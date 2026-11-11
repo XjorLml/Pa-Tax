@@ -1,6 +1,6 @@
 # Project automation
 
-**Future-project template.** Add scripts only when there is a repeatable task. Record setup in [SETUP](../docs/SETUP.md), expected verification in [TEST-PLAN](../docs/delivery/TEST-PLAN.md), and observed results in [STATUS](../docs/delivery/STATUS.md).
+Add scripts only when there is a repeatable task. Record setup in [SETUP](../docs/SETUP.md), expected verification in [TEST-PLAN](../docs/delivery/TEST-PLAN.md), and observed results in [STATUS](../docs/delivery/STATUS.md).
 
 ## Check documentation
 
@@ -10,6 +10,8 @@ Requires Python 3.10+ and no pip packages. From the copied repository root:
 python tools/check_docs.py
 python tools/check_docs.py --ready
 ```
+
+If `python` is not on PATH (as on this project's development PC on 2026-11-10), run the same commands through uv: `uv run --no-project python tools/check_docs.py --ready`. Any Python 3.10+ works; [SETUP](../docs/SETUP.md#troubleshooting-and-maintenance) records the host details.
 
 The normal check allows unfinished template placeholders. Use `--ready` after customization; it fails on remaining `{{...}}` fields, including examples. Reusable templates are the exception: files named `TEMPLATE.md` and anything in a `feature-template` folder keep their placeholders, and the summary counts them. Their links are still checked, and copies you make from them (new names or folders) are enforced. Resolve decisions honestly or remove inapplicable examples with a reason. A structurally ready document can still have pending product approval, builds or device checks.
 
@@ -36,8 +38,8 @@ python -m unittest discover -s tools/tests -v
 
 ## Add automation when needed
 
-Add repeatable build/test entry points only after actual projects and verified commands exist. Add native UI helpers only when their maintenance cost is justified.
+Add repeatable build/test entry points only after actual projects and verified commands exist. Add browser automation helpers only when their maintenance cost is justified.
 
 Each helper should document its required host/tools, input arguments, selected target/device, preconditions, output/artifact location, exit behavior, cleanup, and known limits. Select devices explicitly; isolate test data and make cleanup scoped and repeatable. Keep logs/screenshots free of personal data and signing material. Preserve original settings before modifying them and verify restoration afterwards.
 
-Use repository-relative paths or documented parameters. Stop on failed prerequisites. Never use a passing script exit as acceptance of scenarios it did not exercise. Do not copy the reference app's hardcoded emulator names, serials, database paths, or fixture assumptions.
+Use repository-relative paths or documented parameters. Stop on failed prerequisites. Never use a passing script exit as acceptance of scenarios it did not exercise. Do not hardcode machine-specific paths, device names or fixture assumptions.

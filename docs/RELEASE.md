@@ -1,60 +1,70 @@
-# Release and distribution procedure
+# Release and deployment procedure
 
-**Template. Authority:** packaging, signing, distribution, and recovery procedure. [PRD](PRD.md) chooses channels/platforms; [TEST-PLAN](delivery/TEST-PLAN.md) defines acceptance gates; [STATUS](delivery/STATUS.md) records actual readiness. Nothing here authorizes publishing.
+**Authority:** publishing, deployment, and recovery procedure. [PRD](PRD.md) chooses the audience; [TEST-PLAN](delivery/TEST-PLAN.md) defines acceptance gates; [STATUS](delivery/STATUS.md) records actual readiness. Nothing here authorizes deploying or going public.
 
-## Identity and channel
+State on 2026-11-11: no build, host or domain exists. The first audience is invited testers on a test site (PRD release scope).
+
+## Identity and environments
 
 | Item | Selected value / owner |
 |---|---|
-| App/package/bundle identity | {{Identifier chosen for this app}} |
-| Display version / build number | {{Versioning policy and platform constraints}} |
-| Platform / audience / channel | {{StoreInternalSideloadAndAudience}} |
-| Signing identity | {{Public certificate fingerprint or identifier; never private key material}} |
-| Key/certificate custody | {{Owner, secure location reference, backup/recovery responsibility}} |
-| Release decision owner | {{Owner and actual approval record when available}} |
+| Site name and domain | Not chosen (PRD D01) |
+| Environments | Local development, and one test site for invited testers. A separate production site is decided before public launch (PRD D11) |
+| Who can use the test site | Invited testers only; the mechanism is open (PRD D20) |
+| Version identity | Proposed: each deployment records its git commit, shown on a health or about page, so a tester's report can be tied to a build |
+| Hosting | Render, as a container in its Singapore region ([ADR 007](adr/007-supabase-brevo-container-host.md)). The plan is not chosen, and the free service sleeps when idle; owner lumabanls |
+| Database | Supabase, with a separate project for the test site in the region closest to its users. The plan and backups are decided with the host |
+| Sign-in registrations | One Google and one Microsoft app registration per environment, each with that environment's redirect addresses ([ADR 006](adr/006-web-sign-in.md)) |
+| Email service and sender | Brevo. The sender address and its domain set-up are open (PRD D18) |
+| Release decision owner | lumabanls. No release decision recorded yet |
 
-## Packaging recipes
+There is no app package, store listing or code-signing certificate: nothing is installed on users' devices.
 
-{{Add the exact project-specific publish command for each shipping target after checking current official guidance and SETUP versions. Record configuration, TFM, runtime/architecture, format, trimming/AOT mode, output path, and secure signing input mechanism.}}
+## Publish recipe
 
-| Platform, if selected | Packaging choices to resolve | Acceptance-specific checks |
-|---|---|---|
-| Android | APK versus AAB for the chosen channel; keystore/upload/store signing relationship | Intended signing certificate, manifest/permissions, install/update and launcher start |
-| iOS | Device distribution method, bundle ID, certificate and provisioning profile | Signed device build, entitlements, permission flows and channel validation |
-| Mac Catalyst | Intended distribution method, signing and notarization requirements | Signed install/launch, entitlement and desktop interaction checks |
-| Windows | Packaged/unpackaged distribution and identity/certificate requirements | Target machine install/update, permissions and window/input behavior |
+No recipe yet. After the scaffold step, record the exact publish command and its output here, starting from:
 
-Android distribution requires signing; development/debug identity is not the intended release identity. Confirm the certificate on the actual artifact and distinguish an upload key from the installed signing identity for store-managed signing. Consult the [official Android publishing procedure](https://learn.microsoft.com/en-us/dotnet/maui/android/deployment/publish-cli?view=net-maui-10.0); verify other platform/channel requirements when selected. These rows do not claim those targets were built.
+```powershell
+dotnet publish src/AccApp.Web/AccApp.Web.csproj -c Release
+```
 
-## Release sequence
+This command has not been executed. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.
+
+## Deployment
+
+Host requirements, each to be confirmed against the chosen host ([REFERENCES](REFERENCES.md#implementation-and-hosting)):
+
+| Need | Why |
+|---|---|
+| HTTPS with a valid certificate; HSTS | Sign-in and session cookies require it |
+| WebSockets enabled | Interactive pages work best over WebSockets |
+| Forwarded-headers set-up, if behind a proxy | So the site sees the real scheme and address; sign-in redirects depend on it |
+| Data-protection keys stored outside the app's files | Otherwise sessions and form tokens can break after a redeploy |
+| Production secrets in the host's secret store | Google and Microsoft client secrets, the database connection, the email service key. Rotation owner: lumabanls |
+| One server instance, or session affinity plus a shared chat notifier | Live chat updates are in-process ([SDD](SDD.md#live-chat-and-email-notifications)) |
+| Outbound email allowed | R08 |
+| A health address and logs without personal data | To verify a deployment and diagnose failures. Log retention follows PRD D14 |
+
+Sequence:
 
 1. Identify the source revision and any uncommitted changes; resolve required gates in TEST-PLAN and record remaining limitations.
-2. Produce packages with SETUP's toolchain. Keep signing secrets out of command history, logs, source files, and ordinary build artifacts; document a supported secure input method for the chosen tooling.
-3. Record package hashes, version/build number, public signing identity, and build environment. Verify the artifact itself rather than trusting a filename containing `Signed`.
-4. Install and upgrade on required targets with controlled fixtures. Check migration/data preservation and signed Release runtime behavior, including binding/trimming/AOT paths as applicable.
-5. Execute required native acceptance scenarios and record expected/actual outcomes with the exact artifact.
-6. Record the release decision. Distribute only within the user's authorization, then record the channel/release identity and post-distribution smoke evidence.
+2. Publish with SETUP's SDK. Keep secrets out of command history, logs, source files and build output.
+3. Apply database changes with a migration bundle or a reviewed SQL script, before the new build needs them. Migrating at app startup needs a recorded decision.
+4. Deploy. Open chat pages lose their connection during a restart, so users see a reconnecting notice (TP15).
+5. Verify the deployed site: health address, one public page, sign-in with each provider, one message, and one notification email (TP07, TP12).
+6. Record the release decision, the deployed revision, the environment and the smoke results as evidence.
 
-## Backend deployment, if the app uses its own API
+Schema changes follow a two-step rule. First add the new shape while the old one keeps working. Remove the old one in a later release. This keeps a rollback to the previous build from breaking on newly written data.
 
-The API ships on its own schedule, while released apps stay installed. [API](API.md#compatibility-and-versioning) owns the compatibility rules; this section owns the deployment procedure.
-
-| Item | Selected value / owner |
-|---|---|
-| Hosting and environments | {{HostEnvironmentsAndOwner}} |
-| Deploy method | {{PipelineOrManualProcedure}} |
-| Server database changes | {{MigrationBundleOrReviewedSqlScript}} |
-| Production secrets | {{HostSecretStore; rotation owner}} |
-| Health and monitoring | {{HealthEndpointAlertsLogRetention}} |
-| Rollback | {{PreviousBuildAndDataCompatibility}} |
-
-1. Deploy API changes that every supported app version can use **before** releasing an app that depends on them.
-2. Remove or rename in two steps. First add the new shape while the old one keeps working. Then remove the old one in a later release, once no supported app or older API build uses it. This keeps a rollback from breaking newly written data.
-3. Apply production database changes with a migration bundle or a reviewed SQL script; migrating at app startup needs a deliberate decision ([references](REFERENCES.md#remote-api-and-server)).
-4. Verify the deployed API (health check and one real request) before releasing the app, and record the API build next to the app artifact in evidence.
+Before any public launch, PRD D09 (trust and safety), D10 (privacy review) and D19 (search indexing) must be decided.
 
 ## Recovery and support
 
-{{Describe crash/support intake without personal-data leakage, release suspension/replacement, key loss/rotation, and data recovery limits.}}
+Internal testing: testers report problems directly to lumabanls. Reports carry the support code (correlation ID) shown by the site, never screenshots of other users' chats or contact details.
 
-A previous binary may be unable to read an upgraded schema. Choose a forward-fix, tested downgrade, or backup/restore procedure explicitly; do not promise rollback from an artifact archive alone. Preserve released migration scripts and artifact-specific evidence.
+- **Bad deployment:** redeploy the previous build. If the schema changed, follow that release's recorded rollback plan; do not assume the old build can read the new schema.
+- **Data loss:** all account and chat data is in the server database, so recovery equals database backup and restore (PRD D11).
+- **Lost data-protection keys:** everyone is signed out and must sign in again. No data is lost.
+- **Leaked secret:** rotate it at the provider and in the host's secret store, then redeploy.
+
+Preserve released migration scripts and deployment evidence.

@@ -1,0 +1,445 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Name and logo options</title>
+<style>
+:root{--bg:#F6F8FC;--surface:#FFFFFF;--text:#0F1B3D;--muted:#4F5B76;--border:#DFE5F0;--soft:#EDF1F8;--pick:#17703E;--pick-soft:#E3F4E9;--warn:#7A5200}
+@media (prefers-color-scheme:dark){:root{--bg:#0B1020;--surface:#141B31;--text:#EEF2FB;--muted:#A9B3CC;--border:#263154;--soft:#1B2440;--pick:#7FE0A7;--pick-soft:#12301F;--warn:#F5C76B}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.55 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 16px 64px}
+h1{font:700 34px/1.15 "Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;letter-spacing:-.02em;margin:0 0 10px}
+.lede{max-width:70ch;color:var(--muted);margin:0 0 8px}
+.note{max-width:70ch;margin:14px 0 30px;padding:12px 14px;border:1px solid var(--border);border-left:4px solid var(--warn);border-radius:10px;background:var(--surface);font-size:14.5px}
+.group{font:700 13px/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:34px 0 14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:18px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;overflow:hidden;display:flex;flex-direction:column}
+.stages{display:grid;grid-template-columns:1fr 1fr}
+.stage{display:flex;align-items:center;gap:10px;padding:26px 12px;min-width:0}
+.stage.l{background:#FFFFFF;color:#0F1B3D}
+.stage.d{background:#0F1B3D;color:#FFFFFF}
+.stage svg{width:40px;height:40px;flex:none}
+.wm{font:700 18px/1.1 "Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;letter-spacing:-.02em;white-space:nowrap}
+.wm i{font-style:normal;font-weight:400;opacity:.8}
+.sizes{display:flex;align-items:center;gap:14px;padding:10px 16px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--soft);font-size:12.5px;color:var(--muted)}
+.sizes svg:nth-of-type(1){width:32px;height:32px}
+.sizes svg:nth-of-type(2){width:16px;height:16px}
+.body{padding:16px 18px 20px}
+.body h2{font:700 22px/1.2 "Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;letter-spacing:-.01em;margin:0 0 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pick{font:700 11.5px/1 "Segoe UI",system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:var(--pick);background:var(--pick-soft);padding:5px 8px;border-radius:999px}
+.say{color:var(--muted);font-size:13.5px;margin:0 0 10px}
+.tag{font-style:italic;margin:0 0 2px}
+.en{color:var(--muted);font-size:14px;margin:0 0 12px}
+dl{margin:0;font-size:14.5px}
+dt{font-weight:700;margin-top:9px}
+dd{margin:0;color:var(--muted)}
+.next{margin-top:36px;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px 22px;max-width:80ch}
+.next h2{font:700 20px/1.2 "Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;margin:0 0 8px}
+.next ul{margin:8px 0 0;padding-left:20px}
+.next li{margin:4px 0}
+@media (max-width:420px){.stages{grid-template-columns:1fr}.grid{grid-template-columns:1fr}h1{font-size:28px}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="m-resibo" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#0F6B4A"/>
+    <path d="M13 9h22v30l-3.67-3-3.67 3-3.66-3-3.67 3-3.66-3L13 39z" fill="#fff"/>
+    <polygon points="24,12 25.47,15.98 29.71,16.15 26.38,18.77 27.53,22.85 24,20.5 20.47,22.85 21.62,18.77 18.29,16.15 22.53,15.98" fill="#F5B301"/>
+    <rect x="17" y="26.5" width="14" height="2" rx="1" fill="#0F6B4A" opacity=".6"/>
+    <rect x="17" y="30.5" width="9" height="2" rx="1" fill="#0F6B4A" opacity=".6"/>
+  </symbol>
+  <symbol id="m-tagatuos" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#2F4FE0"/>
+    <rect x="12" y="9.5" width="24" height="5.5" rx="1.5" fill="#fff"/>
+    <rect x="21.25" y="9.5" width="5.5" height="19.5" rx="1.5" fill="#fff"/>
+    <rect x="12" y="33" width="24" height="2.2" rx="1.1" fill="#fff" opacity=".9"/>
+    <rect x="12" y="37.3" width="24" height="2.2" rx="1.1" fill="#fff" opacity=".9"/>
+  </symbol>
+  <symbol id="m-klaras" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#0B2A4A"/>
+    <circle cx="19" cy="24" r="10.5" fill="#38BDF8" opacity=".95"/>
+    <circle cx="29" cy="24" r="10.5" fill="#fff" opacity=".6"/>
+  </symbol>
+  <symbol id="m-kwentado" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#1E1B4B"/>
+    <rect x="12.4" y="12" width="3.2" height="24" rx="1.6" fill="#fff"/>
+    <rect x="18.8" y="12" width="3.2" height="24" rx="1.6" fill="#fff"/>
+    <rect x="25.2" y="12" width="3.2" height="24" rx="1.6" fill="#fff"/>
+    <rect x="31.6" y="12" width="3.2" height="24" rx="1.6" fill="#fff"/>
+    <path d="M8.5 31.5L39.5 16.5" stroke="#FBBF24" stroke-width="3.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="m-kinse" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#C2410C"/>
+    <rect x="10" y="12" width="28" height="27" rx="5" fill="#fff"/>
+    <path d="M10 17a5 5 0 0 1 5-5h18a5 5 0 0 1 5 5v3.5H10z" fill="#FFD3BF"/>
+    <rect x="16" y="8.5" width="3" height="7" rx="1.5" fill="#7C2D12"/>
+    <rect x="29" y="8.5" width="3" height="7" rx="1.5" fill="#7C2D12"/>
+    <text x="24" y="35.5" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="800" font-size="15" fill="#C2410C">15</text>
+  </symbol>
+  <symbol id="m-buwisit" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="24" fill="#EA580C"/>
+    <circle cx="16.5" cy="18.5" r="3.4" fill="#fff"/>
+    <circle cx="31.5" cy="18.5" r="3.4" fill="#fff"/>
+    <path d="M27 12.5L21 25" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+    <path d="M14 30.5Q24 40.5 34 30.5" stroke="#fff" stroke-width="3.4" stroke-linecap="round" fill="none"/>
+  </symbol>
+  <symbol id="m-gaan" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#0E7490"/>
+    <path d="M13 35C13 21 22 12 36 12c0 14-9 23-23 23z" fill="#fff"/>
+    <path d="M15.5 32.5L29 19" stroke="#0E7490" stroke-width="2.2" stroke-linecap="round"/>
+    <path d="M9.5 38.5L14 34" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="m-suki" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#7C3AED"/>
+    <rect x="8.5" y="17" width="19.5" height="14" rx="7" fill="none" stroke="#fff" stroke-width="3.4"/>
+    <rect x="20" y="17" width="19.5" height="14" rx="7" fill="none" stroke="#FDE68A" stroke-width="3.4"/>
+  </symbol>
+  <symbol id="m-kalma" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#0369A1"/>
+    <path d="M14.5 26a9.5 9.5 0 0 1 19 0z" fill="#FDE047"/>
+    <path d="M9 32q3.75-3.2 7.5 0t7.5 0t7.5 0t7.5 0" stroke="#fff" stroke-width="2.8" stroke-linecap="round" fill="none"/>
+    <path d="M15 38q3-2.6 6 0t6 0t6 0" stroke="#fff" stroke-width="2.6" stroke-linecap="round" fill="none" opacity=".7"/>
+  </symbol>
+  <symbol id="m-ready" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#3F3F46"/>
+    <path d="M13 9h22v30l-3.67-3-3.67 3-3.66-3-3.67 3-3.66-3L13 39z" fill="#fff"/>
+    <path d="M18 20.5l4.2 4.2L30 16" stroke="#16A34A" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <rect x="17" y="29.5" width="14" height="2" rx="1" fill="#3F3F46" opacity=".5"/>
+  </symbol>
+  <symbol id="m-patax" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#E11D48"/>
+    <rect x="8.5" y="11" width="18" height="26" rx="3.5" fill="#fff"/>
+    <rect x="12.5" y="17" width="10" height="2.2" rx="1.1" fill="#E11D48" opacity=".6"/>
+    <rect x="12.5" y="22" width="10" height="2.2" rx="1.1" fill="#E11D48" opacity=".6"/>
+    <rect x="12.5" y="27" width="6" height="2.2" rx="1.1" fill="#E11D48" opacity=".6"/>
+    <path d="M30 24h10M35.5 19l5 5-5 5" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </symbol>
+  <symbol id="m-ayos" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#15803D"/>
+    <path d="M12.5 25l8.5 8.5L36 16" stroke="#fff" stroke-width="5.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  </symbol>
+  <symbol id="m-buddy" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#FACC15"/>
+    <text x="24" y="33.5" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-weight="800" font-size="27" letter-spacing="-1" fill="#0F1B3D">bb</text>
+  </symbol>
+  <symbol id="m-tropa" viewBox="0 0 48 48">
+    <rect width="48" height="48" rx="12" fill="#BE185D"/>
+    <circle cx="14" cy="24" r="8.5" fill="#fff" opacity=".8"/>
+    <circle cx="34" cy="24" r="8.5" fill="#fff" opacity=".8"/>
+    <circle cx="24" cy="24" r="9.5" fill="#FDE68A" stroke="#BE185D" stroke-width="2.2"/>
+  </symbol>
+</svg>
+
+<div class="wrap">
+  <h1>Name and logo options</h1>
+  <p class="lede">Fourteen names for the accountant directory (working name "AccApp"), each with a logo sketch: six in Taglish, then eight in Filipino. They lean on what paying taxes in the Philippines feels like: the receipts, the April deadline, the hassle, and wanting someone you can trust to sort it out.</p>
+  <p class="note"><strong>These are sketches to choose a direction, not finished artwork.</strong> A quick web search on 11 November 2026 found no tax or accounting product using these names. It was not a trademark, business-name or domain check.</p>
+
+  <p class="group">Taglish</p>
+  <div class="grid">
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-kalma"/></svg><span class="wm"><i>Tax</i>Kalma</span></div>
+        <div class="stage d"><svg><use href="#m-kalma"/></svg><span class="wm"><i>Tax</i>Kalma</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-kalma"/></svg><svg><use href="#m-kalma"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Tax Kalma <span class="pick">Taglish pick</span></h2>
+        <p class="say">tax + kalma (relax)</p>
+        <p class="tag">"Kalma lang, may accountant ka na."</p>
+        <p class="en">Relax, you've got an accountant now.</p>
+        <dl>
+          <dt>Meaning</dt><dd>"Kalma lang" is what a friend says when you panic. Here it answers the tax panic.</dd>
+          <dt>Logo</dt><dd>A sun over calm water.</dd>
+          <dt>Why it fits</dt><dd>Names the struggle and the relief in two words, and stays respectable enough for an accountant's profile.</dd>
+          <dt>Watch out</dt><dd>Sells the feeling, not the ratings. The tagline has to carry "accountant".</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-ready"/></svg><span class="wm"><i>Resibo</i>Ready</span></div>
+        <div class="stage d"><svg><use href="#m-ready"/></svg><span class="wm"><i>Resibo</i>Ready</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-ready"/></svg><svg><use href="#m-ready"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Resibo Ready</h2>
+        <p class="say">resibo (receipt, proof) + ready</p>
+        <p class="tag">"Rated accountants, para lagi kang ready."</p>
+        <p class="en">Rated accountants, so you're always ready.</p>
+        <dl>
+          <dt>Meaning</dt><dd>Your papers are in order, and the accountant has the "receipts" to prove their work.</dd>
+          <dt>Logo</dt><dd>A receipt with a green tick.</dd>
+          <dt>Why it fits</dt><dd>Keeps the proof idea behind the ratings, with a catchy double R.</dd>
+          <dt>Watch out</dt><dd>Sounds even more like a receipt-organising tool than May Resibo does.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-patax"/></svg><span class="wm">Pa-Tax</span></div>
+        <div class="stage d"><svg><use href="#m-patax"/></svg><span class="wm">Pa-Tax</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-patax"/></svg><svg><use href="#m-patax"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Pa-Tax</h2>
+        <p class="say">"pa-" as in pa-load, pa-deliver</p>
+        <p class="tag">"Pa-tax ka na sa pro."</p>
+        <p class="en">Get your taxes done by a pro.</p>
+        <dl>
+          <dt>Meaning</dt><dd>"Pa-" means having someone do it for you. Pa-Tax: hand your taxes to someone who knows how.</dd>
+          <dt>Logo</dt><dd>A document being handed over.</dd>
+          <dt>Why it fits</dt><dd>The most Taglish of the six, and it describes exactly what a client comes to do.</dd>
+          <dt>Watch out</dt><dd>Needs the hyphen. As a web address, "patax" is hard to read and to say.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-buddy"/></svg><span class="wm"><i>Buwis</i>Buddy</span></div>
+        <div class="stage d"><svg><use href="#m-buddy"/></svg><span class="wm"><i>Buwis</i>Buddy</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-buddy"/></svg><svg><use href="#m-buddy"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Buwis Buddy</h2>
+        <p class="say">buwis (tax) + buddy</p>
+        <p class="tag">"May buddy ka na sa buwis."</p>
+        <p class="en">You've got a buddy for your taxes.</p>
+        <dl>
+          <dt>Meaning</dt><dd>Someone on your side when the forms arrive.</dd>
+          <dt>Logo</dt><dd>Two lowercase b's standing side by side.</dd>
+          <dt>Why it fits</dt><dd>Friendly, easy to remember, and easy to say.</dd>
+          <dt>Watch out</dt><dd>"Buddy" suggests a chatbot or helper app, and may feel too light for business clients.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-tropa"/></svg><span class="wm"><i>Tax</i>Tropa</span></div>
+        <div class="stage d"><svg><use href="#m-tropa"/></svg><span class="wm"><i>Tax</i>Tropa</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-tropa"/></svg><svg><use href="#m-tropa"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Tax Tropa</h2>
+        <p class="say">tax + tropa (your crew)</p>
+        <p class="tag">"Hanapin ang tropa mo sa tax."</p>
+        <p class="en">Find your crew for tax.</p>
+        <dl>
+          <dt>Meaning</dt><dd>Your <em>tropa</em> are the friends who back you up.</dd>
+          <dt>Logo</dt><dd>Three overlapping profile circles, like a group of contacts.</dd>
+          <dt>Why it fits</dt><dd>The closest to a social site for accountants, with a strong double T.</dd>
+          <dt>Watch out</dt><dd>Very casual street slang. Older accountants and corporate clients may not take it seriously.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-ayos"/></svg><span class="wm"><i>Ayos</i>Tax</span></div>
+        <div class="stage d"><svg><use href="#m-ayos"/></svg><span class="wm"><i>Ayos</i>Tax</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-ayos"/></svg><svg><use href="#m-ayos"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>AyosTax</h2>
+        <p class="say">ayos (sorted, all good) + tax</p>
+        <p class="tag">"Ayos na ang tax mo."</p>
+        <p class="en">Your tax is sorted.</p>
+        <dl>
+          <dt>Meaning</dt><dd>"Ayos na" is what you say when a problem is fixed.</dd>
+          <dt>Logo</dt><dd>One bold tick.</dd>
+          <dt>Why it fits</dt><dd>Plain and positive. Nobody will misread it.</dd>
+          <dt>Watch out</dt><dd>Sounds like file-it-yourself software, in a field that already has Taxumo, JuanTax and DocTax.</dd>
+        </dl>
+      </div>
+    </article>
+  </div>
+
+  <p class="group">Proof and trust</p>
+  <div class="grid">
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-resibo"/></svg><span class="wm"><i>May</i>Resibo</span></div>
+        <div class="stage d"><svg><use href="#m-resibo"/></svg><span class="wm"><i>May</i>Resibo</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-resibo"/></svg><svg><use href="#m-resibo"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>May Resibo <span class="pick">Overall pick</span></h2>
+        <p class="say">"mai reh-SEE-boh" · has receipts</p>
+        <p class="tag">"Mga accountant na may resibo."</p>
+        <p class="en">Accountants with the receipts to prove it.</p>
+        <dl>
+          <dt>Meaning</dt><dd>A <em>resibo</em> is the receipt the BIR keeps asking for. In everyday slang, "may resibo" means "I have proof".</dd>
+          <dt>Logo</dt><dd>A receipt with a torn edge and a gold star: proof plus rating.</dd>
+          <dt>Why it fits</dt><dd>The site's whole point is ratings and portfolios, which are an accountant's receipts.</dd>
+          <dt>Watch out</dt><dd>Could be mistaken for a receipt-scanning app. The tagline has to say "accountants".</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-tagatuos"/></svg><span class="wm">Tagatuos</span></div>
+        <div class="stage d"><svg><use href="#m-tagatuos"/></svg><span class="wm">Tagatuos</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-tagatuos"/></svg><svg><use href="#m-tagatuos"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Tagatuos <span class="pick">Formal alternative</span></h2>
+        <p class="say">"tah-gah-too-OHS" · accountant</p>
+        <p class="tag">"Hanapin ang tagatuos na bagay sa'yo."</p>
+        <p class="en">Find the accountant who suits you.</p>
+        <dl>
+          <dt>Meaning</dt><dd>The Tagalog word for accountant, from <em>tuos</em>: to reckon and settle accounts.</dd>
+          <dt>Logo</dt><dd>A "T" over a double rule, the mark accountants draw under a final total.</dd>
+          <dt>Why it fits</dt><dd>Says exactly what the site lists, and accountants would be proud to be on it.</dd>
+          <dt>Watch out</dt><dd>Few people use the word day to day, so it needs the tagline. An unrelated personal-finance app shares the name.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-klaras"/></svg><span class="wm">Klaras</span></div>
+        <div class="stage d"><svg><use href="#m-klaras"/></svg><span class="wm">Klaras</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-klaras"/></svg><svg><use href="#m-klaras"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Klaras</h2>
+        <p class="say">from "kuwentas klaras" · clear accounts</p>
+        <p class="tag">"Kuwentas klaras, walang kaba."</p>
+        <p class="en">Clear accounts, no nerves.</p>
+        <dl>
+          <dt>Meaning</dt><dd>"Kuwentas klaras" is the old saying for honest, settled accounts between two people.</dd>
+          <dt>Logo</dt><dd>Two clear discs overlapping: client and accountant, nothing hidden.</dd>
+          <dt>Why it fits</dt><dd>Short, easy to spell, and it promises the transparency that reviews deliver.</dd>
+          <dt>Watch out</dt><dd>Younger users may not know the saying. On its own, "Klaras" does not say tax.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-kwentado"/></svg><span class="wm">Kwentado</span></div>
+        <div class="stage d"><svg><use href="#m-kwentado"/></svg><span class="wm">Kwentado</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-kwentado"/></svg><svg><use href="#m-kwentado"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Kwentado</h2>
+        <p class="say">"kwen-TAH-doh" · all counted</p>
+        <p class="tag">"Kwentado na ang lahat."</p>
+        <p class="en">Everything is accounted for.</p>
+        <dl>
+          <dt>Meaning</dt><dd>Counted, computed, accounted for.</dd>
+          <dt>Logo</dt><dd>Tally marks with the fifth stroke across them: the count is done.</dd>
+          <dt>Why it fits</dt><dd>Sounds like a finished job, which is the feeling clients are paying for.</dd>
+          <dt>Watch out</dt><dd>Can also mean "calculating" about a person. It names the result, not the accountants.</dd>
+        </dl>
+      </div>
+    </article>
+  </div>
+
+  <p class="group">The struggle, with a smile</p>
+  <div class="grid">
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-kinse"/></svg><span class="wm">Abril<i>Kinse</i></span></div>
+        <div class="stage d"><svg><use href="#m-kinse"/></svg><span class="wm">Abril<i>Kinse</i></span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-kinse"/></svg><svg><use href="#m-kinse"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Abril Kinse</h2>
+        <p class="say">April fifteen</p>
+        <p class="tag">"Handa ka na bago mag-Abril Kinse."</p>
+        <p class="en">Ready before April 15.</p>
+        <dl>
+          <dt>Meaning</dt><dd>The annual income tax deadline, the date every taxpayer dreads.</dd>
+          <dt>Logo</dt><dd>A calendar page showing 15.</dd>
+          <dt>Why it fits</dt><dd>Instantly understood, memorable, and it names the exact moment people look for help.</dd>
+          <dt>Watch out</dt><dd>Ties the brand to one date, when accountants also do monthly and quarterly work. It dates badly if the deadline ever moves.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-buwisit"/></svg><span class="wm"><i>Bye</i>Buwisit</span></div>
+        <div class="stage d"><svg><use href="#m-buwisit"/></svg><span class="wm"><i>Bye</i>Buwisit</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-buwisit"/></svg><svg><use href="#m-buwisit"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Bye Buwisit</h2>
+        <p class="say">buwis (tax) + buwisit (what a pain)</p>
+        <p class="tag">"Buwis lang 'yan, hindi buwisit."</p>
+        <p class="en">It's only tax, not a curse.</p>
+        <dl>
+          <dt>Meaning</dt><dd>The pun every Filipino taxpayer has made at least once.</dd>
+          <dt>Logo</dt><dd>A relieved face whose eyes and nose form a percent sign.</dd>
+          <dt>Why it fits</dt><dd>The most shareable of the eight, and the closest to "tax struggle".</dd>
+          <dt>Watch out</dt><dd>"Buwisit" is a mild swear word. Accountants may not want their professional profile under it. Better as a campaign line than the name.</dd>
+        </dl>
+      </div>
+    </article>
+  </div>
+
+  <p class="group">Relief and relationship</p>
+  <div class="grid">
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-gaan"/></svg><span class="wm">Gaan</span></div>
+        <div class="stage d"><svg><use href="#m-gaan"/></svg><span class="wm">Gaan</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-gaan"/></svg><svg><use href="#m-gaan"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Gaan</h2>
+        <p class="say">"gah-AHN" · lightness</p>
+        <p class="tag">"Pagaanin natin ang buwis."</p>
+        <p class="en">Let's make tax lighter.</p>
+        <dl>
+          <dt>Meaning</dt><dd>Lightness, ease: the weight coming off your shoulders.</dd>
+          <dt>Logo</dt><dd>A feather that doubles as a quill pen.</dd>
+          <dt>Why it fits</dt><dd>Four letters, calm, and it names the feeling instead of the problem.</dd>
+          <dt>Watch out</dt><dd>Says nothing about accountants or tax, and a short common word is hard to find in search and hard to protect.</dd>
+        </dl>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="stages">
+        <div class="stage l"><svg><use href="#m-suki"/></svg><span class="wm">Suki</span></div>
+        <div class="stage d"><svg><use href="#m-suki"/></svg><span class="wm">Suki</span></div>
+      </div>
+      <div class="sizes"><svg><use href="#m-suki"/></svg><svg><use href="#m-suki"/></svg><span>App icon and browser-tab sizes</span></div>
+      <div class="body">
+        <h2>Suki</h2>
+        <p class="say">"SOO-kee" · your trusted regular</p>
+        <p class="tag">"Hanapin ang suki mong accountant."</p>
+        <p class="en">Find your go-to accountant.</p>
+        <dl>
+          <dt>Meaning</dt><dd>The seller you always go back to, and the customer they look after.</dd>
+          <dt>Logo</dt><dd>Two linked loops: client and accountant, kept together.</dd>
+          <dt>Why it fits</dt><dd>Warm and familiar. It sells the long relationship, not a one-off filing.</dd>
+          <dt>Watch out</dt><dd>Many Philippine businesses already use "Suki", so it would need a second word and would be hard to own.</dd>
+        </dl>
+      </div>
+    </article>
+  </div>
+
+  <section class="next">
+    <h2>Before you settle on one</h2>
+    <ul>
+      <li>Search the name in the IPOPHL trademark database, and in the DTI or SEC business-name search.</li>
+      <li>Check the domain (.ph, .com.ph, .com) and the social media handles.</li>
+      <li>Say it aloud to three accountants and three clients. Accountants have to want their name next to it.</li>
+      <li>The colours here are placeholders. The final mark should take its colour from the look you choose for the site.</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

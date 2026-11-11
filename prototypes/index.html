@@ -1,0 +1,2053 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AccApp Prototype</title>
+<meta name="description" content="Clickable design prototype of AccApp release 1. A proposal for review, not an approved design.">
+<style>
+/* ===== Prototype chrome: not part of the site, so it stays neutral for every look ===== */
+:root{--page:#E9ECEF;--bar:#F8F9FA;--frame:#1F2328;--c-surface:#FFFFFF;--c-surface-2:#EEF0F2;--c-text:#1A1D21;--c-muted:#565D66;--c-border:#C3CAD2;--c-accent:#30363D;--c-on-accent:#FFFFFF;--c-focus:#2563EB;--shadow:0 10px 30px rgba(20,24,28,.18);color-scheme:light}
+:root[data-theme="dark"]{--page:#0C0E11;--bar:#14171B;--frame:#30363D;--c-surface:#1A1E23;--c-surface-2:#242930;--c-text:#E6E9ED;--c-muted:#A0A8B3;--c-border:#3A424C;--c-accent:#D0D7DE;--c-on-accent:#14171B;--c-focus:#7AA7FF;--shadow:0 10px 30px rgba(0,0,0,.5);color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+html,body{margin:0}
+body{background:var(--page);color:var(--c-text);font:15px/1.45 "Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--c-focus);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.ic{flex:none}
+.pbar{position:sticky;top:0;z-index:100;display:grid;gap:10px;padding:10px 16px;background:var(--bar);border-bottom:1px solid var(--c-border)}
+.prow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px 18px}
+.ptitle{margin-right:auto;min-width:220px}
+.ptitle strong{display:block;font-size:15px}
+.ptitle span{font-size:12px;color:var(--c-muted)}
+.pctl{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--c-muted)}
+.pctl select{min-height:34px;padding:4px 8px;border:1px solid var(--c-border);border-radius:8px;background:var(--c-surface);color:var(--c-text);font-size:13px}
+.seg{display:inline-flex;overflow:hidden;border:1px solid var(--c-border);border-radius:8px;background:var(--c-surface)}
+.seg button{min-height:34px;padding:6px 12px;border:0;background:transparent;color:var(--c-text);font-size:13px;cursor:pointer}
+.seg button+button{border-left:1px solid var(--c-border)}
+.seg button[aria-pressed="true"]{background:var(--c-accent);color:var(--c-on-accent)}
+.pchk{display:flex;align-items:center;gap:6px;min-height:34px;font-size:13px}
+.pchk input{width:16px;height:16px}
+.pbtn{min-height:34px;padding:6px 12px;border:1px solid var(--c-border);border-radius:8px;background:var(--c-surface);color:var(--c-text);font-size:13px;cursor:pointer}
+.pbtn:disabled{opacity:.5;cursor:not-allowed}
+.stage{display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:24px;padding:24px 16px 56px}
+.notes{width:330px;max-width:100%;padding:16px;font-size:13.5px;background:var(--c-surface);border:1px solid var(--c-border);border-radius:12px}
+.stage.desk .notes{width:min(1120px,100%)}
+.notes h2{margin:0 0 4px;font-size:15px}
+.notes h3{margin:14px 0 6px;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--c-muted)}
+.notes ul{margin:0;padding-left:18px}
+.notes li{margin:4px 0}
+.notes .id{font-weight:700}
+.notes .small,.notes .muted{color:var(--c-muted)}
+.tries{display:flex;flex-wrap:wrap;gap:6px}
+.proto-err{position:fixed;right:12px;bottom:12px;left:12px;z-index:200;display:none;padding:10px 14px;color:#fff;background:#B42318;border-radius:8px}
+
+/* ===== The three looks (generated: colour, type and shape tokens) ===== */
+.device[data-look="ledger"]{--font-head:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;--font-body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;--head-weight:600;--head-track:0;--r-sm:3px;--r-md:4px;--r-lg:6px;--r-pill:4px;--r-avatar:4px;--r-btn:4px;--bubble-r:6px;--elev:none;--elev-hover:none;--dur:80ms;--app-bg:#F6F2EA;--surface:#FFFDF9;--surface-2:#EEE8DC;--text:#1A2233;--muted:#566075;--border:#DAD3C4;--ctl:#857E6E;--primary:#1F3A5F;--primary-strong:#152A46;--primary-edge:#1F3A5F;--on-primary:#FFFFFF;--link:#1F3A5F;--primary-soft:#E2E9F2;--on-soft:#1A3050;--t1:#E2E9F2;--t2:#E2E9F2;--t3:#E2E9F2;--danger:#A3271B;--on-danger:#FFFFFF;--danger-soft:#F8E7E3;--warn:#6B4B00;--warn-soft:#F8ECCB;--ok:#1B6A40;--ok-soft:#E2F1E7;--focus:#1D4ED8;--overlay:rgba(20,26,38,.5)}
+:root[data-theme="dark"] .device[data-look="ledger"]{--app-bg:#11151C;--surface:#19202B;--surface-2:#232C39;--text:#ECE9E2;--muted:#A7AFBD;--border:#2F3948;--ctl:#7A8595;--primary:#A9C3E6;--primary-strong:#C4D6EF;--primary-edge:#A9C3E6;--on-primary:#0F1D30;--link:#A9C3E6;--primary-soft:#22334C;--on-soft:#C9DAF0;--t1:#22334C;--t2:#22334C;--t3:#22334C;--danger:#F19A90;--on-danger:#2B0D0A;--danger-soft:#3A1F1C;--warn:#ECC878;--warn-soft:#33290F;--ok:#82D5A6;--ok-soft:#16301F;--focus:#8FB4FF;--overlay:rgba(0,0,0,.6)}
+.device[data-look="neighbourly"]{--font-head:ui-rounded,"SF Pro Rounded","Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,Roboto,sans-serif;--font-body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;--head-weight:700;--head-track:-0.01em;--r-sm:10px;--r-md:14px;--r-lg:20px;--r-pill:999px;--r-avatar:50%;--r-btn:999px;--bubble-r:20px;--elev:0 1px 2px rgba(60,30,10,.06),0 4px 14px rgba(60,30,10,.06);--elev-hover:0 2px 4px rgba(60,30,10,.08),0 8px 22px rgba(60,30,10,.10);--dur:180ms;--app-bg:#FFF7EE;--surface:#FFFFFF;--surface-2:#FBEAD9;--text:#2A1C14;--muted:#6A5347;--border:#EDD9C6;--ctl:#9B7F6B;--primary:#F4B63F;--primary-strong:#E9A520;--primary-edge:#9A6400;--on-primary:#2A1C14;--link:#8A3F0C;--primary-soft:#FDE6D3;--on-soft:#7A3410;--t1:#FDE6D3;--t2:#DDF0E4;--t3:#E4E6FA;--danger:#B3261E;--on-danger:#FFFFFF;--danger-soft:#FCE8E6;--warn:#6F4A00;--warn-soft:#FFF3CF;--ok:#1F6B45;--ok-soft:#E3F3E8;--focus:#1D4ED8;--overlay:rgba(42,28,20,.5)}
+:root[data-theme="dark"] .device[data-look="neighbourly"]{--app-bg:#1A1410;--surface:#241C17;--surface-2:#30251E;--text:#F4EAE0;--muted:#C2AEA0;--border:#3F3129;--ctl:#8F7B6D;--primary:#F4B63F;--primary-strong:#F8C765;--primary-edge:#F4B63F;--on-primary:#2A1C14;--link:#F2B27A;--primary-soft:#46301F;--on-soft:#F8D3B4;--t1:#46301F;--t2:#1F3A2C;--t3:#2C2F52;--danger:#F49B93;--on-danger:#2B0D0A;--danger-soft:#40201D;--warn:#F0CB73;--warn-soft:#3A2E12;--ok:#86D6A9;--ok-soft:#1A3223;--focus:#9DBBFF;--overlay:rgba(0,0,0,.6)}
+.device[data-look="clear"]{--font-head:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;--font-body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;--head-weight:600;--head-track:-0.01em;--r-sm:8px;--r-md:10px;--r-lg:14px;--r-pill:999px;--r-avatar:50%;--r-btn:10px;--bubble-r:16px;--elev:0 1px 2px rgba(15,31,28,.06);--elev-hover:0 2px 10px rgba(15,31,28,.10);--dur:140ms;--app-bg:#F3F7F6;--surface:#FFFFFF;--surface-2:#E7EEEC;--text:#0F1F1C;--muted:#50605C;--border:#D2DCD9;--ctl:#788985;--primary:#0B6E60;--primary-strong:#095548;--primary-edge:#0B6E60;--on-primary:#FFFFFF;--link:#0A5F53;--primary-soft:#DCF0EB;--on-soft:#0A4E44;--t1:#DCF0EB;--t2:#DCF0EB;--t3:#DCF0EB;--danger:#B42318;--on-danger:#FFFFFF;--danger-soft:#FCEBE9;--warn:#7A5200;--warn-soft:#FFF3D6;--ok:#17703E;--ok-soft:#E3F4E9;--focus:#2563EB;--overlay:rgba(10,16,14,.5)}
+:root[data-theme="dark"] .device[data-look="clear"]{--app-bg:#0E1513;--surface:#151F1D;--surface-2:#1E2A28;--text:#E4ECEA;--muted:#9CB0AB;--border:#2B3936;--ctl:#6E827D;--primary:#52C4B1;--primary-strong:#7AD6C6;--primary-edge:#52C4B1;--on-primary:#04211C;--link:#6FD0BF;--primary-soft:#163430;--on-soft:#A8E4D9;--t1:#163430;--t2:#163430;--t3:#163430;--danger:#F2938A;--on-danger:#2A0D0A;--danger-soft:#3B1E1B;--warn:#F1C66E;--warn-soft:#36290F;--ok:#73D59D;--ok-soft:#14301F;--focus:#7AA7FF;--overlay:rgba(0,0,0,.6)}
+.device[data-look="modern"]{--font-head:"Segoe UI Variable Display","Segoe UI",system-ui,-apple-system,"Helvetica Neue",Arial,sans-serif;--font-body:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;--head-weight:700;--head-track:-0.02em;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-pill:999px;--r-avatar:50%;--r-btn:999px;--bubble-r:18px;--elev:0 1px 2px rgba(15,27,61,.05),0 8px 24px rgba(15,27,61,.06);--elev-hover:0 2px 6px rgba(15,27,61,.08),0 14px 34px rgba(15,27,61,.12);--dur:150ms;--app-bg:#F6F8FC;--surface:#FFFFFF;--surface-2:#EDF1F8;--text:#0F1B3D;--muted:#4F5B76;--border:#DFE5F0;--ctl:#7B869E;--primary:#2F4FE0;--primary-strong:#2440C0;--primary-edge:#2F4FE0;--on-primary:#FFFFFF;--link:#2440C0;--primary-soft:#E9EEFD;--on-soft:#1B2F8F;--t1:#E9EEFD;--t2:#E3F4EE;--t3:#F3E9FB;--danger:#B42318;--on-danger:#FFFFFF;--danger-soft:#FCEBE9;--warn:#7A5200;--warn-soft:#FFF3D6;--ok:#17703E;--ok-soft:#E3F4E9;--focus:#1D4ED8;--overlay:rgba(15,27,61,.5)}
+:root[data-theme="dark"] .device[data-look="modern"]{--app-bg:#0B1020;--surface:#121A2E;--surface-2:#1B2540;--text:#E8ECF7;--muted:#A3AECB;--border:#27324F;--ctl:#6F7DA3;--primary:#8EA2FF;--primary-strong:#AEBDFF;--primary-edge:#8EA2FF;--on-primary:#0B1437;--link:#A5B4FF;--primary-soft:#1C2750;--on-soft:#C9D3FF;--t1:#1C2750;--t2:#153328;--t3:#2D2148;--danger:#F2938A;--on-danger:#2A0D0A;--danger-soft:#3B1E1B;--warn:#F1C66E;--warn-soft:#36290F;--ok:#73D59D;--ok-soft:#14301F;--focus:#9DB2FF;--overlay:rgba(0,0,0,.6)}
+
+/* ===== The site ===== */
+.device{position:relative;display:flex;flex-direction:column;overflow:hidden;background:var(--app-bg);color:var(--text);font-family:var(--font-body);box-shadow:var(--shadow)}
+.device.phone{width:390px;height:800px;border:10px solid var(--frame);border-radius:40px}
+.device.desktop{width:min(1120px,100%);height:760px;border:1px solid var(--c-border);border-radius:10px}
+@media (max-width:820px){
+  .device.phone{width:100%;max-width:420px;height:760px;border-width:6px;border-radius:28px}
+  .notes{width:100%;max-width:420px}
+}
+.device :focus-visible{outline-color:var(--focus)}
+:where(.device) a{color:var(--link)}
+:where(.device) h1,:where(.device) h2,:where(.device) h3{font-family:var(--font-head);font-weight:var(--head-weight);letter-spacing:var(--head-track)}
+.device h1:focus,.device h2:focus{outline:none}
+.device h1:focus-visible,.device h2:focus-visible{outline:2px solid var(--focus)}
+.btn,.chip,.card,.choice,.conv,.mi,.sitenav a,.tabbar a,.tabbar button{transition:background-color var(--dur),border-color var(--dur),box-shadow var(--dur),color var(--dur)}
+@keyframes pulse{50%{opacity:.45}}
+@keyframes rot{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.device *{transition:none !important;animation:none !important}}
+
+/* Frames */
+.app{position:relative;display:flex;flex:1;flex-direction:column;min-height:0}
+.statusbar{display:flex;flex:none;align-items:center;justify-content:space-between;height:30px;padding:0 22px;font-size:12px;font-weight:600;background:var(--surface)}
+.sb-ic{display:flex;align-items:center;gap:6px}
+.batt{display:inline-block;width:20px;height:10px;border:1.5px solid currentColor;border-radius:3px;position:relative}
+.batt::after{content:"";position:absolute;inset:1.5px 5px 1.5px 1.5px;background:currentColor;border-radius:1px}
+.urlbar{display:flex;flex:none;padding:2px 12px 8px;background:var(--surface)}
+.titlebar{display:flex;flex:none;align-items:center;gap:12px;height:40px;padding-left:12px;font-size:12px;background:var(--surface-2);border-bottom:1px solid var(--border)}
+.tabname{display:flex;flex:none;align-items:center;gap:6px;white-space:nowrap}
+.addr{display:flex;flex:1;align-items:center;gap:6px;min-width:0;padding:5px 12px;border-radius:999px;background:var(--surface-2);font-size:12.5px;color:var(--muted)}
+.addr span{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.titlebar .addr{background:var(--surface)}
+.tb-ctrls{display:flex;height:100%}
+.tb-ctrls span{display:grid;place-items:center;width:46px;color:var(--muted)}
+.appdot{display:inline-grid;flex:none;place-items:center;width:18px;height:18px;border-radius:var(--r-sm);background:var(--primary);color:var(--on-primary);font:700 11px/1 var(--font-head)}
+.appdot.md{width:28px;height:28px;font-size:15px}
+.appdot.xl{width:56px;height:56px;margin:0 0 8px;border-radius:var(--r-md);font-size:26px}
+
+/* Phone layout */
+.appbar{display:flex;flex:none;align-items:center;gap:4px;min-height:56px;padding:6px 6px 6px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
+.appbar.has-back{padding-left:4px}
+.appbar h1,.pane-head h1,.pane-head h2{flex:1;min-width:0;margin:0;overflow:hidden;font-size:20px;line-height:1.25;white-space:nowrap;text-overflow:ellipsis}
+.pane-head h2{font-size:18px}
+.content{flex:1;min-height:0;overflow:auto;padding:12px 16px 20px}
+.footer{flex:none;padding:10px 16px 14px;background:var(--surface);border-top:1px solid var(--border)}
+.tabbar{display:flex;flex:none;background:var(--surface);border-top:1px solid var(--border)}
+.tabbar a,.tabbar button{position:relative;display:flex;flex:1;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:60px;padding:0;border:0;background:none;font-size:12px;color:var(--muted);text-decoration:none;cursor:pointer}
+.tabbar a[aria-current="page"]{color:var(--link);font-weight:700;box-shadow:inset 0 3px 0 var(--link)}
+.tabbar .badge{position:absolute;top:6px;left:calc(50% + 6px)}
+
+/* Desktop layout */
+.shell{display:flex;flex:1;flex-direction:column;min-height:0}
+.sitebar{display:flex;flex:none;align-items:center;gap:24px;min-height:60px;padding:0 24px;background:var(--surface);border-bottom:1px solid var(--border)}
+.brand{display:flex;align-items:center;gap:8px;font:var(--head-weight) 18px/1 var(--font-head);color:var(--text);text-decoration:none}
+.sitenav{display:flex;flex:1;gap:4px;align-self:stretch}
+.sitenav a{display:flex;align-items:center;gap:8px;padding:0 14px;color:var(--text);text-decoration:none;border-bottom:3px solid transparent;border-top:3px solid transparent}
+.sitenav a:hover{background:var(--surface-2)}
+.sitenav a[aria-current="page"]{color:var(--link);font-weight:700;border-bottom-color:var(--link)}
+.siteuser{display:flex;align-items:center;gap:8px}
+.userlink{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 8px;color:var(--text);text-decoration:none;border-radius:var(--r-md)}
+.userlink:hover,.userlink[aria-current="page"]{background:var(--surface-2)}
+.main{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
+.panes{display:flex;flex:1;min-height:0}
+.pane-list{display:flex;flex:none;flex-direction:column;width:400px;min-height:0;background:var(--app-bg);border-right:1px solid var(--border)}
+.pane-detail{display:flex;flex:1;flex-direction:column;min-width:0;min-height:0;background:var(--surface)}
+.pane-head{display:flex;flex:none;align-items:center;gap:8px;min-height:56px;padding:8px 12px 8px 20px;border-bottom:1px solid var(--border)}
+.pane-scroll{flex:1;min-height:0;overflow:auto;padding:12px 16px}
+.pane-scroll.pad{padding:24px 32px}
+.pane-scroll .convs{margin:0 -16px}
+.single-wrap{display:flex;flex:1;flex-direction:column;min-height:0;background:var(--app-bg)}
+.single-wrap .pane-head{background:var(--surface)}
+.single-wrap .pane-head{justify-content:center}
+.single-wrap .pane-head h1{flex:0 1 680px}
+.single{flex:1;min-height:0;overflow:auto;padding:24px}
+.single-inner{max-width:680px;margin:0 auto}
+.desk-footer{max-width:320px;margin-top:8px}
+.empty-detail{display:grid;flex:1;place-items:center;padding:24px;text-align:center;color:var(--muted)}
+@media (max-width:900px){.device.desktop .pane-list{width:300px}.sitebar{gap:12px;padding:0 12px}.siteuser .ghost{display:none}}
+
+/* Controls */
+.icon-btn{display:inline-grid;place-items:center;width:44px;height:44px;border:0;border-radius:var(--r-pill);background:transparent;color:var(--text);text-decoration:none;cursor:pointer}
+.icon-btn:hover{background:var(--surface-2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--ctl);border-radius:var(--r-btn);background:var(--surface);color:var(--text);font-weight:600;text-decoration:none;cursor:pointer}
+.btn:hover{border-color:var(--link);background:var(--surface-2)}
+.btn.primary{background:var(--primary);border-color:var(--primary-edge);color:var(--on-primary)}
+.btn.primary:hover{background:var(--primary-strong)}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:var(--on-danger)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--link)}
+.btn.ghost:hover{background:var(--surface-2)}
+.btn.block{width:100%}
+.btn.sm{min-height:36px;padding:0 12px;font-size:13.5px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.linkbtn{min-height:24px;padding:0;border:0;background:none;color:var(--link);font-size:inherit;font-weight:600;text-decoration:underline;cursor:pointer}
+.device.phone .btn.sm,.device.phone .chip{min-height:44px}
+.device.phone .linkbtn{min-height:44px;padding:0 6px}
+.search{position:relative;margin-bottom:10px}
+.search>.ic{position:absolute;top:50%;left:12px;transform:translateY(-50%);color:var(--muted)}
+.search input{width:100%;min-height:46px;padding:0 44px 0 40px;border:1px solid var(--ctl);border-radius:var(--r-md);background:var(--surface)}
+.search .clear{position:absolute;top:1px;right:1px}
+.filter{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.filter label{font-size:13.5px;font-weight:600}
+.filter select{flex:1;min-height:44px;padding:0 10px;border:1px solid var(--ctl);border-radius:var(--r-md);background:var(--surface)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{flex:none;min-height:36px;padding:0 14px;border:1px solid var(--ctl);border-radius:var(--r-pill);background:var(--surface);font-size:13.5px;cursor:pointer}
+.chip:hover{border-color:var(--link)}
+.chip[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--link);color:var(--on-soft);font-weight:700}
+
+/* Directory */
+.meta-row{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px;margin:2px 0 8px;font-size:13px;color:var(--muted)}
+.cards{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.card{display:block;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev);color:inherit;text-decoration:none}
+a.card:hover{border-color:var(--link);box-shadow:var(--elev-hover)}
+a.card[aria-current="true"]{border-color:var(--link);box-shadow:inset 4px 0 0 var(--link)}
+.card-top{display:flex;align-items:center;gap:12px}
+.card-id{flex:1;min-width:0}
+.card h3{margin:0;font-size:16.5px;line-height:1.25}
+.sub{margin:0;font-size:13.5px;color:var(--muted)}
+.facts{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin:10px 0 8px;font-size:13.5px}
+.facts span{display:inline-flex;align-items:center;gap:4px}
+.clamp{display:-webkit-box;margin:8px 0 0;overflow:hidden;font-size:14px;color:var(--muted);-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+.tag{padding:3px 9px;border-radius:var(--r-pill);background:var(--surface-2);font-size:12.5px}
+.tag.strong{flex:none;background:var(--primary-soft);color:var(--on-soft);font-weight:700}
+.more{display:flex;justify-content:center;margin-top:12px}
+.avatar{display:grid;flex:none;place-items:center;width:44px;height:44px;border-radius:var(--r-avatar);background:var(--t1);color:var(--text);font:700 15px/1 var(--font-head)}
+.avatar.t2{background:var(--t2)}
+.avatar.t3{background:var(--t3)}
+.avatar.lg{width:72px;height:72px;font-size:24px}
+.avatar.sm{width:30px;height:30px;font-size:12px}
+
+/* Feedback */
+.banner{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;font-size:13.5px;border-bottom:1px solid var(--border)}
+.banner.inline{margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r-md)}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.banner.danger{background:var(--danger-soft);color:var(--text)}
+.banner.danger .ic{color:var(--danger)}
+.banner .ic{margin-top:1px}
+.state{padding:40px 16px;text-align:center;color:var(--muted)}
+.state h2{margin:12px 0 6px;font-size:18px;color:var(--text)}
+.state p{margin:0 0 16px}
+.skel{display:grid;gap:10px}
+.skeleton{padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg)}
+.sk{height:12px;margin:8px 0;border-radius:6px;background:var(--surface-2);animation:pulse 1.2s ease-in-out infinite}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:rot .8s linear infinite}
+.spin.lg{width:32px;height:32px;border-width:3px;color:var(--link)}
+.note{display:flex;gap:10px;margin:16px 0 0;padding:10px 12px;font-size:13.5px;color:var(--muted);background:var(--surface-2);border-radius:var(--r-md)}
+.note .ic{margin-top:2px}
+.placeholder{background:transparent;border:1px dashed var(--ctl)}
+.small{font-size:12.5px}
+.muted{color:var(--muted)}
+.h2{margin:0 0 8px;font-size:20px}
+.center-col{max-width:420px;margin:16px auto;text-align:center}
+.stack{display:grid;gap:10px;margin:16px 0 10px}
+.quote{margin:14px 0 0;padding:10px 14px;text-align:left;background:var(--surface-2);border-left:4px solid var(--link);border-radius:var(--r-sm);white-space:pre-wrap;overflow-wrap:anywhere}
+.choices{display:grid;gap:10px;margin-top:14px;text-align:left}
+.choice{display:grid;gap:4px;min-height:44px;padding:16px;text-align:left;background:var(--surface);border:1px solid var(--ctl);border-radius:var(--r-lg);cursor:pointer}
+.choice:hover{border-color:var(--link);background:var(--surface-2)}
+.choice span{font-size:13.5px;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:16px}
+
+/* Profile */
+.profile-head{display:flex;align-items:center;gap:16px;margin:4px 0 14px}
+.profile-head h2{margin:0;font-size:24px;line-height:1.2}
+.profile-head .sub{display:flex;align-items:center;gap:4px}
+.facts-row{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 16px;padding:0;list-style:none}
+.facts-row li{padding:8px 12px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--app-bg);font-size:13.5px}
+.facts-row strong{font:700 16px/1 var(--font-head)}
+.cta{max-width:340px}
+.cta-hint{margin:8px 0 0;font-size:13px;color:var(--muted)}
+.footer .cta-hint{text-align:center}
+.section{margin:22px 0}
+.section h3,.form legend{margin:0 0 8px;padding:0;font:600 12.5px/1.4 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.section p{margin:0}
+.timeline{display:grid;gap:12px;margin:0;padding:0;list-style:none}
+.timeline li{padding-left:14px;border-left:2px solid var(--ctl)}
+.timeline strong{display:block}
+.svc,.contact{display:grid;gap:8px;margin:0;padding:0;list-style:none}
+.svc li{padding:10px 12px;border:1px solid var(--border);border-radius:var(--r-md)}
+.svc strong{display:block}
+.contact li{display:flex;align-items:center;gap:10px;overflow-wrap:anywhere}
+
+/* Chats */
+.convs{margin:0 -16px;padding:0;list-style:none}
+.conv{display:flex;gap:12px;padding:12px 16px;color:inherit;text-decoration:none;border-bottom:1px solid var(--border)}
+.conv:hover{background:var(--surface-2)}
+.conv[aria-current="true"]{background:var(--primary-soft);box-shadow:inset 4px 0 0 var(--link)}
+.conv-main{display:grid;flex:1;grid-template-columns:minmax(0,1fr);gap:2px;min-width:0}
+.conv-top,.conv-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;min-width:0}
+.conv-name{min-width:0;overflow:hidden;font-weight:600;white-space:nowrap;text-overflow:ellipsis}
+.conv.unread .conv-name{font-weight:800}
+.conv-prev{flex:1;min-width:0;overflow:hidden;font-size:13.5px;color:var(--muted);white-space:nowrap;text-overflow:ellipsis}
+.conv.unread .conv-prev{color:var(--text)}
+.time{font-size:12px;color:var(--muted);white-space:nowrap}
+.badge{display:inline-block;min-width:20px;padding:2px 7px;border-radius:var(--r-pill);background:var(--primary);color:var(--on-primary);font-size:11.5px;font-weight:700;text-align:center;white-space:nowrap}
+.thread{display:flex;flex-direction:column;gap:6px}
+.day{align-self:center;margin:10px 0 4px;padding:3px 10px;border-radius:var(--r-pill);background:var(--surface-2);font-size:12px;color:var(--muted)}
+.msg{display:flex;flex-direction:column;max-width:82%}
+.msg.mine{align-self:flex-end;align-items:flex-end}
+.msg.theirs{align-self:flex-start}
+.bubble{padding:9px 13px;border-radius:var(--bubble-r);font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
+.mine .bubble{background:var(--primary);color:var(--on-primary);border-bottom-right-radius:var(--r-sm)}
+.theirs .bubble{background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:var(--r-sm)}
+.device.desktop .theirs .bubble{background:var(--surface-2)}
+.msg.failed .bubble{background:var(--danger-soft);color:var(--text);border:1px solid var(--danger)}
+.msg-meta{display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin:3px 4px 0;font-size:12px;color:var(--muted)}
+.err{color:var(--danger);font-weight:700}
+.thread-intro{padding:20px 8px;font-size:14px;text-align:center;color:var(--muted)}
+.thread-intro p{margin:0 0 12px}
+.starters{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.starters .chip{height:auto;padding:8px 14px;color:var(--text);text-align:left;white-space:normal}
+.composer{display:grid;grid-template-columns:1fr auto;align-items:end;gap:8px}
+.composer textarea{min-height:44px;max-height:120px;padding:11px 12px;line-height:1.35;resize:none;background:var(--app-bg);border:1px solid var(--ctl);border-radius:var(--r-md)}
+.composer .btn{padding:0 14px}
+.composer-meta{display:flex;grid-column:1/-1;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted)}
+.over{color:var(--danger);font-weight:700}
+
+/* Forms */
+.form fieldset{margin:0 0 22px;padding:0;border:0}
+.field{display:grid;gap:4px;margin-bottom:12px}
+.field label{font-size:13.5px;font-weight:600}
+.req{font-weight:400;color:var(--muted)}
+.field input,.field textarea,.field select{width:100%;min-height:44px;padding:9px 12px;background:var(--surface);border:1px solid var(--ctl);border-radius:var(--r-md)}
+.field input:disabled{opacity:.55}
+.field textarea{min-height:110px;resize:vertical}
+.hint{font-size:12.5px;font-weight:400;color:var(--muted)}
+.ferr{font-size:13px;font-weight:700;color:var(--danger)}
+.field [aria-invalid="true"]{border-color:var(--danger);border-width:2px}
+.row{margin-bottom:10px;padding:12px;background:var(--app-bg);border:1px solid var(--border);border-radius:var(--r-md)}
+.row-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;font-size:13px;font-weight:600}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.check{display:flex;align-items:flex-start;gap:10px;font-size:14px}
+.check input{flex:none;width:20px;height:20px;margin-top:2px}
+.check .hint{display:block}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:var(--r-pill);font-size:13px;font-weight:700}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.status-line{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:0 0 10px}
+.checklist{margin:0 0 18px;padding:14px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg)}
+.checklist p{margin:0 0 8px}
+.meter{height:8px;margin:0 0 10px;overflow:hidden;background:var(--surface-2);border:1px solid var(--ctl);border-radius:var(--r-pill)}
+.meter span{display:block;height:100%;background:var(--ok)}
+.checklist ul{display:grid;gap:2px;margin:0;padding:0;list-style:none}
+.checklist li{display:flex;align-items:center;gap:8px;min-height:32px;font-size:14px}
+.checklist li.done{color:var(--muted)}
+.checklist li.done .ic{color:var(--ok)}
+.err-summary{margin-bottom:16px;padding:12px 14px;background:var(--danger-soft);border:1px solid var(--danger);border-radius:var(--r-md)}
+.err-summary h2{margin:0 0 6px;font-size:15.5px;color:var(--danger)}
+.err-summary ul{margin:0;padding-left:18px}
+.save-status{min-height:1.4em;margin:6px 0 0;font-size:13.5px}
+.save-status.ok{color:var(--ok)}
+.save-status.fail{color:var(--danger)}
+
+/* Account */
+.me-card{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.me-card h2{margin:0;font-size:18px}
+.menu{margin:0 0 14px;padding:0;overflow:hidden;list-style:none;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.menu li+li{border-top:1px solid var(--border)}
+.mi{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:12px 16px;text-align:left;color:inherit;text-decoration:none;background:none;border:0;cursor:pointer}
+a.mi:hover,button.mi:hover{background:var(--surface-2)}
+.mi-main{flex:1;min-width:0}
+.mi-main small{display:block;font-size:12.5px;color:var(--muted)}
+.mi.danger{color:var(--danger)}
+.card.static{padding:18px}
+.card.static ul{padding-left:20px}
+
+/* Overlays */
+.overlay{position:absolute;inset:0;z-index:30;display:flex;align-items:flex-end;justify-content:center;background:var(--overlay)}
+.overlay.center,.device.desktop .overlay{align-items:center}
+.sheet{width:100%;padding:20px 20px 24px;background:var(--surface);border-radius:var(--r-lg) var(--r-lg) 0 0;box-shadow:var(--shadow)}
+.sheet h2{margin:8px 0;font-size:19px}
+.sheet p{margin:0}
+.sheet .actions{justify-content:flex-end}
+.osnote{position:absolute;top:70px;right:10px;left:10px;z-index:40;display:flex;align-items:flex-start;gap:12px;padding:12px 14px;text-align:left;color:inherit;background:var(--surface);border:1px solid var(--ctl);border-radius:var(--r-lg);box-shadow:var(--shadow);cursor:pointer}
+.device.desktop .osnote{top:auto;right:16px;bottom:16px;left:auto;width:380px}
+.toast{position:absolute;bottom:76px;left:50%;z-index:35;max-width:calc(100% - 32px);padding:10px 16px;font-size:13.5px;color:var(--surface);background:var(--text);border-radius:var(--r-md);box-shadow:var(--shadow);transform:translateX(-50%)}
+.device.desktop .toast{bottom:20px}
+
+/* Website layout */
+.page{flex:1;min-height:0;overflow:auto;background:var(--app-bg)}
+.container{width:100%;max-width:1040px;margin:0 auto;padding:0 24px}
+.hero{margin-bottom:14px;padding:18px 16px;background:var(--primary-soft);border-radius:var(--r-lg)}
+.hero h1,.hero h2{margin:0 0 6px;font-size:24px;line-height:1.15;color:var(--text)}
+.hero-sub{margin:0 0 12px;color:var(--text)}
+.hero-search .search,.hero-search .filter,.hero-search .chips{margin-bottom:8px}
+.hero-search .search input{min-height:52px;font-size:16px;box-shadow:var(--elev)}
+.trustline{display:flex;align-items:center;gap:6px;margin:6px 0 0;font-size:13px;color:var(--text)}
+.hero-actions{display:flex;gap:8px;margin-top:10px}
+.hero-foot{margin:10px 0 0;font-size:13.5px;color:var(--text)}
+.hero.wide{margin:24px 0 20px;padding:44px 32px 30px;text-align:center}
+.hero.wide h1{font-size:42px}
+.hero.wide .hero-sub{margin-bottom:22px;font-size:17px}
+.hero.wide .hero-search{max-width:720px;margin:0 auto}
+.hero.wide .chips{justify-content:center}
+.hero.wide .trustline{justify-content:center;margin-top:10px}
+.steps{display:grid;gap:10px;margin:14px 0 0;padding:0;list-style:none;counter-reset:step;text-align:left}
+.steps li{position:relative;display:grid;padding-left:38px;color:var(--text);counter-increment:step}
+.steps li::before{content:counter(step);position:absolute;left:0;top:0;display:grid;place-items:center;width:28px;height:28px;border-radius:var(--r-avatar);background:var(--surface);border:1px solid var(--ctl);font:700 13px/1 var(--font-head)}
+.steps span{font-size:13.5px;color:var(--muted)}
+.hero .steps span{color:var(--text)}
+.steps.row{grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.steps.row li{padding:18px 18px 18px 58px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.steps.row li::before{left:18px;top:18px}
+.how{margin:36px 0 12px}
+.how h2{margin:0 0 4px;font-size:24px}
+.results{min-height:120px}
+.device.desktop .results .cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.device.desktop .results .meta-row{margin:0 0 12px;font-size:14px}
+.device.desktop .results .card{padding:18px}
+.card-foot{display:flex;justify-content:flex-end;margin-top:10px}
+.card-link{display:inline-flex;align-items:center;gap:2px;font-size:13.5px;font-weight:600;color:var(--link)}
+.sitefoot{margin-top:40px;padding:20px 0 28px;background:var(--surface);border-top:1px solid var(--border)}
+.sitefoot .container{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 24px;color:var(--muted)}
+.crumbs{display:flex;align-items:center;gap:8px;margin:20px 0 16px;font-size:13.5px;color:var(--muted)}
+.profile-grid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:32px;align-items:start;margin-bottom:8px}
+.profile-main{padding:28px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.profile-main .profile-head{margin-top:0}
+.profile-main .section:last-child{margin-bottom:0}
+.profile-aside{position:sticky;top:20px;display:grid;gap:14px}
+.aside-card{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.aside-card h3{margin:18px 0 8px;font:600 12.5px/1.4 var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.aside-card .muted{margin:8px 0 0}
+.profile-aside .note{margin:0;background:var(--surface);border:1px solid var(--border)}
+.state>.ic{box-sizing:content-box;padding:14px;border-radius:50%;background:var(--surface-2);color:var(--link)}
+.device.desktop .center-col{margin-top:32px;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+@media (max-width:900px){
+  .device.desktop .results .cards{grid-template-columns:1fr}
+  .profile-grid{grid-template-columns:1fr}
+  .profile-aside{position:static}
+  .steps.row{grid-template-columns:1fr}
+  .hero.wide{padding:28px 18px 22px}
+  .hero.wide h1{font-size:30px}
+}
+
+/* Ratings, portfolio, reports, information pages */
+.rating{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:8px 0 0;font-size:13.5px}
+.stars{display:inline-flex;gap:1px;font-size:15px;line-height:1}
+.star{color:var(--ctl)}
+.star.on{color:var(--link)}
+.rating-link{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0;border:0;background:none;font-size:13.5px;cursor:pointer}
+.rating-link:hover{text-decoration:underline}
+.device.phone .rating-link{min-height:44px}
+.profile-head .rating{margin-top:2px}
+.sortctl{display:inline-flex;flex:none;align-items:center;gap:6px;font-size:13px}
+.sortctl select{min-height:36px;padding:0 8px;border:1px solid var(--ctl);border-radius:var(--r-md);background:var(--surface)}
+.device.phone .sortctl select{min-height:44px}
+.meta-row .linkbtn{margin-left:4px}
+.pf{display:grid;gap:10px;margin:0;padding:0;list-style:none}
+.pf li{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--app-bg)}
+.pf-top{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px}
+.pf p{margin:6px 0 0;font-size:14px}
+.pf .pf-result{font-weight:600}
+.rev-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.rev-sum{display:flex;align-items:center;gap:8px}
+.rev-avg{font:700 26px/1 var(--font-head)}
+.revs{display:grid;gap:10px;margin:10px 0 0;padding:0;list-style:none}
+.rev{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-md)}
+.rev-top{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.rev-who{font-weight:600}
+.rev-top .time{margin-left:auto}
+.rev p{margin:6px 0 0}
+.rev-reply{margin-top:10px;padding:10px 12px;background:var(--surface-2);border-radius:var(--r-sm);font-size:14px}
+.rev-reply textarea{display:block;width:100%;margin-top:6px;padding:9px 12px;background:var(--surface);border:1px solid var(--ctl);border-radius:var(--r-md)}
+.rev-reply .actions{margin-top:8px}
+.rev-report{display:block;margin-top:8px;font-size:12.5px;font-weight:400}
+.report-row{margin:14px 0 0;font-size:13px}
+.report-row .linkbtn{font-weight:400}
+.starpick{display:flex;gap:6px}
+.starbtn{width:48px;height:48px;border:1px solid var(--ctl);border-radius:var(--r-md);background:var(--surface);color:var(--ctl);font-size:24px;line-height:1;cursor:pointer}
+.starbtn.on{color:var(--link);border-color:var(--link);background:var(--primary-soft)}
+.reasons{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.thread-tools{display:flex;justify-content:flex-end;gap:14px;margin-bottom:4px;font-size:12.5px}
+.thread-tools .linkbtn{font-weight:400}
+.agree{margin:14px 0 4px;text-align:left}
+.choice:disabled{opacity:.5;cursor:not-allowed}
+.infolinks{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:13.5px}
+.content>.infolinks,.single-inner>.infolinks{justify-content:center;margin-top:22px}
+.narrow{max-width:760px;margin:0 auto}
+.panel{margin:24px 0;padding:32px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--elev)}
+.panel h1{margin:0 0 12px;font-size:28px}
+.prose .lead{margin:0 0 6px;font-size:17px}
+.faq{margin:0}
+.faq dt{margin-top:14px;font-weight:700}
+.faq dd{margin:4px 0 0}
+.benefits{display:grid;gap:10px;margin:16px 0;padding:0;list-style:none}
+.benefits li{display:grid;gap:2px;padding:14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--app-bg)}
+.benefits span{font-size:14px;color:var(--muted)}
+.device.desktop .benefits{grid-template-columns:repeat(3,minmax(0,1fr))}
+.osnote{cursor:default}
+.osnote .actions{margin-top:8px;gap:6px}
+</style>
+</head>
+<body>
+<header class="pbar" aria-label="Prototype controls">
+  <div class="prow">
+    <div class="ptitle"><strong>AccApp prototype</strong><span>Release 1 proposal for review · not approved · all data is synthetic</span></div>
+    <div class="pctl"><span id="lbl-device">Device</span>
+      <div class="seg" role="group" aria-labelledby="lbl-device"><button type="button" id="dev-phone">Phone browser</button><button type="button" id="dev-desktop">Desktop browser</button></div>
+    </div>
+    <label class="pctl">Look
+      <select id="sel-look"><option value="modern">Modern</option><option value="ledger">Ledger</option><option value="neighbourly">Neighbourly</option><option value="clear">Clear</option></select>
+    </label>
+    <label class="pctl">Signed in as
+      <select id="sel-role">
+        <option value="visitor">Visitor (not signed in)</option>
+        <option value="client">Client · Maria Santos</option>
+        <option value="accountant">Accountant · Andrea Villanueva</option>
+        <option value="newAccountant">Accountant · Sam Aquino (new)</option>
+      </select>
+    </label>
+    <div class="pctl"><span id="lbl-net">Network</span>
+      <div class="seg" role="group" aria-labelledby="lbl-net"><button type="button" id="net-on">Online</button><button type="button" id="net-off">Offline</button></div>
+    </div>
+    <label class="pctl">Theme
+      <select id="sel-theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select>
+    </label>
+  </div>
+  <div class="prow">
+    <label class="pctl">Directory data
+      <select id="sel-dir"><option value="normal">Loads normally</option><option value="slow">Slow (stays loading)</option><option value="empty">Empty directory</option><option value="error">Load fails</option></select>
+    </label>
+    <label class="pctl">Message send
+      <select id="sel-send"><option value="ok">Succeeds</option><option value="fail">Fails</option><option value="unknown">Times out, then found</option></select>
+    </label>
+    <button type="button" class="pbtn" id="btn-push">Simulate an incoming message</button>
+    <label class="pctl">Jump to
+      <select id="sel-jump">
+        <option value="">Choose a screen…</option>
+        <option value="directory">Directory</option>
+        <option value="profile">Accountant profile</option>
+        <option value="removed">Removed profile link</option>
+        <option value="compose">Visitor starts a chat</option>
+        <option value="signin">Sign in</option>
+        <option value="client-thread">Client chat</option>
+        <option value="chats">Accountant chats</option>
+        <option value="thread">Accountant reply</option>
+        <option value="editor">Edit profile (accountant)</option>
+        <option value="editor-new">Create profile (new accountant)</option>
+        <option value="delete">Delete account</option>
+        <option value="reviews">Profile reviews (client)</option>
+        <option value="review">Write a review</option>
+        <option value="reply">Reply to a review (accountant)</option>
+        <option value="foracc">For accountants</option>
+        <option value="help">Help and contact</option>
+        <option value="privacy">Privacy</option>
+        <option value="notfound">Page not found</option>
+      </select>
+    </label>
+    <label class="pchk"><input type="checkbox" id="chk-notes"> Show notes</label>
+    <button type="button" class="pbtn" id="btn-reset">Reset</button>
+  </div>
+</header>
+<main class="stage" id="stage">
+  <div id="device" class="device phone"><div id="app" class="app"></div></div>
+  <aside id="notes" class="notes" aria-label="Screen notes"></aside>
+</main>
+<div id="live" class="sr-only" aria-live="polite"></div>
+<div id="proto-err" class="proto-err" role="alert"></div>
+<noscript><p style="padding:16px">This prototype needs JavaScript.</p></noscript>
+<script>
+(function () {
+'use strict';
+window.addEventListener('error', function (e) {
+  var el = document.getElementById('proto-err');
+  el.textContent = 'Prototype error: ' + e.message;
+  el.style.display = 'block';
+});
+
+/* ---------- Constants and synthetic data ---------- */
+const TZ = 'Asia/Manila';
+const PAGE = 6;            // prototype page size (API proposal: 50)
+const MAX_MSG = 2000;      // proposal for D06
+const MAX_SUMMARY = 1000;  // proposal for D04
+const SERVICES = ['Bookkeeping', 'Tax filing', 'Payroll', 'Financial statements', 'Audit', 'Business registration', 'Tax advisory'];
+const NOW = Date.now();
+const ago = m => new Date(NOW - m * 60000).toISOString();
+let seq = 100;
+const nid = p => p + (++seq);
+
+const PROFILES = [
+  { id: 'a1', name: 'Andrea Villanueva', title: 'Certified Public Accountant', city: 'Makati City',
+    summary: 'I help small businesses keep clean books and file on time. I worked in tax at a mid-size firm before going independent, and now mostly serve retail and food businesses.',
+    experience: [
+      { role: 'Independent accountant', org: 'Self-employed', start: '2021-03', end: '', current: true },
+      { role: 'Senior tax associate', org: 'Northbay Accounting', start: '2016-06', end: '2021-02', current: false },
+      { role: 'Junior auditor', org: 'Harbor Lane Audit', start: '2014-01', end: '2016-05', current: false }],
+    services: [
+      { name: 'Bookkeeping', desc: 'Monthly books, bank reconciliation and ledgers.' },
+      { name: 'Tax filing', desc: 'Monthly, quarterly and annual returns.' },
+      { name: 'Financial statements', desc: 'Year-end statements for permits and loan applications.' }],
+    email: 'andrea.v@example.com', phone: '+63 900 000 0101', website: '', consent: true, listed: true },
+  { id: 'a2', name: 'Benjie Ramos', title: 'Certified Public Accountant', city: 'Cebu City',
+    summary: 'Payroll and compliance for growing teams of 5 to 80 people. I set up payroll processes that owners can run themselves, and handle the filings that come with hiring.',
+    experience: [
+      { role: 'Payroll consultant', org: 'Self-employed', start: '2019-08', end: '', current: true },
+      { role: 'Payroll lead', org: 'Visayas Staffing Co.', start: '2013-05', end: '2019-07', current: false }],
+    services: [
+      { name: 'Payroll', desc: 'Payroll setup, monthly runs and payslips.' },
+      { name: 'Tax filing', desc: 'Withholding tax returns for employers.' },
+      { name: 'Business registration', desc: 'Employer registrations when you start hiring.' }],
+    email: 'benjie.ramos@example.com', phone: '+63 900 000 0102', website: 'benjieramos.example.com', consent: true, listed: true },
+  { id: 'a3', name: 'Carla Mendoza', title: 'Bookkeeper', city: 'Quezon City',
+    summary: 'Bookkeeper for freelancers and online sellers. I keep records simple, explain every number, and get your books ready for filing.',
+    experience: [
+      { role: 'Bookkeeper', org: 'Self-employed', start: '2020-01', end: '', current: true },
+      { role: 'Accounting assistant', org: 'Kalayaan Trading', start: '2016-04', end: '2019-12', current: false }],
+    services: [
+      { name: 'Bookkeeping', desc: 'Sales, expenses and receipts organized every month.' },
+      { name: 'Payroll', desc: 'Simple payroll for one to five staff.' }],
+    email: 'carla.mendoza@example.com', phone: '', website: '', consent: true, listed: true },
+  { id: 'a4', name: 'Daniel Cruz', title: 'Certified Public Accountant', city: 'Pasig City',
+    summary: 'External audits and financial statements for small and medium businesses and non-profits. I have worked in assurance since 2015 and now manage audit engagements.',
+    experience: [
+      { role: 'Audit manager', org: 'Ridgeview Assurance', start: '2020-02', end: '', current: true },
+      { role: 'Senior auditor', org: 'Ridgeview Assurance', start: '2015-06', end: '2020-01', current: false }],
+    services: [
+      { name: 'Audit', desc: 'Annual external audits.' },
+      { name: 'Financial statements', desc: 'Audited and unaudited statements.' }],
+    email: 'daniel.cruz@example.com', phone: '+63 900 000 0104', website: '', consent: true, listed: true },
+  { id: 'a5', name: 'Elaine Navarro', title: 'Certified Public Accountant', city: 'Davao City',
+    summary: 'Tax advisory and registration for new businesses in Mindanao. I help founders choose the right setup and stay compliant from the first month.',
+    experience: [
+      { role: 'Tax adviser', org: 'Navarro Tax Studio', start: '2018-09', end: '', current: true },
+      { role: 'Tax specialist', org: 'Southpoint Business Advisers', start: '2014-06', end: '2018-08', current: false }],
+    services: [
+      { name: 'Tax advisory', desc: 'Planning for new and growing businesses.' },
+      { name: 'Tax filing', desc: 'Monthly, quarterly and annual returns.' },
+      { name: 'Business registration', desc: 'Registration from scratch, step by step.' }],
+    email: 'elaine.navarro@example.com', phone: '+63 900 000 0105', website: 'navarrotax.example.com', consent: true, listed: true },
+  { id: 'a6', name: 'Francis Lim', title: 'Accounting technician', city: 'Iloilo City',
+    summary: 'Bookkeeping and year-end statements for family-owned shops, with a focus on clear monthly reports owners actually read.',
+    experience: [{ role: 'Accounting technician', org: 'Self-employed', start: '2017-03', end: '', current: true }],
+    services: [
+      { name: 'Bookkeeping', desc: 'Monthly books and reports.' },
+      { name: 'Financial statements', desc: 'Year-end statements.' }],
+    email: 'francis.lim@example.com', phone: '+63 900 000 0106', website: '', consent: true, listed: true },
+  { id: 'a7', name: 'Grace Tan', title: 'Certified Public Accountant', city: 'Taguig City',
+    summary: 'Internal audit and tax advisory for companies preparing to raise capital or apply for large loans.',
+    experience: [
+      { role: 'Advisory partner', org: 'Tan & Partners Advisory', start: '2019-01', end: '', current: true },
+      { role: 'Internal audit manager', org: 'Highfield Holdings', start: '2012-07', end: '2018-12', current: false }],
+    services: [
+      { name: 'Audit', desc: 'Internal audit and controls reviews.' },
+      { name: 'Tax advisory', desc: 'Tax reviews before fundraising.' }],
+    email: 'grace.tan@example.com', phone: '', website: 'tanpartners.example.com', consent: true, listed: true },
+  { id: 'a8', name: 'Hannah de Guzman', title: 'Bookkeeper', city: 'Baguio City',
+    summary: 'Bookkeeping, payroll and permit renewals for cafés, inns and tour operators.',
+    experience: [
+      { role: 'Bookkeeper', org: 'Self-employed', start: '2022-05', end: '', current: true },
+      { role: 'Front office and accounts', org: 'Pine Ridge Inn', start: '2018-02', end: '2022-04', current: false }],
+    services: [
+      { name: 'Bookkeeping', desc: 'Weekly or monthly books.' },
+      { name: 'Payroll', desc: 'Payroll for seasonal staff.' },
+      { name: 'Business registration', desc: 'Permit renewals.' }],
+    email: 'hannah.dg@example.com', phone: '+63 900 000 0108', website: '', consent: true, listed: true }
+];
+
+const msg = (from, text, minutesAgo) => ({ id: nid('m'), from: from, text: text, at: ago(minutesAgo), status: 'sent' });
+const CONVS = [
+  { id: 'c1', clientId: 'u-maria', clientName: 'Maria Santos', accountantId: 'a1', unread: { client: 0, accountant: 1 }, messages: [
+    msg('client', 'Hi Andrea! I run a small bakery in Pasig and need help with monthly bookkeeping. Are you taking new clients?', 1500),
+    msg('accountant', 'Hi Maria, yes I am. Roughly how many sales and expense entries do you have each month?', 1440),
+    msg('client', 'Around 300, mostly cash sales. I also need help with quarterly tax filing.', 95)] },
+  { id: 'c2', clientId: 'u-jose', clientName: 'Jose Reyes', accountantId: 'a1', unread: { client: 0, accountant: 2 }, messages: [
+    msg('client', 'Good morning. Do you handle business registration for a sole proprietorship?', 300),
+    msg('client', 'I am planning to open a small printing shop next month.', 298)] },
+  { id: 'c3', clientId: 'u-liza', clientName: 'Liza Fernandez', accountantId: 'a1', unread: { client: 0, accountant: 0 }, messages: [
+    msg('client', 'Thank you for the financial statements!', 4000),
+    msg('accountant', 'You are welcome, Liza. Let me know if the bank asks for anything else.', 3990)] },
+  { id: 'c4', clientId: 'u-maria', clientName: 'Maria Santos', accountantId: 'a5', unread: { client: 1, accountant: 0 }, messages: [
+    msg('client', 'Hello, do you offer tax advisory for a small food business?', 2900),
+    msg('accountant', 'Hi Maria, I do. We can start with a short review of your current filings.', 2800)] }
+];
+
+const PERSONAS = {
+  client: { name: 'Maria Santos', role: 'client', clientId: 'u-maria', provider: 'Google', email: 'maria.santos@example.com' },
+  accountant: { name: 'Andrea Villanueva', role: 'accountant', accountantId: 'a1', provider: 'Microsoft', email: 'andrea.v@example.com' },
+  newAccountant: { name: 'Sam Aquino', role: 'accountant', accountantId: 'a-new', provider: 'Google', email: 'sam.aquino@example.com' }
+};
+
+/* ---------- State ---------- */
+const S = {
+  device: 'phone', theme: 'system', look: 'modern', online: true, notes: true, howOpen: false,
+  dirScenario: 'normal', sendScenario: 'ok',
+  me: null,
+  dir: { status: 'idle', data: [], search: '', service: '', sort: 'name', shown: PAGE },
+  drafts: {}, composeErr: {},
+  signin: null, editor: null, del: null,
+  emailOn: true, emailNote: null, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
+  route: null, routeChanged: false, guardTarget: null, focusSel: null
+};
+const qs = new URLSearchParams(location.search);
+if (qs.get('device') === 'desktop') S.device = 'desktop';
+if (['light', 'dark'].indexOf(qs.get('theme')) >= 0) S.theme = qs.get('theme');
+if (PERSONAS[qs.get('role')]) S.me = Object.assign({}, PERSONAS[qs.get('role')]);
+if (qs.get('offline') === '1') S.online = false;
+if (qs.get('email') === 'off') S.emailOn = false;
+if (qs.get('notes') === '0') S.notes = false;
+if (['modern', 'ledger', 'neighbourly', 'clear'].indexOf(qs.get('look')) >= 0) S.look = qs.get('look');
+
+/* ---------- Helpers ---------- */
+const $id = id => document.getElementById(id);
+const app = $id('app'), deviceEl = $id('device'), notesEl = $id('notes'), stageEl = $id('stage'), live = $id('live');
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const num = n => n.toLocaleString('en-US');
+const initials = n => (n.split(/\s+/).filter(w => /^[A-Z]/.test(w)).slice(0, 2).map(w => w[0]).join('')) || '?';
+const firstName = n => n.split(' ')[0];
+const ymd = d => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(d);
+const fmtTime = iso => new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit' }).format(new Date(iso));
+function fmtShort(iso) {
+  const d = new Date(iso), today = new Date();
+  if (ymd(d) === ymd(today)) return fmtTime(iso);
+  if (ymd(d) === ymd(new Date(today.getTime() - 86400000))) return 'Yesterday';
+  return new Intl.DateTimeFormat('en-US', { timeZone: TZ, month: 'short', day: 'numeric' }).format(d);
+}
+function dayLabel(iso) {
+  const d = new Date(iso), today = new Date();
+  if (ymd(d) === ymd(today)) return 'Today';
+  if (ymd(d) === ymd(new Date(today.getTime() - 86400000))) return 'Yesterday';
+  return new Intl.DateTimeFormat('en-US', { timeZone: TZ, weekday: 'short', month: 'short', day: 'numeric' }).format(d);
+}
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fmtMonth = s => { if (!s) return 'Present'; const p = s.split('-'); return MONTHS[+p[1] - 1] + ' ' + p[0]; };
+
+const ICONS = {
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>',
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  refresh: '<path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/>',
+  list: '<path d="M8 6h13M8 12h13M8 18h13"/><circle cx="3.5" cy="6" r="1"/><circle cx="3.5" cy="12" r="1"/><circle cx="3.5" cy="18" r="1"/>',
+  chat: '<path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/>',
+  phone: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  wifiOff: '<path d="M2 2l20 20"/><path d="M8.5 16.5a5 5 0 0 1 7 0M5 13a10 10 0 0 1 5.2-2.8M19 13a10 10 0 0 0-2.4-1.8M2 8.8a15 15 0 0 1 4.2-2.6M22 8.8A15 15 0 0 0 11 5"/><circle cx="12" cy="20" r=".8"/>',
+  signal: '<path d="M4 20v-3M9 20v-7M14 20V9M19 20V4"/>',
+  bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
+  alert: '<path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/>',
+  check: '<path d="M5 12l5 5L20 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  x: '<path d="M6 6l12 12M18 6L6 18"/>',
+  send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>',
+  pin: '<path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  edit: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/>',
+  chevron: '<path d="M9 6l6 6-6 6"/>',
+  logout: '<path d="M15 4h4a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-4"/><path d="M10 17l-5-5 5-5M5 12h11"/>',
+  lock: '<rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/>'
+};
+const icon = (n, size) => '<svg class="ic" width="' + (size || 20) + '" height="' + (size || 20) + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[n] + '</svg>';
+
+function announce(text) { live.textContent = ''; setTimeout(() => { live.textContent = text; }, 30); }
+let toastTimer = null;
+function toast(text) {
+  S.toast = { text: text };
+  announce(text);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { S.toast = null; render(); }, 4000);
+  render();
+}
+
+/* ---------- Data access ---------- */
+const getListed = id => PROFILES.find(p => p.id === id && p.listed && !p.deleted);
+const listedProfiles = () => PROFILES.filter(p => p.listed && !p.deleted);
+function isParticipant(c) {
+  if (!S.me) return false;
+  return S.me.role === 'client' ? c.clientId === S.me.clientId : c.accountantId === S.me.accountantId;
+}
+const lastMsg = c => c.messages[c.messages.length - 1];
+function myConvs() {
+  if (!S.me) return [];
+  return CONVS.filter(isParticipant).sort((a, b) => {
+    const la = lastMsg(a), lb = lastMsg(b);
+    return (lb ? lb.at : '').localeCompare(la ? la.at : '') || a.id.localeCompare(b.id);
+  });
+}
+const unreadFor = c => (S.me ? (c.unread[S.me.role] || 0) : 0);
+const totalUnread = () => myConvs().reduce((n, c) => n + unreadFor(c), 0);
+function peerName(c) {
+  if (S.me && S.me.role === 'client') {
+    const p = PROFILES.find(x => x.id === c.accountantId);
+    return p && !p.deleted ? p.name : 'Deleted account';
+  }
+  return c.clientName;
+}
+function filtered() {
+  const q = S.dir.search.trim().toLowerCase();
+  const byName = (a, b) => a.name.localeCompare(b.name) || a.id.localeCompare(b.id);
+  const list = S.dir.data.filter(p =>
+    (!S.dir.service || p.services.some(s => s.name === S.dir.service)) &&
+    (!q || [p.name, p.title, p.city].concat(p.services.map(s => s.name)).some(v => (v || '').toLowerCase().indexOf(q) >= 0)));
+  if (S.dir.sort !== 'rating') return list.sort(byName);
+  return list.sort((a, b) => { const x = ratingOf(a.id), y = ratingOf(b.id); return y.avg - x.avg || y.count - x.count || byName(a, b); });
+}
+
+/* ---------- Routing ---------- */
+function parseRoute() {
+  const parts = (location.hash || '#/directory').replace(/^#/, '').split('/').filter(Boolean);
+  const a = parts[0], b = parts[1];
+  switch (a) {
+    case undefined: case 'directory': return { name: 'directory' };
+    case 'profile': return { name: 'profile', id: b || '' };
+    case 'review': return { name: 'review', accId: b || '' };
+    case 'compose': return { name: 'compose', accId: b || '' };
+    case 'thread': return { name: 'thread', id: b || '' };
+    case 'signin': return { name: 'signin' };
+    case 'chats': return { name: 'chats' };
+    case 'me': return { name: b === 'profile' ? 'editor' : b === 'delete' ? 'delete' : 'me' };
+    case 'privacy': case 'terms': case 'about': case 'help': case 'for-accountants': case 'email-off': case 'error': return { name: 'info', page: a };
+    default: return { name: 'info', page: 'notfound' };
+  }
+}
+function go(h) { if (location.hash === h) onRoute(); else location.hash = h; }
+function onRoute() {
+  const h = location.hash || '#/directory';
+  if (h !== S.route) { S.route = h; S.routeChanged = true; S.replyTo = null; }
+  const r = parseRoute();
+  if (r.name !== 'signin') S.signin = null;
+  else if (!S.signin) S.signin = { step: 'choose', next: '#/directory' };
+  if (r.name !== 'delete') S.del = null;
+  if (r.name !== 'review') S.review = null;
+  render();
+}
+function resolveRedirects() {
+  const r = parseRoute();
+  if (r.name === 'compose' && S.me && S.me.role === 'client') {
+    const ex = CONVS.find(c => c.clientId === S.me.clientId && c.accountantId === r.accId);
+    if (ex) {
+      const from = 'compose:' + r.accId, to = 'thread:' + ex.id;
+      if (S.drafts[from] && !S.drafts[to]) S.drafts[to] = S.drafts[from];
+      delete S.drafts[from];
+      history.replaceState(null, '', '#/thread/' + ex.id);
+      S.route = '#/thread/' + ex.id;
+    }
+  }
+}
+
+/* ---------- Directory loading ---------- */
+let dirTok = 0;
+function resetDir() { dirTok++; S.dir.status = 'idle'; }
+function startDirLoad() {
+  S.dir.status = 'loading';
+  if (S.dirScenario === 'slow') return;
+  const tok = ++dirTok;
+  setTimeout(() => {
+    if (tok !== dirTok) return;
+    if (!S.online || S.dirScenario === 'error') S.dir.status = 'error';
+    else {
+      S.dir.status = 'ready';
+      S.dir.data = S.dirScenario === 'empty' ? [] : listedProfiles();
+    }
+    render();
+  }, 700);
+}
+
+/* ---------- Shared fragments ---------- */
+const stateHTML = (ic, title, text, actions) => '<div class="state">' + icon(ic, 36) + '<h2>' + title + '</h2>' + (text ? '<p>' + text + '</p>' : '') + (actions || '') + '</div>';
+const offlineBanner = () => S.online ? '' : '<div class="banner warn" role="status">' + icon('wifiOff', 18) + '<div><strong>Connection lost.</strong> Your typed text is kept. Send it again when you\'re back online.</div></div>';
+const signinBtn = next => '<button class="btn primary" data-action="start-signin" data-next="' + esc(next) + '">Sign in</button>';
+/* Proposed page addresses, shown in the simulated browser bar. */
+const PATHS = {
+  directory: () => '/', profile: r => '/accountants/' + r.id, review: r => '/accountants/' + r.accId + '/review', compose: r => '/chats/new/' + r.accId, thread: r => '/chats/' + r.id,
+  signin: () => '/signin', chats: () => '/chats', me: () => '/account', editor: () => '/account/profile', 'delete': () => '/account/delete',
+  info: r => r.page === 'notfound' ? '/' + location.hash.replace(/^#\/?/, '') : r.page === 'email-off' ? '/email/off' : '/' + r.page
+};
+function addressText() {
+  const r = parseRoute();
+  let p = PATHS[r.name](r);
+  if (r.name === 'directory') {
+    const q = [];
+    if (S.dir.search.trim()) q.push('q=' + encodeURIComponent(S.dir.search.trim()));
+    if (S.dir.service) q.push('service=' + encodeURIComponent(S.dir.service));
+    if (S.dir.sort === 'rating') q.push('sort=rating');
+    if (q.length) p += '?' + q.join('&');
+  }
+  return 'accapp.example' + p;
+}
+const addressPill = () => '<span class="addr">' + icon('lock', 12) + '<span data-address>' + esc(addressText()) + '</span></span>';
+function statusbarHTML() {
+  const t = new Intl.DateTimeFormat('en-US', { timeZone: TZ, hour: 'numeric', minute: '2-digit', hour12: false }).format(new Date());
+  return '<div class="statusbar" aria-hidden="true"><span>' + t + '</span><span class="sb-ic">' + (S.online ? icon('signal', 14) : icon('wifiOff', 14)) + '<span class="batt"></span></span></div>' +
+    '<div class="urlbar" aria-hidden="true">' + addressPill() + '</div>';
+}
+const titlebarHTML = () => '<div class="titlebar" aria-hidden="true"><span class="tabname"><span class="appdot">A</span>AccApp</span>' + addressPill() + '<span class="tb-ctrls"><span>&#8212;</span><span>&#9744;</span><span>&#10005;</span></span></div>';
+
+/* ---------- Directory ---------- */
+function searchHTML() {
+  return '<div class="search" role="search">' + icon('search', 18) +
+    '<label for="q" class="sr-only">Search accountants</label>' +
+    '<input id="q" type="search" data-fkey="q" data-bind="search" placeholder="Search name, city or service" value="' + esc(S.dir.search) + '" autocomplete="off">' +
+    '<button class="icon-btn clear" data-action="clear-search" data-clear aria-label="Clear search"' + (S.dir.search ? '' : ' hidden') + '>' + icon('x', 18) + '</button></div>';
+}
+function skeletonHTML() {
+  let h = '<div class="skel" aria-busy="true"><p class="sr-only">Loading accountants…</p>';
+  for (let i = 0; i < 4; i++) {
+    h += '<div class="skeleton" aria-hidden="true"><div class="card-top"><span class="avatar"></span><div style="flex:1"><div class="sk" style="width:55%"></div><div class="sk" style="width:35%"></div></div></div><div class="sk"></div><div class="sk" style="width:80%"></div></div>';
+  }
+  return h + '</div>';
+}
+function cardHTML(p, sel) {
+  const yrs = yearsExp(p);
+  const chatting = S.me && S.me.role === 'client' && CONVS.some(c => c.clientId === S.me.clientId && c.accountantId === p.id);
+  return '<li><a class="card" href="#/profile/' + p.id + '" data-fkey="card-' + p.id + '"' + (sel === p.id ? ' aria-current="true"' : '') + '>' +
+    '<div class="card-top"><span class="avatar ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span>' +
+    '<div class="card-id"><h3>' + esc(p.name) + '</h3><p class="sub">' + esc(p.title) + '</p></div>' +
+    (chatting ? '<span class="tag strong">Chatting</span>' : '') + '</div>' +
+    '<p class="rating">' + ratingLine(p.id) + '</p>' +
+    '<p class="facts">' + (p.city ? '<span>' + icon('pin', 14) + esc(p.city) + '</span>' : '') + (yrs ? '<span>' + yearsText(yrs) + '\' experience</span>' : '') +
+    (p.portfolio.length ? '<span>' + p.portfolio.length + (p.portfolio.length === 1 ? ' highlight' : ' highlights') + '</span>' : '') + '</p>' +
+    '<ul class="tags" aria-label="Services">' + p.services.map(s => '<li class="tag">' + esc(s.name) + '</li>').join('') + '</ul>' +
+    '<p class="clamp">' + esc(p.summary) + '</p>' +
+    '<span class="card-foot"><span class="card-link">View profile' + icon('chevron', 16) + '</span></span></a></li>';
+}
+function dirResultsHTML(sel) {
+  const d = S.dir;
+  if (d.status === 'idle' || d.status === 'loading') return skeletonHTML();
+  if (d.status === 'error') {
+    return stateHTML('alert', S.online ? 'We couldn\'t load the accountants' : 'Can\'t reach AccApp',
+      S.online ? 'That\'s a problem on our side, not yours. Please try again.' : 'Check your connection and try again.',
+      '<button class="btn primary" data-action="retry-dir" data-fkey="retry-dir">Try again</button>');
+  }
+  if (!d.data.length) {
+    return stateHTML('list', 'No accountants listed yet', 'When accountants publish their profiles, they appear here.',
+      S.me ? '' : '<a class="btn" href="#/for-accountants">I\'m an accountant</a>');
+  }
+  const list = filtered(), q = d.search.trim();
+  if (!list.length) {
+    const crit = [q ? '“' + esc(q) + '”' : '', d.service ? esc(d.service) : ''].filter(Boolean).join(' in ');
+    return stateHTML('search', 'No matches', 'No listed accountant matches ' + crit + '. Try a shorter search or another service.',
+      '<button class="btn" data-action="clear-search" data-fkey="clear-all">Clear search and filter</button>');
+  }
+  const shown = list.slice(0, d.shown);
+  const what = list.length + ' accountant' + (list.length === 1 ? '' : 's') + (d.service ? ' for ' + esc(d.service) : '') + (q ? ' matching “' + esc(q) + '”' : '');
+  return '<div class="meta-row"><span>' + what + (q || d.service ? ' <button class="linkbtn" data-action="clear-search" data-fkey="clear-inline">Clear</button>' : '') + '</span>' +
+    '<label class="sortctl">Sort <select data-bind="sort-select" data-fkey="sort"><option value="name"' + (d.sort === 'rating' ? '' : ' selected') + '>Name (A–Z)</option><option value="rating"' + (d.sort === 'rating' ? ' selected' : '') + '>Highest rated</option></select></label></div>' +
+    '<ul class="cards">' + shown.map(p => cardHTML(p, sel)).join('') + '</ul>' +
+    (list.length > shown.length ? '<div class="more"><button class="btn sm" data-action="more" data-fkey="more">Show more (' + (list.length - shown.length) + ')</button></div>' : '');
+}
+
+/* ---------- Profile ---------- */
+function profileAction(p) {
+  if (S.me && S.me.role === 'accountant') {
+    if (S.me.accountantId === p.id) return '<p class="note"><span>This is your public profile. <a href="#/me/profile">Edit profile</a></span></p>';
+    return '<p class="note"><span>You\'re signed in as an accountant. Only clients can start chats.</span></p>';
+  }
+  const conv = S.me ? CONVS.find(c => c.clientId === S.me.clientId && c.accountantId === p.id) : null;
+  const hint = conv ? '' : S.me ? 'It\'s free to send a message. Ask about pricing in the chat.'
+    : 'It\'s free to send a message. You\'ll sign in with Google or Microsoft before it\'s sent.';
+  return '<a class="btn primary block" href="' + (conv ? '#/thread/' + conv.id : '#/compose/' + p.id) + '" data-fkey="msg-btn">' + icon('chat', 18) + ' ' +
+    (conv ? 'Open chat' : 'Message ' + esc(firstName(p.name))) + '</a>' + (hint ? '<p class="cta-hint">' + hint + '</p>' : '');
+}
+function profileBodyHTML(id, desktop) {
+  const p = getListed(id);
+  if (!p) return stateHTML('alert', 'This profile is no longer available', 'The accountant may have removed their profile, or the link is wrong.', '<a class="btn" href="#/directory">Back to directory</a>');
+  if (!S.online) return stateHTML('wifiOff', 'Can\'t load this profile', 'You\'re offline. Connect and try again.', '<button class="btn primary" data-action="rerender">Try again</button>');
+  const titleAttr = desktop ? ' id="screen-title" tabindex="-1"' : '';
+  const yrs = yearsExp(p), rt = ratingOf(p.id);
+  const head = '<div class="profile-head"><span class="avatar lg ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span><div><h2' + titleAttr + '>' + esc(p.name) + '</h2><p class="sub">' + esc(p.title) + '</p>' +
+    (p.city ? '<p class="sub">' + icon('pin', 14) + ' ' + esc(p.city) + '</p>' : '') +
+    '<p class="rating"><button class="rating-link" data-action="goto-reviews" data-fkey="goto-reviews">' + ratingLine(p.id) + '</button></p></div></div>' +
+    '<ul class="facts-row">' + (rt.count ? '<li><strong>' + rt.avg.toFixed(1) + '</strong> average from ' + countText(rt.count) + '</li>' : '') +
+    (yrs ? '<li><strong>' + yrs + '</strong> ' + (yrs === 1 ? 'year' : 'years') + ' of experience</li>' : '') +
+    '<li><strong>' + p.services.length + '</strong> ' + (p.services.length === 1 ? 'service' : 'services') + '</li></ul>';
+  const about = '<section class="section"><h3>About</h3><p>' + esc(p.summary) + '</p></section>';
+  const services = '<section class="section"><h3>Services</h3><ul class="svc">' + p.services.map(s => '<li><strong>' + esc(s.name) + '</strong><span class="muted small">' + esc(s.desc) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Prices aren\'t listed. Ask in chat.</p></section>';
+  const portfolio = p.portfolio.length ? '<section class="section"><h3>Portfolio highlights</h3><ul class="pf">' + p.portfolio.map(x =>
+    '<li><div class="pf-top"><strong>' + esc(x.title) + '</strong>' + (x.sector ? '<span class="tag">' + esc(x.sector) + '</span>' : '') + '</div><p>' + esc(x.work) + '</p>' +
+    (x.result ? '<p class="pf-result"><span class="muted small">Result</span> ' + esc(x.result) + '</p>' : '') + '</li>').join('') +
+    '</ul><p class="muted small" style="margin-top:8px">Described by the accountant. Client names are left out.</p></section>' : '';
+  const experience = '<section class="section"><h3>Experience</h3>' + (p.experience.length ? '<ol class="timeline">' + p.experience.map(e =>
+    '<li><strong>' + esc(e.role) + '</strong>' + esc(e.org) + '<br><span class="muted small">' + fmtMonth(e.start) + ' – ' + fmtMonth(e.current ? '' : e.end) + '</span></li>').join('') + '</ol>' : '<p class="muted">No experience listed.</p>') + '</section>';
+  const contacts = [p.email ? ['mail', p.email] : null, p.phone ? ['phone', p.phone] : null, p.website ? ['globe', p.website] : null].filter(Boolean);
+  const contactList = '<ul class="contact">' + contacts.map(c => '<li>' + icon(c[0], 18) + '<span>' + esc(c[1]) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Shown publicly by the accountant.</p>';
+  const note = '<p class="note">' + icon('info', 18) + '<span>Accountants write their own profiles. AccApp doesn\'t check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>';
+  const own = S.me && S.me.role === 'accountant' && S.me.accountantId === p.id;
+  const report = own ? '' : '<p class="report-row"><button class="linkbtn" data-action="report" data-kind="profile" data-id="' + p.id + '" data-fkey="report-profile">Report this profile</button></p>';
+  const main = about + services + portfolio + experience + reviewsHTML(p);
+  if (desktop) {
+    return '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/directory">Accountants</a><span aria-hidden="true">/</span><span>' + esc(p.name) + '</span></nav>' +
+      '<div class="profile-grid"><div class="profile-main">' + head + main + '</div>' +
+      '<aside class="profile-aside" aria-label="Contact"><div class="aside-card">' + profileAction(p) + '<h3>Contact</h3>' + contactList + '</div>' + note + report + '</aside></div>';
+  }
+  return head + main + '<section class="section"><h3>Contact</h3>' + contactList + '</section>' + note + report;
+}
+
+/* ---------- Chats ---------- */
+function convListHTML(selId) {
+  if (!S.me) return stateHTML('chat', 'Sign in to see your chats', 'Clients message accountants here, and accountants reply here.', signinBtn('#/chats'));
+  const list = myConvs();
+  if (!list.length) {
+    return S.me.role === 'client'
+      ? stateHTML('chat', 'No chats yet', 'Find an accountant and send a message to start.', '<a class="btn primary" href="#/directory">Find an accountant</a>')
+      : stateHTML('chat', 'No client messages yet', 'When a client messages you, the conversation appears here.', '');
+  }
+  const note = S.me.role === 'accountant' ? '<p class="muted small" style="margin:0 0 10px">' + (S.emailOn ? 'New client messages are also emailed to you.' : 'Email notifications are off.') + ' <a href="#/me">Change</a></p>' : '';
+  return note + '<ul class="convs">' + list.map(c => {
+    const u = unreadFor(c), l = lastMsg(c), mine = l && l.from === S.me.role, name = peerName(c);
+    return '<li><a class="conv' + (u ? ' unread' : '') + '" href="#/thread/' + c.id + '"' + (selId === c.id ? ' aria-current="true"' : '') + '>' +
+      '<span class="avatar ' + tone(name) + '" aria-hidden="true">' + initials(name) + '</span><span class="conv-main">' +
+      '<span class="conv-top"><span class="conv-name">' + esc(name) + '</span><span class="time">' + (l ? fmtShort(l.at) : '') + '</span></span>' +
+      '<span class="conv-bottom"><span class="conv-prev">' + (l ? (mine ? 'You: ' : '') + esc(l.text) : '') + '</span>' + (u ? '<span class="badge">' + u + ' new</span>' : '') + '</span>' +
+      '</span></a></li>';
+  }).join('') + '</ul>';
+}
+function statusText(m) {
+  switch (m.status) {
+    case 'sending': return '<span>· Sending…</span>';
+    case 'checking': return '<span>· Checking whether it was sent…</span>';
+    case 'failed': return '<span>·</span><span class="err">Not sent.</span><button class="linkbtn" data-action="retry-msg" data-mid="' + m.id + '">Retry</button>';
+    default: return '<span>· Sent</span>';
+  }
+}
+function messagesHTML(conv, acc) {
+  const msgs = conv ? conv.messages : [];
+  let out = '', lastDay = '';
+  if (!msgs.length) {
+    out = '<div class="thread-intro"><p>' + (S.me
+      ? 'Say hello to ' + esc(firstName(acc.name)) + ' and describe what you need help with.'
+      : 'Write your message to ' + esc(firstName(acc.name)) + '. You\'ll sign in before it\'s sent, and your text is kept.') + '</p>' +
+      '<div class="starters" role="group" aria-label="Ideas to start with">' +
+      STARTERS.map((s, i) => '<button class="chip" data-action="starter" data-i="' + i + '">' + esc(s) + '</button>').join('') + '</div></div>';
+  }
+  const mineIds = msgs.filter(m => S.me && m.from === S.me.role).map(m => m.id);
+  const lastMine = mineIds[mineIds.length - 1];
+  msgs.forEach(m => {
+    const dl = dayLabel(m.at);
+    if (dl !== lastDay) { out += '<div class="day">' + dl + '</div>'; lastDay = dl; }
+    const mine = S.me && m.from === S.me.role;
+    const showStatus = mine && (m.status !== 'sent' || m.id === lastMine);
+    out += '<div class="msg ' + (mine ? 'mine' : 'theirs') + (m.status === 'failed' ? ' failed' : '') + '"><div class="bubble">' + esc(m.text) + '</div>' +
+      '<div class="msg-meta"><span>' + fmtTime(m.at) + '</span>' + (showStatus ? statusText(m) : '') + '</div></div>';
+  });
+  return '<div class="thread">' + out + '</div>';
+}
+function composerHTML(key) {
+  const t = S.drafts[key] || '', over = t.length > MAX_MSG, empty = !t.trim(), err = S.composeErr[key];
+  const hint = S.device === 'desktop' ? 'Enter to send · Shift+Enter for a new line' : '';
+  return '<div class="composer"><label class="sr-only" for="composer">Message</label>' +
+    '<textarea id="composer" rows="1" data-fkey="composer" data-bind="draft" data-key="' + esc(key) + '" placeholder="Write a message">' + esc(t) + '</textarea>' +
+    '<button class="btn primary" data-action="send" data-key="' + esc(key) + '" data-fkey="send"' + (empty || over ? ' disabled' : '') + '>' + icon('send', 18) + '<span>' + (S.me ? 'Send' : 'Sign in to send') + '</span></button>' +
+    '<div class="composer-meta"><span class="cerr" role="status">' + (err ? '<span class="err">' + esc(err) + '</span>' : hint) + '</span>' +
+    '<span class="count' + (over ? ' over' : '') + '" data-count>' + num(t.length) + ' / ' + num(MAX_MSG) + '</span></div></div>';
+}
+function threadParts(r) {
+  if (r.name === 'compose') {
+    const acc = getListed(r.accId);
+    if (!acc) return { title: 'Chat', back: '#/directory', body: stateHTML('alert', 'This accountant is no longer available', '', '<a class="btn" href="#/directory">Back to directory</a>') };
+    if (S.me && S.me.role === 'accountant') return { title: acc.name, back: '#/profile/' + acc.id, body: stateHTML('chat', 'Only clients can start chats', 'You\'re signed in as an accountant.', '<a class="btn" href="#/profile/' + acc.id + '">Back to profile</a>') };
+    const key = 'compose:' + acc.id;
+    return { title: acc.name, back: '#/profile/' + acc.id, body: messagesHTML(null, acc), footer: composerHTML(key), scrollBottom: true,
+      actions: '<a class="icon-btn" href="#/profile/' + acc.id + '" aria-label="View profile">' + icon('user') + '</a>',
+      headExtra: '<a class="btn sm" href="#/profile/' + acc.id + '">View profile</a>' };
+  }
+  if (!S.me) return { title: 'Chat', back: '#/chats', body: stateHTML('chat', 'Sign in to see this chat', '', signinBtn('#/thread/' + r.id)) };
+  const conv = CONVS.find(c => c.id === r.id);
+  if (!conv || !isParticipant(conv)) return { title: 'Chat', back: '#/chats', body: stateHTML('alert', 'This conversation isn\'t available', 'It may have been removed, or it belongs to a different account.', '<a class="btn" href="#/chats">Back to chats</a>') };
+  conv.unread[S.me.role] = 0;
+  conv.emailed = false;
+  const acc = PROFILES.find(p => p.id === conv.accountantId);
+  const accGone = !acc || acc.deleted;
+  const isClient = S.me.role === 'client', other = esc(firstName(peerName(conv)));
+  const blockedByMe = conv.blockedBy === S.me.role, blockedByThem = !!conv.blockedBy && !blockedByMe;
+  const tools = '<div class="thread-tools"><button class="linkbtn" data-action="report" data-kind="chat" data-id="' + conv.id + '" data-fkey="report-chat">Report</button>' +
+    (blockedByMe ? '' : '<button class="linkbtn" data-action="block" data-id="' + conv.id + '" data-fkey="block">Block</button>') + '</div>';
+  const footer = isClient && accGone ? '<p class="note placeholder"><span>This accountant deleted their account. Wording depends on decision D07.</span></p>'
+    : blockedByMe ? '<p class="note"><span>You blocked ' + other + '. They can\'t message you. <button class="linkbtn" data-action="unblock" data-id="' + conv.id + '" data-fkey="unblock">Unblock</button></span></p>'
+    : blockedByThem ? '<p class="note"><span>You can\'t send messages in this conversation.</span></p>'
+    : composerHTML('thread:' + conv.id);
+  return { title: peerName(conv), back: '#/chats', body: tools + messagesHTML(conv, acc || { name: 'Accountant' }), footer: footer, scrollBottom: true,
+    actions: isClient && !accGone ? '<a class="icon-btn" href="#/profile/' + acc.id + '" aria-label="View profile">' + icon('user') + '</a>' : '',
+    headExtra: isClient && !accGone ? '<a class="btn sm" href="#/profile/' + acc.id + '">View profile</a>' : '' };
+}
+
+/* ---------- Sign in ---------- */
+function signinHTML() {
+  if (S.me) return stateHTML('check', 'You\'re signed in as ' + esc(S.me.name), '', '<a class="btn" href="#/directory">Go to directory</a>');
+  const si = S.signin;
+  if (si.step === 'opening') {
+    return '<div class="state" role="status"><span class="spin lg" aria-hidden="true"></span><h2>Redirecting to ' + esc(si.provider) + '…</h2><p>Sign in there. You\'ll come back to AccApp automatically.</p><button class="btn" data-action="signin-cancel" data-fkey="si-cancel">Cancel</button></div>';
+  }
+  if (si.step === 'role') {
+    const off = si.agree ? '' : ' disabled';
+    return '<div class="center-col"><h2 class="h2">How will you use AccApp?</h2><p class="muted">Signed in with ' + esc(si.provider) + '. Choose one: an account is either a client or an accountant.</p>' +
+      '<label class="check agree"><input type="checkbox" id="agree" data-bind="agree" data-fkey="agree"' + (si.agree ? ' checked' : '') + '><span>I agree to the <a href="#/terms">Terms of use</a> and the <a href="#/privacy">Privacy policy</a>.</span></label>' +
+      '<div class="choices">' +
+      '<button class="choice" data-action="choose-role" data-role="client" data-fkey="role-client"' + off + '><strong>I\'m looking for an accountant</strong><span>Browse accountants, message them, and review the ones who help you.</span></button>' +
+      '<button class="choice" data-action="choose-role" data-role="accountant" data-fkey="role-acc"' + off + '><strong>I\'m an accountant</strong><span>Publish your profile and portfolio, and reply to client messages.</span></button></div>' +
+      (si.agree ? '' : '<p class="muted small">Tick the box to continue.</p>') + '</div>';
+  }
+  const acc = si.next && si.next.indexOf('#/compose/') === 0 ? getListed(si.next.split('/')[2]) : null;
+  const draft = acc ? (S.drafts['compose:' + acc.id] || '').trim() : '';
+  const lead = acc ? 'Sign in to send your message to ' + esc(firstName(acc.name)) + '.' + (draft ? ' It\'s saved and ready:' : '')
+    : si.next === '#/me/profile' ? 'Sign in to create your accountant profile. You\'ll choose “I\'m an accountant” on the next step.'
+    : 'Sign in to message accountants, or to publish your profile as an accountant.';
+  return '<div class="center-col"><span class="appdot xl" aria-hidden="true">A</span><h2 class="h2">Welcome to AccApp</h2><p>' + lead + '</p>' +
+    (draft ? '<blockquote class="quote">' + esc(draft) + '</blockquote>' : '') +
+    (si.error ? '<div class="banner danger inline" role="alert" style="margin-top:14px">' + icon('alert', 18) + '<div>' + esc(si.error) + '</div></div>' : '') +
+    '<div class="stack"><button class="btn block" data-action="provider" data-provider="Google" data-fkey="p-google">Continue with Google</button>' +
+    '<button class="btn block" data-action="provider" data-provider="Microsoft" data-fkey="p-ms">Continue with Microsoft</button></div>' +
+    '<p class="muted small">AccApp never sees your Google or Microsoft password.</p></div>';
+}
+
+/* ---------- Account ---------- */
+function emailRow() {
+  const isAcc = S.me.role === 'accountant';
+  const detail = S.emailOn
+    ? 'We email ' + esc(S.me.email) + ' when ' + (isAcc ? 'a client messages you' : 'an accountant replies to you') + ' and you\'re not on the site. Emails don\'t include the message text.'
+    : 'You won\'t get emails. New messages still show as unread in Chats.';
+  return '<li><div class="mi">' + icon('mail') + '<span class="mi-main">Email notifications: ' + (S.emailOn ? 'On' : 'Off') + '<small>' + detail + '</small></span>' +
+    '<button class="btn sm" data-action="toggle-email" data-fkey="toggle-email">' + (S.emailOn ? 'Turn off' : 'Turn on') + '</button></div></li>';
+}
+function meHTML() {
+  if (!S.me) {
+    return '<div class="me-card"><span class="avatar lg" aria-hidden="true">' + icon('user', 30) + '</span><div><h2>You\'re browsing as a visitor</h2><p class="sub">Sign in to message accountants, or to publish your profile as an accountant.</p></div></div>' +
+      '<button class="btn primary block" data-action="start-signin" data-next="#/me" data-fkey="me-signin">Sign in</button>' + infoLinksHTML();
+  }
+  const isAcc = S.me.role === 'accountant';
+  const prof = isAcc ? PROFILES.find(p => p.id === S.me.accountantId) : null;
+  const listed = !!(prof && prof.listed && !prof.deleted);
+  let rows = '';
+  if (isAcc) {
+    rows += '<li><a class="mi" href="#/me/profile">' + icon('edit') + '<span class="mi-main">My profile and portfolio<small>' + (listed ? 'Listed in the directory' : 'Not listed yet') + '</small></span>' + icon('chevron', 18) + '</a></li>';
+    if (listed) { const rt = ratingOf(prof.id); rows += '<li><a class="mi" href="#/profile/' + prof.id + '">' + icon('chat') + '<span class="mi-main">My reviews<small>' + (rt.count ? rt.avg.toFixed(1) + ' average from ' + countText(rt.count) + '. Reply on your public profile.' : 'No reviews yet.') + '</small></span>' + icon('chevron', 18) + '</a></li>'; }
+  }
+  rows += emailRow();
+  rows += '<li><button class="mi" data-action="sign-out" data-fkey="sign-out">' + icon('logout') + '<span class="mi-main">Sign out</span></button></li>';
+  return '<div class="me-card"><span class="avatar lg ' + tone(S.me.name) + '" aria-hidden="true">' + initials(S.me.name) + '</span><div><h2>' + esc(S.me.name) + '</h2><p class="sub">' + (isAcc ? 'Accountant' : 'Client') + ' · Signed in with ' + esc(S.me.provider) + '</p></div></div>' +
+    '<ul class="menu">' + rows + '</ul><ul class="menu"><li><a class="mi danger" href="#/me/delete">' + icon('trash') + '<span class="mi-main">Delete account</span>' + icon('chevron', 18) + '</a></li></ul>' + infoLinksHTML();
+}
+
+/* ---------- Profile editor ---------- */
+function ensureEditor() {
+  if (S.editor && S.editor.accId === S.me.accountantId) return;
+  const p = PROFILES.find(x => x.id === S.me.accountantId && !x.deleted);
+  const f = p ? JSON.parse(JSON.stringify({ name: p.name, title: p.title, city: p.city, summary: p.summary, email: p.email, phone: p.phone, website: p.website, consent: p.consent, experience: p.experience, services: p.services, portfolio: p.portfolio || [] }))
+    : { name: S.me.name, title: '', city: '', summary: '', email: '', phone: '', website: '', consent: false, experience: [], services: [], portfolio: [] };
+  S.editor = { accId: S.me.accountantId, f: f, dirty: false, errors: {}, status: 'idle' };
+}
+function missingFields(f) { return listingSteps(f).filter(s => !s.done).map(s => s.name); }
+function validateFormat(f) {
+  const e = {};
+  if (f.summary.length > MAX_SUMMARY) e['f-summary'] = 'Keep the career summary under ' + num(MAX_SUMMARY) + ' characters.';
+  f.experience.forEach((x, i) => {
+    if (!(x.role || x.org || x.start || x.end)) return;
+    if (!x.role.trim()) e['f-exp-' + i + '-role'] = 'Experience ' + (i + 1) + ': add a role.';
+    if (!x.org.trim()) e['f-exp-' + i + '-org'] = 'Experience ' + (i + 1) + ': add a company, or "Self-employed".';
+    if (!x.start) e['f-exp-' + i + '-start'] = 'Experience ' + (i + 1) + ': add a start month.';
+    if (!x.current && !x.end) e['f-exp-' + i + '-end'] = 'Experience ' + (i + 1) + ': add an end month, or tick "I work here now".';
+    if (!x.current && x.start && x.end && x.end < x.start) e['f-exp-' + i + '-end'] = 'Experience ' + (i + 1) + ': the end month must be after the start month.';
+  });
+  (f.portfolio || []).forEach((x, i) => {
+    if (!(x.title || x.sector || x.work || x.result)) return;
+    if (!x.title.trim()) e['f-pf-' + i + '-title'] = 'Highlight ' + (i + 1) + ': add a title.';
+    if (!x.work.trim()) e['f-pf-' + i + '-work'] = 'Highlight ' + (i + 1) + ': describe what you did.';
+  });
+  f.services.forEach((s, i) => { if (!s.name) e['f-svc-' + i + '-name'] = 'Service ' + (i + 1) + ': choose a service, or remove the row.'; });
+  if (f.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e['f-email'] = 'Enter an email address like name@example.com.';
+  if (f.website && !/^(https?:\/\/)?[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(f.website)) e['f-website'] = 'Enter a web address like example.com.';
+  return e;
+}
+function fld(id, label, value, o) {
+  o = o || {};
+  const err = S.editor.errors[id];
+  return '<div class="field"><label for="' + id + '">' + label + (o.req ? ' <span class="req">(needed to be listed)</span>' : '') + '</label>' +
+    '<input id="' + id + '" type="' + (o.type || 'text') + '" value="' + esc(value) + '" data-fkey="' + id + '" data-bind="' + (o.bind || 'ed') + '" data-field="' + o.field + '"' +
+    (o.i != null ? ' data-i="' + o.i + '"' : '') + (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.disabled ? ' disabled' : '') +
+    (err ? ' aria-invalid="true" aria-describedby="' + id + '-err"' : '') + '>' +
+    (o.hint ? '<span class="hint">' + o.hint + '</span>' : '') + (err ? '<span class="ferr" id="' + id + '-err">' + esc(err) + '</span>' : '') + '</div>';
+}
+function editorParts() {
+  if (!S.me) return { title: 'My profile', body: stateHTML('user', 'Sign in as an accountant', 'Accountants publish a profile so clients can find them.', signinBtn('#/me/profile')) };
+  if (S.me.role !== 'accountant') return { title: 'My profile', body: stateHTML('user', 'Only accountants have a public profile', 'You\'re signed in as a client.', '<a class="btn" href="#/me">Back to account</a>') };
+  ensureEditor();
+  const ed = S.editor, f = ed.f;
+  const prof = PROFILES.find(p => p.id === ed.accId);
+  const listed = !!(prof && prof.listed && !prof.deleted);
+  const missing = missingFields(f);
+  const errs = Object.keys(ed.errors);
+  let h = '<p class="status-line"><span class="pill ' + (listed ? 'ok' : 'warn') + '">' + icon(listed ? 'check' : 'alert', 14) + ' ' + (listed ? 'Listed in the directory' : 'Not listed yet') + '</span>' +
+    (listed ? '<a href="#/profile/' + ed.accId + '">View public profile</a>' : '') + '</p>';
+  h += '<div class="checklist" data-checklist>' + checklistInner(f, listed) + '</div>';
+  if (errs.length) {
+    h += '<div class="err-summary" id="err-summary" tabindex="-1" role="alert"><h2>Fix ' + (errs.length === 1 ? 'this' : 'these') + ' before saving</h2><ul>' +
+      errs.map(id => '<li><a href="#' + id + '" data-action="focus-field" data-target="' + id + '">' + esc(ed.errors[id]) + '</a></li>').join('') + '</ul></div>';
+  }
+  h += '<fieldset><legend>About you</legend>' +
+    fld('f-name', 'Display name', f.name, { field: 'name', req: 1 }) +
+    fld('f-title', 'Professional title', f.title, { field: 'title', req: 1, ph: 'e.g. Certified Public Accountant' }) +
+    fld('f-city', 'City', f.city, { field: 'city', ph: 'e.g. Makati City' });
+  const se = ed.errors['f-summary'];
+  h += '<div class="field"><label for="f-summary">Career summary <span class="req">(needed to be listed)</span></label>' +
+    '<textarea id="f-summary" rows="5" data-fkey="f-summary" data-bind="ed" data-field="summary"' + (se ? ' aria-invalid="true" aria-describedby="f-summary-err"' : '') + '>' + esc(f.summary) + '</textarea>' +
+    '<span class="hint"><span data-count-summary>' + num(f.summary.length) + '</span> / ' + num(MAX_SUMMARY) + ' characters. The first lines appear in the directory.</span>' +
+    (se ? '<span class="ferr" id="f-summary-err">' + esc(se) + '</span>' : '') + '</div></fieldset>';
+  h += '<fieldset><legend>Experience</legend>' + f.experience.map((x, i) =>
+    '<div class="row"><div class="row-head"><span>Experience ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-exp" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> experience ' + (i + 1) + '</span></button></div>' +
+    fld('f-exp-' + i + '-role', 'Role', x.role, { bind: 'ed-exp', field: 'role', i: i, ph: 'e.g. Senior tax associate' }) +
+    fld('f-exp-' + i + '-org', 'Company or practice', x.org, { bind: 'ed-exp', field: 'org', i: i, ph: 'e.g. Self-employed' }) +
+    '<div class="grid2">' + fld('f-exp-' + i + '-start', 'Start month', x.start, { bind: 'ed-exp', field: 'start', i: i, type: 'month', ph: 'YYYY-MM' }) +
+    fld('f-exp-' + i + '-end', 'End month', x.current ? '' : x.end, { bind: 'ed-exp', field: 'end', i: i, type: 'month', ph: 'YYYY-MM', disabled: x.current }) + '</div>' +
+    '<label class="check"><input type="checkbox" data-bind="ed-exp-current" data-i="' + i + '" data-fkey="f-exp-' + i + '-cur"' + (x.current ? ' checked' : '') + '> I work here now</label></div>'
+  ).join('') + '<button class="btn sm" id="add-exp" data-action="add-exp" data-fkey="add-exp">' + icon('plus', 16) + ' Add experience</button>' +
+    '<p class="muted small">Your years of experience on your card are counted from the earliest start month here.</p></fieldset>';
+  h += '<fieldset><legend>Services</legend>' + f.services.map((s, i) => {
+    const ne = ed.errors['f-svc-' + i + '-name'];
+    return '<div class="row"><div class="row-head"><span>Service ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-svc" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> service ' + (i + 1) + '</span></button></div>' +
+      '<div class="field"><label for="f-svc-' + i + '-name">Service</label><select id="f-svc-' + i + '-name" data-fkey="f-svc-' + i + '-name" data-bind="ed-svc" data-field="name" data-i="' + i + '"' + (ne ? ' aria-invalid="true" aria-describedby="f-svc-' + i + '-name-err"' : '') + '>' +
+      '<option value="">Choose a service</option>' + SERVICES.map(n => '<option' + (n === s.name ? ' selected' : '') + '>' + esc(n) + '</option>').join('') + '</select>' +
+      (ne ? '<span class="ferr" id="f-svc-' + i + '-name-err">' + esc(ne) + '</span>' : '') + '</div>' +
+      fld('f-svc-' + i + '-desc', 'Short description', s.desc, { bind: 'ed-svc', field: 'desc', i: i, ph: 'What this includes' }) + '</div>';
+  }).join('') + '<button class="btn sm" id="add-svc" data-action="add-svc" data-fkey="add-svc">' + icon('plus', 16) + ' Add service</button><p class="muted small">No prices in release 1. Clients ask about pricing in chat.</p></fieldset>';
+  h += portfolioFieldset(f);
+  h += '<fieldset><legend>Contact details</legend>' +
+    fld('f-email', 'Email', f.email, { field: 'email', type: 'email', req: 1, ph: 'name@example.com' }) +
+    fld('f-phone', 'Phone', f.phone, { field: 'phone', type: 'tel', ph: '+63 900 000 0000' }) +
+    fld('f-website', 'Website', f.website, { field: 'website', ph: 'example.com' }) +
+    '<label class="check"><input type="checkbox" id="f-consent" data-fkey="f-consent" data-bind="ed" data-field="consent"' + (f.consent ? ' checked' : '') + '>' +
+    '<span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using AccApp can see them, including people who aren\'t signed in.</span></span></label></fieldset>';
+  const msgText = ed.status === 'saved' ? (listed ? 'Saved. Your profile is listed in the directory.' : 'Saved. Not listed yet: add ' + missing.join(', ') + '.')
+    : ed.status === 'failed' ? 'Not saved: no connection. Your changes are still here.' : '';
+  h += '<p class="save-status ' + (ed.status === 'saved' ? 'ok' : ed.status === 'failed' ? 'fail' : '') + '" data-save-status role="status">' + esc(msgText) + '</p>';
+  const footer = '<button class="btn primary block" data-action="save-profile" data-fkey="save"' + (ed.status === 'saving' ? ' disabled' : '') + '>' +
+    (ed.status === 'saving' ? '<span class="spin" aria-hidden="true"></span> Saving…' : 'Save profile') + '</button>';
+  return { title: listed ? 'My profile' : 'Create your profile', body: '<div class="form">' + h + '</div>', footer: footer };
+}
+function saveEditor() {
+  const ed = S.editor;
+  if (!ed) return;
+  ed.errors = validateFormat(ed.f);
+  if (Object.keys(ed.errors).length) { ed.status = 'invalid'; S.focusSel = '#err-summary'; render(); return; }
+  if (!S.online) { ed.status = 'failed'; render(); return; }
+  ed.status = 'saving';
+  render();
+  setTimeout(() => {
+    if (S.editor !== ed) return;
+    const f = JSON.parse(JSON.stringify(ed.f));
+    f.experience = f.experience.filter(x => x.role || x.org || x.start || x.end);
+    f.experience.forEach(x => { if (x.current) x.end = ''; });
+    f.portfolio = (f.portfolio || []).filter(x => x.title.trim() || x.work.trim());
+    ed.f.portfolio = JSON.parse(JSON.stringify(f.portfolio));
+    ed.f.experience = JSON.parse(JSON.stringify(f.experience));
+    const rec = Object.assign({ id: ed.accId }, f, { listed: missingFields(f).length === 0, deleted: false });
+    const existing = PROFILES.find(p => p.id === ed.accId);
+    if (existing) Object.assign(existing, rec); else PROFILES.push(rec);
+    if (S.me && S.me.accountantId === ed.accId) S.me.name = f.name || S.me.name;
+    ed.dirty = false;
+    ed.status = 'saved';
+    resetDir();
+    render();
+  }, 800);
+}
+
+/* ---------- Delete account ---------- */
+function deleteHTML() {
+  if (!S.me) return stateHTML('user', 'Sign in to manage your account', '', signinBtn('#/me'));
+  const d = S.del || (S.del = { step: 1, status: 'idle' });
+  const isAcc = S.me.role === 'accountant';
+  const items = ['Your AccApp sign-in. Your ' + esc(S.me.provider) + ' account itself is not affected.'];
+  if (isAcc) items.push('Your public profile. It leaves the directory immediately.');
+  items.push('Email notifications for this account.');
+  if (d.step === 1) {
+    return '<div class="card static"><h2 class="h2">Delete your account?</h2><p>This removes:</p><ul>' + items.map(i => '<li>' + i + '</li>').join('') + '</ul>' +
+      '<p class="note placeholder">What happens to your existing chats: wording depends on decision D07.</p>' +
+      '<div class="actions"><a class="btn" href="#/me">Cancel</a><button class="btn danger" data-action="del-continue" data-fkey="del-continue">Continue</button></div></div>';
+  }
+  return '<div class="card static"><h2 class="h2">Are you sure?</h2><p>Deleting your account can\'t be undone.</p>' +
+    (d.status === 'failed' ? '<div class="banner danger inline" role="alert">' + icon('alert', 18) + '<div>Couldn\'t delete your account, so nothing was removed. You\'re still signed in. Check your connection and try again.</div></div>' : '') +
+    '<div class="actions"><a class="btn" href="#/me">Cancel</a><button class="btn danger" data-action="del-confirm" data-fkey="del-confirm"' + (d.status === 'deleting' ? ' disabled' : '') + '>' +
+    (d.status === 'deleting' ? '<span class="spin" aria-hidden="true"></span> Deleting…' : 'Delete my account') + '</button></div></div>';
+}
+
+/* ---------- Design rework: looks, hero, filter, checklist ---------- */
+const LOOKS = {
+  modern: { name: 'Modern', mood: 'modern, crisp, confident',
+    heroTitle: 'Find an accountant who fits your business', heroSub: 'Compare experience and services, then message them directly.' },
+  ledger: { name: 'Ledger', mood: 'calm, established, precise',
+    heroTitle: 'Find an accountant for your business', heroSub: 'Read each accountant\'s experience and services, then message them directly.' },
+  neighbourly: { name: 'Neighbourly', mood: 'warm, friendly, encouraging',
+    heroTitle: 'Accounting help, in plain words', heroSub: 'Browse accountants, pick one you like, and say hello. You don\'t need an account to look around.' },
+  clear: { name: 'Clear', mood: 'fresh, focused, efficient',
+    heroTitle: 'Search. Compare. Message.', heroSub: 'Accountants by service, with their experience up front.' }
+};
+const STARTERS = ['Hi! I need help with monthly bookkeeping.', 'Hi! Can you help me file my taxes?', 'Hi! I\'m starting a business and need to register it.'];
+const themeQuery = window.matchMedia('(prefers-color-scheme: dark)');
+function yearsExp(p) {
+  const starts = p.experience.map(e => e.start).filter(Boolean).sort();
+  if (!starts.length) return 0;
+  const parts = starts[0].split('-').map(Number), now = new Date();
+  return Math.max(0, now.getFullYear() - parts[0] - (now.getMonth() + 1 < parts[1] ? 1 : 0));
+}
+const yearsText = n => n + (n === 1 ? ' year' : ' years');
+function tone(name) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 997;
+  return 't' + (h % 3 + 1);
+}
+function heroHTML(desktop) {
+  const L = LOOKS[S.look], visitor = !S.me;
+  const title = visitor ? L.heroTitle : 'Find an accountant';
+  const head = desktop ? '<h1 id="screen-title" tabindex="-1">' + esc(title) + '</h1>' : visitor ? '<h2 id="hero-t">' + esc(title) + '</h2>' : '';
+  return '<section class="hero' + (desktop ? ' wide' : '') + '" aria-label="Find an accountant">' + head +
+    (visitor ? '<p class="hero-sub">' + esc(L.heroSub) + '</p>' : '') +
+    '<div class="hero-search">' + searchHTML() + filterHTML(desktop) + '</div>' +
+    (visitor ? '<p class="trustline">' + icon('lock', 14) + '<span>Free to browse. You only sign in when you send a message.</span></p>' : '') +
+    (!desktop && visitor
+      ? '<div class="hero-actions"><button class="btn sm" data-action="toggle-how" data-fkey="how" aria-expanded="' + S.howOpen + '">How it works</button></div>' + (S.howOpen ? howHTML(false) : '')
+      : '') + '</section>';
+}
+function filterHTML(desktop) {
+  if (desktop) {
+    return '<div class="chips" role="group" aria-label="Filter by service">' +
+      '<button class="chip" data-fkey="chip-x" data-action="service" data-val="" aria-pressed="' + (!S.dir.service) + '">All services</button>' +
+      SERVICES.map((s, i) => '<button class="chip" data-fkey="chip-' + i + '" data-action="service" data-val="' + esc(s) + '" aria-pressed="' + (S.dir.service === s) + '">' + esc(s) + '</button>').join('') + '</div>';
+  }
+  return '<div class="filter"><label for="svc">Service</label><select id="svc" data-fkey="svc" data-bind="service-select">' +
+    '<option value="">All services</option>' + SERVICES.map(s => '<option' + (S.dir.service === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></div>';
+}
+function directoryBodyHTML(sel, desktop) {
+  return heroHTML(desktop) + '<div class="results" data-dir-results>' + dirResultsHTML(sel) + '</div>' + (desktop ? (S.me ? '' : howHTML(true)) : infoLinksHTML());
+}
+function listingSteps(f) {
+  return [
+    { name: 'display name', label: 'Display name', done: !!f.name.trim(), target: 'f-name' },
+    { name: 'professional title', label: 'Professional title', done: !!f.title.trim(), target: 'f-title' },
+    { name: 'career summary', label: 'Career summary', done: !!f.summary.trim(), target: 'f-summary' },
+    { name: 'at least one service', label: 'At least one service', done: f.services.some(s => s.name), target: f.services.length ? 'f-svc-0-name' : 'add-svc' },
+    { name: 'email', label: 'Email', done: !!f.email.trim(), target: 'f-email' },
+    { name: 'agreement to show contact details', label: 'Agreement to show your contact details', done: !!f.consent, target: 'f-consent' }
+  ];
+}
+function checklistInner(f, listed) {
+  const steps = listingSteps(f), done = steps.filter(s => s.done).length;
+  const head = done === steps.length
+    ? (listed ? 'Everything needed to be listed is filled in.' : 'Everything is filled in. Save to be listed.')
+    : '<strong>' + done + ' of ' + steps.length + '</strong> details needed to be listed';
+  return '<p>' + head + '</p><div class="meter" aria-hidden="true"><span style="width:' + Math.round(done / steps.length * 100) + '%"></span></div><ul>' +
+    steps.map(s => s.done
+      ? '<li class="done">' + icon('check', 16) + '<span>' + esc(s.label) + '<span class="sr-only"> (done)</span></span></li>'
+      : '<li>' + icon('plus', 16) + '<a href="#' + s.target + '" data-action="focus-field" data-target="' + s.target + '">Add: ' + esc(s.label.charAt(0).toLowerCase() + s.label.slice(1)) + '</a></li>').join('') + '</ul>';
+}
+
+function howHTML(desktop) {
+  const steps = '<ol class="steps' + (desktop ? ' row' : '') + '"><li><strong>Browse for free</strong><span>Read portfolios and reviews without an account.</span></li>' +
+    '<li><strong>Message who you like</strong><span>Sign in with Google or Microsoft first.</span></li>' +
+    '<li><strong>Rate how it went</strong><span>Once they have replied to you, you can leave a review.</span></li></ol>';
+  const forAcc = '<p class="hero-foot">Are you an accountant? <a href="#/for-accountants">See how listing works</a></p>';
+  return desktop ? '<section class="how" aria-labelledby="how-t"><h2 id="how-t">How it works</h2>' + steps + forAcc + '</section>' : steps + forAcc;
+}
+const footerHTML = () => '<footer class="sitefoot"><div class="container"><span class="brand"><span class="appdot md" aria-hidden="true">A</span>AccApp</span>' +
+  '<span class="small">Accountants write their own profiles. AccApp doesn\'t check licences or qualifications.</span>' + infoLinksHTML() + '</div></footer>';
+
+const PORTFOLIO_SEED = {
+  a1: [
+    { title: 'Cleaned up two years of books for a bakery', sector: 'Food retail', work: 'Rebuilt the ledgers from receipts and bank statements, then set up a simple monthly routine.', result: 'Books were ready for a bank loan application.' },
+    { title: 'Moved a family store to quarterly filing on time', sector: 'Retail', work: 'Set a filing calendar and prepared each return with the owner.', result: 'Four quarters filed on time in a row.' }],
+  a2: [{ title: 'Payroll set-up for a 40-person team', sector: 'Staffing', work: 'Designed the payroll process, payslips and employer filings.', result: 'The owner now runs payroll without outside help.' }],
+  a4: [{ title: 'First external audit for a non-profit', sector: 'Non-profit', work: 'Planned and led the audit, and coached the finance volunteer through it.', result: 'Audited statements delivered before the grant deadline.' }],
+  a5: [{ title: 'Registration and first-year tax plan for a start-up', sector: 'Online services', work: 'Compared business structures and registered the company.', result: 'The founder knew each filing date for the first year.' }]
+};
+PROFILES.forEach(p => { p.portfolio = PORTFOLIO_SEED[p.id] || []; });
+const REVIEWS = [
+  { id: 'r1', accountantId: 'a1', clientId: 'u-liza', clientName: 'Liza Fernandez', stars: 5, text: 'Andrea explained every line of my financial statements and got them to the bank on time.', at: ago(3900), reply: { text: 'Thank you, Liza. Glad the loan went through.', at: ago(3800) } },
+  { id: 'r2', accountantId: 'a1', clientId: 'u-noel', clientName: 'Noel Bautista', stars: 4, text: 'Clear monthly reports. Replies can take a day during filing season.', at: ago(20000), reply: null },
+  { id: 'r3', accountantId: 'a2', clientId: 'u-rica', clientName: 'Rica Domingo', stars: 5, text: 'Set up our payroll in a week and trained me to run it.', at: ago(9000), reply: null },
+  { id: 'r4', accountantId: 'a2', clientId: 'u-paolo', clientName: 'Paolo Garcia', stars: 5, text: '', at: ago(30000), reply: null },
+  { id: 'r5', accountantId: 'a3', clientId: 'u-jen', clientName: 'Jen Soriano', stars: 4, text: 'Very patient with a first-time online seller.', at: ago(12000), reply: null },
+  { id: 'r6', accountantId: 'a4', clientId: 'u-mark', clientName: 'Mark Villar', stars: 5, text: 'Thorough audit, and no surprises on the fee we agreed in chat.', at: ago(15000), reply: null },
+  { id: 'r7', accountantId: 'a4', clientId: 'u-ana', clientName: 'Ana Lopez', stars: 4, text: 'Good work. I would have liked more updates along the way.', at: ago(42000), reply: { text: 'Fair point, Ana. I now send a weekly status note.', at: ago(41000) } },
+  { id: 'r8', accountantId: 'a5', clientId: 'u-carl', clientName: 'Carl Uy', stars: 5, text: 'Helped me choose the right set-up for my shop.', at: ago(7000), reply: null },
+  { id: 'r9', accountantId: 'a5', clientId: 'u-bea', clientName: 'Bea Ramos', stars: 3, text: 'Helpful advice, but it took a while to get a reply.', at: ago(26000), reply: null },
+  { id: 'r10', accountantId: 'a7', clientId: 'u-tom', clientName: 'Tomas Reyes', stars: 5, text: 'Sharp review of our tax position before we raised money.', at: ago(50000), reply: null }
+];
+const REPORT_REASONS = ['Fake or misleading', 'Abusive or harassing', 'Spam or a scam', 'Shares private information', 'Something else'];
+const reviewsFor = id => REVIEWS.filter(r => r.accountantId === id).sort((a, b) => b.at.localeCompare(a.at) || a.id.localeCompare(b.id));
+function ratingOf(id) {
+  const rs = reviewsFor(id);
+  return { count: rs.length, avg: rs.length ? rs.reduce((n, r) => n + r.stars, 0) / rs.length : 0 };
+}
+const countText = n => n + (n === 1 ? ' review' : ' reviews');
+const starsHTML = n => '<span class="stars" role="img" aria-label="' + (Math.round(n * 10) / 10) + ' out of 5 stars">' +
+  [1, 2, 3, 4, 5].map(i => '<span class="star' + (i <= Math.round(n) ? ' on' : '') + '" aria-hidden="true">★</span>').join('') + '</span>';
+function ratingLine(id) {
+  const r = ratingOf(id);
+  return r.count ? starsHTML(r.avg) + '<strong>' + r.avg.toFixed(1) + '</strong><span class="muted">(' + countText(r.count) + ')</span>' : '<span class="muted">No reviews yet</span>';
+}
+const shortName = n => { const p = n.split(' '); return p[0] + (p.length > 1 ? ' ' + p[p.length - 1][0] + '.' : ''); };
+function canReview(accId) {
+  if (!S.me) return { ok: false, why: 'signin' };
+  if (S.me.role !== 'client') return { ok: false, why: 'role' };
+  const conv = CONVS.find(c => c.clientId === S.me.clientId && c.accountantId === accId);
+  if (!conv || !conv.messages.some(m => m.from === 'accountant')) return { ok: false, why: 'nochat' };
+  return { ok: true, mine: REVIEWS.find(r => r.accountantId === accId && r.clientId === S.me.clientId) };
+}
+const infoLinksHTML = () => '<nav class="infolinks" aria-label="About AccApp"><a href="#/about">About</a><a href="#/help">Help</a><a href="#/for-accountants">For accountants</a><a href="#/privacy">Privacy</a><a href="#/terms">Terms</a></nav>';
+function reviewsHTML(p) {
+  const rs = reviewsFor(p.id), rt = ratingOf(p.id), can = canReview(p.id), first = esc(firstName(p.name));
+  const own = !!(S.me && S.me.role === 'accountant' && S.me.accountantId === p.id);
+  const why = can.ok || own ? '' : '<p class="muted small">' + (can.why === 'signin'
+    ? 'Reviews come from clients ' + first + ' has chatted with. <button class="linkbtn" data-action="start-signin" data-next="#/profile/' + p.id + '">Sign in</button> if that\'s you.'
+    : can.why === 'nochat' ? 'You can review ' + first + ' after they reply to a message from you.' : 'Only clients can write reviews.') + '</p>';
+  const head = '<div class="rev-head"><div class="rev-sum">' + (rt.count
+    ? '<strong class="rev-avg">' + rt.avg.toFixed(1) + '</strong>' + starsHTML(rt.avg) + '<span class="muted">' + countText(rt.count) + '</span>'
+    : '<span class="muted">No reviews yet.</span>') + '</div>' +
+    (can.ok ? '<a class="btn sm" href="#/review/' + p.id + '" data-fkey="write-review">' + (can.mine ? 'Edit your review' : 'Write a review') + '</a>' : '') + '</div>' + why;
+  const list = rs.map(r => {
+    const mine = !!(S.me && S.me.role === 'client' && r.clientId === S.me.clientId);
+    let reply = '';
+    if (own && S.replyTo === r.id) {
+      reply = '<div class="rev-reply"><label for="reply-text"><strong>Your public reply</strong></label><textarea id="reply-text" rows="3" maxlength="600" data-fkey="reply-text" data-bind="reply-draft">' + esc(S.replyDraft || '') + '</textarea>' +
+        '<div class="actions"><button class="btn primary sm" data-action="save-reply" data-id="' + r.id + '" data-fkey="save-reply">Post reply</button><button class="btn sm" data-action="cancel-reply">Cancel</button></div></div>';
+    } else if (r.reply) {
+      reply = '<div class="rev-reply"><strong>Reply from ' + first + '</strong><p>' + esc(r.reply.text) + '</p>' +
+        (own ? '<button class="linkbtn" data-action="reply-review" data-id="' + r.id + '">Edit reply</button>' : '') + '</div>';
+    } else if (own) reply = '<button class="btn sm" data-action="reply-review" data-id="' + r.id + '" data-fkey="reply-' + r.id + '">Reply</button>';
+    return '<li class="rev"><div class="rev-top">' + starsHTML(r.stars) + '<span class="rev-who">' + esc(shortName(r.clientName)) + (mine ? ' (you)' : '') + '</span><span class="time">' + fmtShort(r.at) + '</span></div>' +
+      (r.text ? '<p>' + esc(r.text) + '</p>' : '') + reply +
+      (S.me && !mine ? '<button class="linkbtn rev-report" data-action="report" data-kind="review" data-id="' + r.id + '">Report this review</button>' : '') + '</li>';
+  }).join('');
+  return '<section class="section"><h3 id="reviews-h" tabindex="-1">Reviews</h3>' + head + (rs.length ? '<ul class="revs">' + list + '</ul>' : '') +
+    '<p class="muted small" style="margin-top:10px">Only clients this accountant has replied to can leave a review. AccApp doesn\'t edit or check reviews.</p></section>';
+}
+function reviewPageHTML(accId) {
+  const p = getListed(accId);
+  if (!p) return stateHTML('alert', 'This accountant is no longer available', '', '<a class="btn" href="#/directory">Back to directory</a>');
+  const can = canReview(accId), first = esc(firstName(p.name));
+  if (!can.ok) {
+    return can.why === 'signin' ? stateHTML('user', 'Sign in to write a review', 'Reviews come from clients ' + first + ' has chatted with.', signinBtn('#/review/' + accId))
+      : stateHTML('chat', 'You can\'t review ' + first + ' yet', can.why === 'nochat' ? 'You can leave a review after ' + first + ' replies to a message from you.' : 'Only clients can write reviews.', '<a class="btn" href="#/profile/' + accId + '">Back to profile</a>');
+  }
+  if (!S.review || S.review.accId !== accId) S.review = { accId: accId, stars: can.mine ? can.mine.stars : 0, text: can.mine ? can.mine.text : '', error: '' };
+  const rv = S.review;
+  return '<div class="form"><p>How was working with <strong>' + esc(p.name) + '</strong>?</p>' +
+    '<fieldset><legend>Your rating</legend><div class="starpick" role="radiogroup" aria-label="Rating out of 5">' +
+    [1, 2, 3, 4, 5].map(i => '<button type="button" class="starbtn' + (i <= rv.stars ? ' on' : '') + '" role="radio" aria-checked="' + (rv.stars === i) + '" aria-label="' + i + (i === 1 ? ' star' : ' stars') + '" data-action="pick-star" data-n="' + i + '" data-fkey="star-' + i + '">★</button>').join('') +
+    '</div>' + (rv.error ? '<span class="ferr" role="alert">' + esc(rv.error) + '</span>' : '') + '</fieldset>' +
+    '<div class="field"><label for="rv-text">Your review <span class="req">(optional)</span></label><textarea id="rv-text" rows="5" maxlength="1000" data-fkey="rv-text" data-bind="review-text">' + esc(rv.text) + '</textarea>' +
+    '<span class="hint">Shown publicly under the name “' + esc(shortName(S.me.name)) + '” Describe your own experience, and leave out private details. ' + first + ' can post one public reply.</span></div>' +
+    '<div class="actions"><button class="btn primary" data-action="save-review" data-fkey="save-review">' + (can.mine ? 'Update review' : 'Post review') + '</button>' +
+    (can.mine ? '<button class="btn" data-action="delete-review" data-fkey="delete-review">Delete review</button>' : '') + '<a class="btn ghost" href="#/profile/' + accId + '">Cancel</a></div></div>';
+}
+function infoPage(page) {
+  const draft = '<p class="note placeholder"><span>Draft outline for review. This is not legal text yet (decision D10).</span></p>';
+  const sec = (h, t) => '<section class="section"><h3>' + h + '</h3><p>' + t + '</p></section>';
+  switch (page) {
+    case 'privacy': return { title: 'Privacy', body: draft +
+      sec('What AccApp keeps', 'Your name and email address from Google or Microsoft, what you add to your profile, your chats, and your reviews.') +
+      sec('What is public', 'Accountant profiles, portfolio highlights, reviews and replies. A review shows the client\'s first name and last initial.') +
+      sec('What is private', 'Chats are seen only by the two people in them. Client accounts are never listed.') +
+      sec('Emails', 'AccApp emails you about new messages. The emails don\'t include the message text, and you can turn them off.') +
+      sec('Deleting your data', 'You can delete your account in Account. What happens to your chats and reviews is still being decided (decision D07).') };
+    case 'terms': return { title: 'Terms of use', body: draft +
+      sec('Using AccApp', 'Browsing is free. You sign in with Google or Microsoft to message, review or publish a profile.') +
+      sec('Accountant profiles', 'Accountants write their own profiles and are responsible for what they say. AccApp doesn\'t check licences or qualifications.') +
+      sec('Reviews', 'A client can review an accountant who has replied to them, once, and can change or delete it. Reviews must describe the reviewer\'s own experience.') +
+      sec('Reports and blocking', 'Anyone signed in can report a profile, review or conversation, and block someone from messaging them. AccApp may remove content or close accounts that break these terms.') +
+      sec('Agreements between you', 'Work, fees and deadlines are agreed between the client and the accountant. AccApp is not a party to them.') };
+    case 'about': return { title: 'About AccApp', body:
+      '<p class="lead">AccApp is where accountants show their work and people find one they trust.</p>' +
+      sec('For people looking for an accountant', 'Read portfolios and reviews, compare experience and services, then message the accountant directly.') +
+      sec('For accountants', 'Publish a profile with your services, experience and portfolio highlights. There is no approval step. <a href="#/for-accountants">See how listing works</a>.') +
+      sec('How trust works here', 'AccApp doesn\'t verify accountants. Ratings come only from clients an accountant has replied to, and anyone signed in can report a profile or review.') +
+      '<p class="note placeholder"><span>Who runs AccApp and how to reach them: to be written.</span></p>' };
+    case 'help': return { title: 'Help and contact', body:
+      '<dl class="faq"><dt>How do I message an accountant?</dt><dd>Open their profile and choose Message. You sign in with Google or Microsoft before the message is sent.</dd>' +
+      '<dt>Who can leave a review?</dt><dd>A client can review an accountant after that accountant has replied to them in chat. One review each, which you can edit or delete.</dd>' +
+      '<dt>How do I report or block someone?</dt><dd>Use Report on a profile, a review or a chat. Use Block in a chat to stop someone messaging you. They aren\'t told.</dd>' +
+      '<dt>How do I stop the emails?</dt><dd>Use the link in any notification email, or the switch in Account.</dd>' +
+      '<dt>How do I delete my account?</dt><dd>Go to Account, then Delete account.</dd></dl>' +
+      sec('Contact', 'Email support@accapp.example. Include the support code if an error page showed one.') };
+    case 'for-accountants': {
+      const cta = S.me && S.me.role === 'accountant' ? '<a class="btn primary" href="#/me/profile">Go to my profile</a>'
+        : '<button class="btn primary" data-action="start-signin" data-next="#/me/profile" data-fkey="acc-cta">Create your profile</button>';
+      return { title: 'For accountants', body:
+        '<p class="lead">Show your work, collect reviews from the clients you help, and let new clients message you directly.</p>' +
+        '<ul class="benefits"><li><strong>A portfolio, not just a listing</strong><span>Services, experience and highlights of work you\'re proud of.</span></li>' +
+        '<li><strong>Ratings you earn</strong><span>Only clients you have replied to can review you, and you can answer each review once.</span></li>' +
+        '<li><strong>No approval queue</strong><span>Your profile is listed as soon as the required details are filled in.</span></li></ul>' +
+        sec('What becomes public', 'Your name, title, city, summary, services, experience, portfolio highlights, the contact details you choose to show, and your reviews and replies.') +
+        sec('What it costs', 'Listing and messaging are free in this release.') +
+        '<div class="actions">' + cta + '</div>' };
+    }
+    case 'email-off': return { title: 'Emails turned off', body: stateHTML('mail', S.emailOn ? 'Notification emails are on' : 'Notification emails are off',
+      S.me ? (S.emailOn ? 'We email ' + esc(S.me.email) + ' about new messages.' : 'We won\'t email ' + esc(S.me.email) + ' about new messages. Unread messages still show in Chats.') : 'Sign in to change this setting.',
+      S.me ? '<button class="btn" data-action="toggle-email" data-fkey="toggle-email">' + (S.emailOn ? 'Turn off' : 'Turn emails back on') + '</button>' : signinBtn('#/me')) };
+    case 'error': return { title: 'Something went wrong', body: stateHTML('alert', 'Something went wrong on our side', 'Your work isn\'t lost. Try again in a moment. If it keeps happening, contact us with this support code: <strong>7F3K-21</strong>.', '<a class="btn primary" href="#/directory">Back to the directory</a>') };
+    default: return { title: 'Page not found', body: stateHTML('search', 'We couldn\'t find that page', 'The link may be old or mistyped.', '<a class="btn primary" href="#/directory">Go to the directory</a>') };
+  }
+}
+function portfolioFieldset(f) {
+  return '<fieldset><legend>Portfolio highlights</legend>' + f.portfolio.map((x, i) =>
+    '<div class="row"><div class="row-head"><span>Highlight ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-pf" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> highlight ' + (i + 1) + '</span></button></div>' +
+    fld('f-pf-' + i + '-title', 'Title', x.title, { bind: 'ed-pf', field: 'title', i: i, ph: 'e.g. Payroll set-up for a 40-person team' }) +
+    fld('f-pf-' + i + '-sector', 'Type of client', x.sector, { bind: 'ed-pf', field: 'sector', i: i, ph: 'e.g. Food retail' }) +
+    fld('f-pf-' + i + '-work', 'What you did', x.work, { bind: 'ed-pf', field: 'work', i: i }) +
+    fld('f-pf-' + i + '-result', 'Result', x.result, { bind: 'ed-pf', field: 'result', i: i }) + '</div>'
+  ).join('') + (f.portfolio.length < 6 ? '<button class="btn sm" id="add-pf" data-action="add-pf" data-fkey="add-pf">' + icon('plus', 16) + ' Add highlight</button>' : '') +
+    '<p class="muted small">Up to 6. Don\'t name clients or share their details without their permission.</p></fieldset>';
+}
+
+/* ---------- Shells ---------- */
+function tabbarHTML(r) {
+  const u = totalUnread();
+  const cur = { directory: 'directory', chats: 'chats', me: 'me' }[r.name];
+  const tab = (k, h, ic, l, extra) => '<a href="' + h + '" data-fkey="tab-' + k + '"' + (cur === k ? ' aria-current="page"' : '') + '>' + icon(ic, 22) + '<span>' + l + '</span>' + (extra || '') + '</a>';
+  const third = S.me ? tab('me', '#/me', 'user', 'Account')
+    : '<button data-action="start-signin" data-next="#/me" data-fkey="tab-signin">' + icon('user', 22) + '<span>Sign in</span></button>';
+  return '<nav class="tabbar" aria-label="Main">' + tab('directory', '#/directory', 'search', 'Accountants') +
+    tab('chats', '#/chats', 'chat', 'Chats', u ? '<span class="badge">' + u + '<span class="sr-only"> unread</span></span>' : '') + third + '</nav>';
+}
+function phoneScreen(r) {
+  switch (r.name) {
+    case 'directory':
+      return { title: 'AccApp', body: directoryBodyHTML('', false), tabs: true };
+    case 'profile': {
+      const p = getListed(r.id);
+      return { title: 'Profile', back: '#/directory', body: profileBodyHTML(r.id, false), footer: p && S.online ? profileAction(p) : '' };
+    }
+    case 'review': return { title: 'Write a review', back: '#/profile/' + r.accId, body: reviewPageHTML(r.accId) };
+    case 'compose': case 'thread': return threadParts(r);
+    case 'signin':
+      return { title: 'Sign in', back: S.signin && S.signin.next && S.signin.next !== '#/signin' ? S.signin.next : '#/directory', body: signinHTML() };
+    case 'chats': return { title: 'Chats', body: convListHTML(''), tabs: true };
+    case 'me': return { title: 'Account', body: meHTML(), tabs: true };
+    case 'editor': { const e = editorParts(); return { title: e.title, back: '#/me', body: e.body, footer: e.footer }; }
+    case 'delete': return { title: 'Delete account', back: '#/me', body: deleteHTML() };
+    case 'info': { const i = infoPage(r.page); return { title: i.title, back: '#/directory', body: '<div class="prose">' + i.body + '</div>' }; }
+  }
+  return { title: '', body: '' };
+}
+function phoneShell(r) {
+  const sc = phoneScreen(r);
+  const scroll = sc.scrollBottom ? ' data-scroll-bottom' : ' data-skey="p' + esc(location.hash) + '"';
+  return '<header class="appbar' + (sc.back ? ' has-back' : '') + '">' +
+    (sc.back ? '<a class="icon-btn" href="' + sc.back + '" aria-label="Back" data-fkey="back">' + icon('back') + '</a>' : '') +
+    '<h1 id="screen-title" tabindex="-1">' + esc(sc.title) + '</h1>' + (sc.actions || '') + '</header>' +
+    offlineBanner() + '<div class="content"' + scroll + '>' + sc.body + '</div>' +
+    (sc.footer ? '<div class="footer">' + sc.footer + '</div>' : '') + (sc.tabs ? tabbarHTML(r) : '');
+}
+function desktopMain(r) {
+  const page = (key, inner) => '<div class="page" data-skey="' + key + '"><div class="container">' + inner + '</div>' + footerHTML() + '</div>';
+  switch (r.name) {
+    case 'directory': return page('d-dir', directoryBodyHTML('', true));
+    case 'profile': return page('d-prof-' + esc(r.id), profileBodyHTML(r.id, true));
+    case 'review': return page('d-review', '<div class="narrow"><nav class="crumbs" aria-label="Breadcrumb"><a href="#/profile/' + esc(r.accId) + '">Back to profile</a></nav><div class="panel"><h1 id="screen-title" tabindex="-1">Write a review</h1>' + reviewPageHTML(r.accId) + '</div></div>');
+    case 'info': { const i = infoPage(r.page); return page('d-info-' + r.page, '<div class="narrow"><div class="panel prose"><h1 id="screen-title" tabindex="-1">' + esc(i.title) + '</h1>' + i.body + '</div></div>'); }
+    case 'chats': case 'thread': case 'compose': {
+      let detail;
+      if (r.name === 'chats') {
+        detail = '<section class="pane-detail" aria-label="Conversation"><div class="empty-detail"><div>' + icon('chat', 40) + '<p>' + (S.me ? 'Select a conversation.' : 'Sign in to see your chats.') + '</p></div></div></section>';
+      } else {
+        const t = threadParts(r);
+        detail = '<section class="pane-detail" aria-label="Conversation"><div class="pane-head"><h2 id="screen-title" tabindex="-1">' + esc(t.title) + '</h2>' + (t.headExtra || '') + '</div>' +
+          '<div class="pane-scroll pad"' + (t.scrollBottom ? ' data-scroll-bottom' : '') + '>' + t.body + '</div>' + (t.footer ? '<div class="footer">' + t.footer + '</div>' : '') + '</section>';
+      }
+      const list = '<section class="pane-list" aria-label="Conversations"><div class="pane-head"><h1' + (r.name === 'chats' ? ' id="screen-title" tabindex="-1"' : '') + '>Chats</h1></div>' +
+        '<div class="pane-scroll" data-skey="d-convs">' + convListHTML(r.name === 'thread' ? r.id : '') + '</div></section>';
+      return '<div class="panes">' + list + detail + '</div>';
+    }
+  }
+  let title = '', body = '', footer = '';
+  if (r.name === 'signin') { title = 'Sign in'; body = signinHTML(); }
+  else if (r.name === 'me') { title = 'Account'; body = meHTML(); }
+  else if (r.name === 'editor') { const e = editorParts(); title = e.title; body = e.body; footer = e.footer || ''; }
+  else if (r.name === 'delete') { title = 'Delete account'; body = deleteHTML(); }
+  return '<div class="single-wrap"><div class="pane-head' + (r.name === 'signin' ? ' sr-only' : '') + '"><h1 id="screen-title" tabindex="-1">' + esc(title) + '</h1></div>' +
+    '<div class="single" data-skey="d-single-' + r.name + '"><div class="single-inner">' + body + (footer ? '<div class="desk-footer">' + footer + '</div>' : '') + '</div></div></div>';
+}
+function desktopShell(r) {
+  const main = desktopMain(r);
+  const cur = { directory: 'directory', profile: 'directory', compose: 'chats', thread: 'chats', chats: 'chats', me: 'me', editor: 'me', delete: 'me' }[r.name];
+  const u = totalUnread();
+  const link = (k, h, l, extra) => '<a href="' + h + '"' + (cur === k ? ' aria-current="page"' : '') + '>' + l + (extra || '') + '</a>';
+  const user = S.me
+    ? '<a class="userlink" href="#/me"' + (cur === 'me' ? ' aria-current="page"' : '') + '><span class="avatar sm ' + tone(S.me.name) + '" aria-hidden="true">' + initials(S.me.name) + '</span><span>' + esc(S.me.name) + '</span></a>'
+    : '<a class="btn ghost sm" href="#/for-accountants">For accountants</a>' +
+      '<button class="btn primary sm" data-action="start-signin" data-next="#/directory" data-fkey="nav-signin">Sign in</button>';
+  return '<div class="shell"><header class="sitebar"><a class="brand" href="#/directory"><span class="appdot md" aria-hidden="true">A</span>AccApp</a>' +
+    '<nav class="sitenav" aria-label="Main">' + link('directory', '#/directory', 'Find an accountant') +
+    link('chats', '#/chats', 'Chats', u ? '<span class="badge">' + u + '<span class="sr-only"> unread</span></span>' : '') + '</nav>' +
+    '<div class="siteuser">' + user + '</div></header>' +
+    '<div class="main">' + offlineBanner() + main + '</div></div>';
+}
+function overlaysHTML() {
+  let o = '';
+  if (S.report) {
+    const rp = S.report, what = { profile: 'profile', review: 'review', chat: 'conversation' }[rp.kind];
+    o += '<div class="overlay center"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rep-t" style="width:min(440px,92%);border-radius:var(--r-lg)">' +
+      '<h2 id="rep-t">Report this ' + what + '</h2><p class="muted small">Reports go to the AccApp team, who review them by hand. The other person isn\'t told who reported them.</p>' +
+      '<div class="reasons" role="radiogroup" aria-label="Reason">' + REPORT_REASONS.map((t, i) => '<button type="button" class="chip" role="radio" aria-checked="' + (rp.reason === t) + '" aria-pressed="' + (rp.reason === t) + '" data-action="report-reason" data-i="' + i + '" data-fkey="reason-' + i + '"' + (i === 0 ? ' data-dfocus' : '') + '>' + t + '</button>').join('') + '</div>' +
+      '<div class="field"><label for="rep-d">Anything to add? <span class="req">(optional)</span></label><textarea id="rep-d" rows="3" maxlength="600" data-fkey="rep-d" data-bind="report-details">' + esc(rp.details) + '</textarea></div>' +
+      (rp.error ? '<span class="ferr" role="alert">' + esc(rp.error) + '</span>' : '') +
+      '<div class="actions"><button class="btn" data-action="report-cancel">Cancel</button><button class="btn primary" data-action="report-send" data-fkey="report-send">Send report</button></div></div></div>';
+  }
+  if (S.dialog) {
+    o += '<div class="overlay center"><div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="dlg-t" style="width:min(360px,90%);border-radius:var(--r-lg)">' +
+      '<h2 id="dlg-t">' + esc(S.dialog.title) + '</h2><p>' + esc(S.dialog.body) + '</p><div class="actions">' +
+      S.dialog.actions.map((a, i) => '<button class="btn' + (a.kind ? ' ' + a.kind : '') + '" data-action="' + a.action + '"' + (i === 0 ? ' data-dfocus' : '') + '>' + esc(a.label) + '</button>').join('') + '</div></div></div>';
+  }
+  if (S.emailNote) {
+    o += '<div class="osnote" role="status"><span class="avatar" aria-hidden="true">' + icon('mail') + '</span><div><span class="muted small">Simulated email to ' + esc(S.emailNote.to) + '</span><br><strong>New message from ' + esc(S.emailNote.from) + '</strong><br><span class="small">Open AccApp to read it.</span>' +
+      '<div class="actions"><button class="btn primary sm" data-action="open-note" data-fkey="open-note">Open conversation</button><button class="btn ghost sm" data-action="email-unsub" data-fkey="email-unsub">Turn off these emails</button></div></div></div>';
+  }
+  if (S.toast) o += '<div class="toast">' + esc(S.toast.text) + '</div>';
+  return o;
+}
+function buildApp() {
+  const r = parseRoute();
+  const chrome = S.device === 'desktop' ? titlebarHTML() : statusbarHTML();
+  const body = S.device === 'desktop' ? desktopShell(r) : phoneShell(r);
+  return chrome + body + overlaysHTML();
+}
+
+/* ---------- Notes panel ---------- */
+const NOTES = {
+  directory: { title: 'Directory',
+    refs: [['R01', 'Browse listed accountants without signing in. New visitors get a short introduction and "How it works".'], ['R02', 'Search and filter live in the page address (see the browser bar), so Back and shared links keep them. "No matches" is different from an empty directory.'], ['BR02', 'Stable order with a unique tie-breaker, so "Show more" never repeats or skips anyone.'], ['R10', 'A failed load shows an error with a retry, never an empty list.'], ['FT01–FT03, FT06, FT07', 'Feature F01 scenarios.']],
+    open: [['D05', 'Proposal shown: text search on name, title, city and services; one service filter (a menu on phones, buttons on wide screens); A–Z order; pages of 6 here.'], ['D04', 'Cards show years of experience, counted from the earliest start month the accountant entered.'], ['D19', 'Whether search engines may index these public pages.']],
+    tries: [['Empty directory', 'scenario', 'dirScenario', 'empty'], ['Load fails', 'scenario', 'dirScenario', 'error'], ['Slow loading', 'scenario', 'dirScenario', 'slow'], ['Go offline, then reload', 'offline-reload'], ['Normal data', 'scenario', 'dirScenario', 'normal'], ['View as a client', 'role', '', 'client']] },
+  profile: { title: 'Profile',
+    refs: [['R03', 'Career summary, services, experience and contact details. Services come before experience because clients look for a service first. No prices.'], ['R11', 'Contact details are public because the accountant chose to publish them.'], ['BR01', 'Only listed profiles appear, including through old links.'], ['BR03', 'Only clients can start chats. Try viewing as an accountant.'], ['R12', 'Portfolio highlights written by the accountant, without client names.'], ['R13, R14', 'Rating and reviews from clients the accountant has replied to, with one public reply each.'], ['R15', 'Anyone signed in can report the profile or a review.'], ['FT04, FT05', 'Feature F01 scenarios.']],
+    open: [['D04', 'Proposal shown: title, city, career summary, experience (role, company, start and end month), services from a fixed list with a short description, email, phone, website.'], ['D09', 'Accountants are not verified in release 1, and the note at the end of the profile says so. Its wording needs your review.']],
+    tries: [['Open a removed profile link', 'go', '', '#/profile/a9'], ['View as a client', 'role', '', 'client'], ['View as an accountant', 'role', '', 'accountant']] },
+  thread: { title: 'Chat',
+    refs: [['R06', 'A client starts a chat from a profile. A visitor can type first; sign-in comes before sending, and the text is kept. Message ideas help people start.'], ['R07', 'Accountants read and reply. Unread marks clear when the chat is opened.'], ['R10', 'Connection lost: the text stays in the field and nothing is queued.'], ['BR04', 'Plain text only; empty messages can\'t be sent; a retry never creates a second copy (TP09).'], ['TP03, TP08, TP09', 'Test procedures.']],
+    open: [['D06', 'Proposal shown: one ongoing chat per client–accountant pair; 2,000-character limit.'], ['R15', 'Report and Block sit at the top of every chat. A blocked person can no longer send messages and is not told why.']],
+    tries: [['Make sending fail', 'scenario', 'sendScenario', 'fail'], ['Make sending time out', 'scenario', 'sendScenario', 'unknown'], ['Go offline', 'offline'], ['Start as a visitor', 'jump', '', 'compose'], ['Sending succeeds', 'scenario', 'sendScenario', 'ok']] },
+  signin: { title: 'Sign in',
+    refs: [['R04', 'Google or Microsoft account. The first sign-in chooses client or accountant.'], ['R06', 'A visitor\'s typed message is shown here, so they can see it was kept.'], ['ADR 006', 'The browser goes to Google or Microsoft and comes back to the site; provider secrets stay on the server.']],
+    open: [['D03', 'Proposal shown: one role per account.']],
+    tries: [['Go offline, then sign in', 'offline'], ['Start from a visitor\'s message', 'jump', '', 'compose']] },
+  chats: { title: 'Chats',
+    refs: [['R07', 'Conversation list with unread marks ("2 new" as text, not color only).'], ['R08', 'Both sides get an email about a new message when they are not on the site. The email has no message text, links to the conversation, and can be turned off from the email itself.'], ['BR05', 'Only the two participants can see a conversation.']],
+    open: [['D18', 'Email service, and how often emails are sent. Proposal shown: one email per conversation until it is opened.']],
+    tries: [['Simulate an incoming message', 'push'], ['View as accountant', 'role', '', 'accountant'], ['View as client', 'role', '', 'client']] },
+  me: { title: 'Account',
+    refs: [['R04', 'Sign out ends the session in this browser.'], ['R08', 'Accountants can turn email notifications off and on.'], ['R09', 'Account deletion starts here.']],
+    open: [['D18', 'How often emails are sent per conversation.']],
+    tries: [['View as accountant', 'role', '', 'accountant'], ['View as client', 'role', '', 'client'], ['View as visitor', 'role', '', 'visitor']] },
+  editor: { title: 'My profile',
+    refs: [['R05', 'Accountants create and edit their own profile.'], ['BR01', 'A checklist shows what is still needed. The profile is listed as soon as it is complete and saved; there is no approval step.'], ['R11', 'Agreeing to show contact details publicly is part of publishing.']],
+    open: [['D04', 'Proposal shown: which fields exist and which are needed to be listed.'], ['D10', 'The consent wording needs a privacy review.']],
+    tries: [['Start as a new accountant', 'jump', '', 'editor-new'], ['Go offline, then save', 'offline']] },
+  review: { title: 'Write a review',
+    refs: [['R13', 'A client rates an accountant from 1 to 5 stars, with an optional written review.'], ['BR09', 'Only a client the accountant has replied to can review, once. They can change or delete it.'], ['R14', 'The accountant can post one public reply to each review.']],
+    open: [['D21', 'Proposal shown: the review shows the client\'s first name and last initial.'], ['D09', 'Reviews are not checked by anyone before they appear.']],
+    tries: [['As a client who can review', 'jump', '', 'review'], ['Reply as the accountant', 'jump', '', 'reply'], ['As a visitor', 'role', '', 'visitor']] },
+  info: { title: 'Information pages',
+    refs: [['R16', 'Privacy policy and terms of use, agreed to at first sign-in.'], ['R17', 'About, Help and contact, and For accountants.'], ['R18', 'Page-not-found and error pages.'], ['R08', 'The page a notification email\'s "turn off" link leads to.']],
+    open: [['D10', 'The privacy and terms text shown is an outline. It needs a legal review before use.'], ['D22', 'Who receives reports, and how quickly they act.']],
+    tries: [['For accountants', 'go', '', '#/for-accountants'], ['Help and contact', 'go', '', '#/help'], ['Privacy', 'go', '', '#/privacy'], ['Terms', 'go', '', '#/terms'], ['About', 'go', '', '#/about'], ['Page not found', 'go', '', '#/no-such-page'], ['Error page', 'go', '', '#/error']] },
+  delete: { title: 'Delete account',
+    refs: [['R09', 'Account deletion on the site.'], ['BR06', 'Two-step confirmation. Profile, sign-in and notification settings are removed.']],
+    open: [['D07', 'What happens to the other participant\'s copy of the chats.'], ['D14', 'How long data is kept.']],
+    tries: [['Go offline, then delete', 'offline'], ['As an accountant', 'role', '', 'accountant']] }
+};
+function notesHTML() {
+  const r = parseRoute();
+  const key = { directory: 'directory', profile: 'profile', compose: 'thread', thread: 'thread', signin: 'signin', chats: 'chats', me: 'me', editor: 'editor', delete: 'delete', review: 'review' }[r.name] || 'info';
+  const n = NOTES[key], L = LOOKS[S.look];
+  const li = x => '<li><span class="id">' + esc(x[0]) + '</span> ' + esc(x[1]) + '</li>';
+  return '<h2>Screen notes: ' + esc(n.title) + '</h2><p class="muted small">IDs refer to docs/PRD.md, the ADRs and specs/browse-accountants.</p>' +
+    '<h3>Look</h3><p class="small"><strong>' + esc(L.name) + '</strong>: ' + esc(L.mood) + '. One of three proposed directions; switch with the Look control. See prototypes/DESIGN-DIRECTIONS.md.</p>' +
+    '<h3>Requirements shown</h3><ul>' + n.refs.map(li).join('') + '</ul>' +
+    '<h3>Open decisions (proposals shown)</h3><ul>' + n.open.map(li).join('') + '</ul>' +
+    '<h3>Try</h3><div class="tries">' + n.tries.map(t => '<button type="button" class="pbtn" data-try="' + t[1] + '" data-k="' + (t[2] || '') + '" data-v="' + esc(t[3] || '') + '">' + esc(t[0]) + '</button>').join('') + '</div>' +
+    '<h3>About this prototype</h3><p class="small">All people, companies and contact details are synthetic. No visual system is chosen yet: every look is a proposal. Dashed boxes mark text that waits on a decision. This prototype does not authorize building these screens, and it is not accessibility evidence.</p>';
+}
+
+/* ---------- Render ---------- */
+let scrollMem = {}, lastOverlay = '';
+function overlayKey() { return S.dialog ? S.dialog.id : S.report ? 'report' : ''; }
+function render() {
+  resolveRedirects();
+  const ae = document.activeElement;
+  let fkey = null, sel = null;
+  const focusInApp = ae && app.contains(ae);
+  if (focusInApp && ae.dataset && ae.dataset.fkey) {
+    fkey = ae.dataset.fkey;
+    if (typeof ae.selectionStart === 'number' && ae.type !== 'month' && ae.type !== 'email') sel = [ae.selectionStart, ae.selectionEnd];
+  }
+  app.querySelectorAll('[data-skey]').forEach(el => { scrollMem[el.dataset.skey] = el.scrollTop; });
+  deviceEl.className = 'device ' + S.device;
+  deviceEl.dataset.look = S.look;
+  stageEl.classList.toggle('desk', S.device === 'desktop');
+  app.innerHTML = buildApp();
+  notesEl.hidden = !S.notes;
+  if (S.notes) notesEl.innerHTML = notesHTML();
+  syncToolbar();
+  app.querySelectorAll('[data-skey]').forEach(el => { if (scrollMem[el.dataset.skey] != null) el.scrollTop = scrollMem[el.dataset.skey]; });
+  app.querySelectorAll('[data-scroll-bottom]').forEach(el => { el.scrollTop = el.scrollHeight; });
+  const c = app.querySelector('#composer'); if (c) autoGrow(c);
+  const ok = overlayKey();
+  if (ok && ok !== lastOverlay) { const f = app.querySelector('[data-dfocus]'); if (f) f.focus({ preventScroll: true }); }
+  else if (S.focusSel) { const el = app.querySelector(S.focusSel); if (el) { el.focus({ preventScroll: true }); reveal(el); } }
+  else if (S.routeChanged && (focusInApp || !ae || ae === document.body)) { const h = app.querySelector('#screen-title'); if (h) h.focus({ preventScroll: true }); }
+  else if (fkey) {
+    const el = app.querySelector('[data-fkey="' + fkey + '"]');
+    if (el) { el.focus({ preventScroll: true }); if (sel && el.setSelectionRange) { try { el.setSelectionRange(sel[0], sel[1]); } catch (_) { /* not a text field */ } } }
+  }
+  lastOverlay = ok; S.routeChanged = false; S.focusSel = null;
+  const r = parseRoute();
+  if ((r.name === 'directory' || (r.name === 'profile' && S.device === 'desktop')) && S.dir.status === 'idle') startDirLoad();
+}
+function updateDirResults() {
+  const box = app.querySelector('[data-dir-results]');
+  const r = parseRoute();
+  if (box) box.innerHTML = dirResultsHTML(r.name === 'profile' ? r.id : '');
+  const clr = app.querySelector('[data-clear]');
+  if (clr) clr.hidden = !S.dir.search;
+  const ad = app.querySelector('[data-address]');
+  if (ad) ad.textContent = addressText();
+}
+function updateComposer(key) {
+  const t = S.drafts[key] || '';
+  const c = app.querySelector('[data-count]');
+  if (c) { c.textContent = num(t.length) + ' / ' + num(MAX_MSG); c.classList.toggle('over', t.length > MAX_MSG); }
+  const b = app.querySelector('[data-action="send"]');
+  if (b) b.disabled = !t.trim() || t.length > MAX_MSG;
+  if (S.composeErr[key]) {
+    delete S.composeErr[key];
+    const ce = app.querySelector('.cerr');
+    if (ce) ce.textContent = S.device === 'desktop' ? 'Enter to send · Shift+Enter for a new line' : '';
+  }
+}
+/* Scroll only the app's own scroll area, never the page, to show a focused element. */
+function reveal(el) {
+  const sc = el.closest('.content, .pane-scroll, .single, .page');
+  if (!sc) return;
+  const r = el.getBoundingClientRect(), cr = sc.getBoundingClientRect();
+  if (r.top < cr.top || r.bottom > cr.bottom) sc.scrollTop += r.top - cr.top - 16;
+}
+function autoGrow(el) { el.style.height = 'auto'; el.style.height = Math.min(el.scrollHeight + 2, 120) + 'px'; }
+function syncToolbar() {
+  $id('dev-phone').setAttribute('aria-pressed', String(S.device === 'phone'));
+  $id('dev-desktop').setAttribute('aria-pressed', String(S.device === 'desktop'));
+  $id('net-on').setAttribute('aria-pressed', String(S.online));
+  $id('net-off').setAttribute('aria-pressed', String(!S.online));
+  $id('sel-look').value = S.look;
+  $id('sel-role').value = S.me ? (S.me.accountantId === 'a-new' ? 'newAccountant' : S.me.role) : 'visitor';
+  $id('sel-theme').value = S.theme;
+  $id('sel-dir').value = S.dirScenario;
+  $id('sel-send').value = S.sendScenario;
+  $id('chk-notes').checked = S.notes;
+  $id('btn-push').disabled = !S.me;
+  $id('btn-push').title = S.me ? 'Adds a message from the other person and shows the notification email if emails are on' : 'Switch to a client or an accountant first';
+}
+function applyTheme() {
+  const t = S.theme === 'system' ? (themeQuery.matches ? 'dark' : 'light') : S.theme;
+  document.documentElement.setAttribute('data-theme', t);
+}
+
+/* ---------- Behaviour ---------- */
+function setPersona(v) {
+  S.me = PERSONAS[v] ? Object.assign({}, PERSONAS[v]) : null;
+  S.editor = null; S.emailNote = null;
+  if (parseRoute().name === 'signin') S.signin = { step: 'choose', next: '#/directory' };
+}
+function send(key) {
+  const t = S.drafts[key] || '';
+  if (!t.trim() || t.length > MAX_MSG) return;
+  const r = parseRoute();
+  if (!S.me) { S.signin = { step: 'choose', next: location.hash }; location.hash = '#/signin'; return; }
+  if (!S.online) { S.composeErr[key] = 'You\'re offline. Your message wasn\'t sent and is still here.'; render(); announce(S.composeErr[key]); return; }
+  let conv;
+  if (r.name === 'compose') {
+    conv = { id: nid('c'), clientId: S.me.clientId, clientName: S.me.name, accountantId: r.accId, unread: { client: 0, accountant: 0 }, messages: [] };
+    CONVS.push(conv);
+  } else conv = CONVS.find(c => c.id === r.id);
+  if (!conv) return;
+  const m = { id: nid('m'), from: S.me.role, text: t.trim(), at: new Date().toISOString(), status: 'sending' };
+  conv.messages.push(m);
+  S.drafts[key] = '';
+  delete S.composeErr[key];
+  if (r.name === 'compose') { history.replaceState(null, '', '#/thread/' + conv.id); S.route = '#/thread/' + conv.id; }
+  S.focusSel = '#composer';
+  render();
+  deliver(conv, m, S.sendScenario);
+}
+function deliver(conv, m, sc) {
+  const done = () => { m.status = 'sent'; render(); announce('Message sent.'); maybeReply(conv); };
+  if (sc === 'fail') setTimeout(() => { m.status = 'failed'; render(); announce('Message not sent. You can retry.'); }, 900);
+  else if (sc === 'unknown') setTimeout(() => { m.status = 'checking'; render(); setTimeout(done, 1500); }, 1300);
+  else setTimeout(done, 700);
+}
+function maybeReply(conv) {
+  if (!S.me || S.me.role !== 'client' || conv.autoReplied) return;
+  conv.autoReplied = true;
+  setTimeout(() => {
+    conv.messages.push({ id: nid('m'), from: 'accountant', text: 'Thanks for reaching out! I can help with that. Could you tell me a bit more about your business?', at: new Date().toISOString(), status: 'sent' });
+    const r = parseRoute();
+    if (!(r.name === 'thread' && r.id === conv.id)) conv.unread.client = (conv.unread.client || 0) + 1;
+    render();
+    announce('New message.');
+  }, 2600);
+}
+let noteTimer = null;
+function simulatePush() {
+  if (!S.me) return;
+  const isAcc = S.me.role === 'accountant';
+  const mine = CONVS.filter(c => isParticipant(c) && !c.blockedBy);
+  let conv = mine.find(c => c.id === (isAcc ? 'c2' : 'c4')) || mine[0];
+  if (!conv && isAcc) { conv = { id: nid('c'), clientId: 'u-ramon', clientName: 'Ramon Castillo', accountantId: S.me.accountantId, unread: { client: 0, accountant: 0 }, messages: [] }; CONVS.push(conv); }
+  if (!conv) { toast('Prototype: this client has no conversations yet. Message an accountant first.'); return; }
+  const texts = isAcc
+    ? ['Hello, are you available for a quick question about payroll?', 'Thanks! Do you also handle the annual return?', 'Could we schedule a call this week?']
+    : ['Hi! Following up on my last message. Does Thursday work for a call?', 'I can also send a checklist of what I need from you.', 'Let me know when you have the documents ready.'];
+  conv.messages.push({ id: nid('m'), from: isAcc ? 'client' : 'accountant', text: texts[conv.messages.length % texts.length], at: new Date().toISOString(), status: 'sent' });
+  const r = parseRoute();
+  const viewing = r.name === 'thread' && r.id === conv.id;
+  if (!viewing) conv.unread[S.me.role] = (conv.unread[S.me.role] || 0) + 1;
+  if (viewing) toast('Prototype: no email, because you have this conversation open.');
+  else if (!S.emailOn) toast('Prototype: no email, because email notifications are off. The unread mark still updates.');
+  else if (conv.emailed) toast('Prototype: no second email for this conversation until you open it (proposal for D18).');
+  else {
+    conv.emailed = true;
+    S.emailNote = { convId: conv.id, from: peerName(conv), to: S.me.email };
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => { S.emailNote = null; render(); }, 12000);
+    render();
+    announce('Email sent to ' + S.me.email + ': new message from ' + peerName(conv) + '.');
+  }
+}
+const JUMPS = {
+  directory: () => go('#/directory'),
+  profile: () => go('#/profile/a2'),
+  reviews: () => { setPersona('client'); go('#/profile/a1'); },
+  review: () => { setPersona('client'); go('#/review/a1'); },
+  reply: () => { setPersona('accountant'); go('#/profile/a1'); },
+  foracc: () => go('#/for-accountants'),
+  help: () => go('#/help'),
+  privacy: () => go('#/privacy'),
+  notfound: () => go('#/no-such-page'),
+  removed: () => go('#/profile/a9'),
+  compose: () => { setPersona('visitor'); go('#/compose/a3'); },
+  signin: () => { setPersona('visitor'); S.signin = { step: 'choose', next: '#/directory' }; go('#/signin'); },
+  'client-thread': () => { setPersona('client'); go('#/thread/c1'); },
+  chats: () => { setPersona('accountant'); go('#/chats'); },
+  thread: () => { setPersona('accountant'); go('#/thread/c2'); },
+  editor: () => { setPersona('accountant'); go('#/me/profile'); },
+  'editor-new': () => { setPersona('newAccountant'); go('#/me/profile'); },
+  'delete': () => { setPersona('client'); S.del = null; go('#/me/delete'); }
+};
+let signTok = 0;
+const ACTIONS = {
+  'rerender': () => render(),
+  'starter': el => {
+    const r = parseRoute();
+    S.drafts[r.name === 'compose' ? 'compose:' + r.accId : 'thread:' + r.id] = STARTERS[+el.dataset.i];
+    S.focusSel = '#composer';
+    render();
+  },
+  'toggle-how': () => { S.howOpen = !S.howOpen; render(); },
+  'goto-reviews': () => { S.focusSel = '#reviews-h'; render(); },
+  'pick-star': el => { if (S.review) { S.review.stars = +el.dataset.n; S.review.error = ''; } render(); },
+  'save-review': () => {
+    const rv = S.review; if (!rv) return;
+    if (!rv.stars) { rv.error = 'Choose a rating from 1 to 5 stars.'; S.focusSel = '[data-fkey="star-1"]'; render(); return; }
+    if (!S.online) { rv.error = 'No connection. Your review is still here. Try again when you\'re back online.'; render(); return; }
+    const mine = REVIEWS.find(r => r.accountantId === rv.accId && r.clientId === S.me.clientId);
+    if (mine) { mine.stars = rv.stars; mine.text = rv.text.trim(); mine.at = new Date().toISOString(); }
+    else REVIEWS.push({ id: nid('r'), accountantId: rv.accId, clientId: S.me.clientId, clientName: S.me.name, stars: rv.stars, text: rv.text.trim(), at: new Date().toISOString(), reply: null });
+    const id = rv.accId; S.review = null;
+    go('#/profile/' + id);
+    toast(mine ? 'Your review was updated.' : 'Your review was posted.');
+  },
+  'delete-review': () => {
+    const rv = S.review; if (!rv) return;
+    const i = REVIEWS.findIndex(r => r.accountantId === rv.accId && r.clientId === S.me.clientId);
+    if (i >= 0) REVIEWS.splice(i, 1);
+    const id = rv.accId; S.review = null;
+    go('#/profile/' + id);
+    toast('Your review was deleted.');
+  },
+  'reply-review': el => { const r = REVIEWS.find(x => x.id === el.dataset.id); if (!r) return; S.replyTo = r.id; S.replyDraft = r.reply ? r.reply.text : ''; S.focusSel = '#reply-text'; render(); },
+  'save-reply': el => {
+    const r = REVIEWS.find(x => x.id === el.dataset.id), t = (S.replyDraft || '').trim();
+    if (!r || !t) { toast('Write a reply first.'); return; }
+    r.reply = { text: t, at: new Date().toISOString() }; S.replyTo = null; S.replyDraft = '';
+    toast('Your reply was posted.');
+  },
+  'cancel-reply': () => { S.replyTo = null; S.replyDraft = ''; render(); },
+  'report': el => {
+    if (!S.me) { S.signin = { step: 'choose', next: location.hash }; go('#/signin'); toast('Sign in to send a report.'); return; }
+    S.report = { kind: el.dataset.kind, id: el.dataset.id, reason: '', details: '', error: '' };
+    render();
+  },
+  'report-reason': el => { if (S.report) { S.report.reason = REPORT_REASONS[+el.dataset.i]; S.report.error = ''; } render(); },
+  'report-cancel': () => { S.report = null; render(); },
+  'report-send': () => {
+    if (!S.report) return;
+    if (!S.report.reason) { S.report.error = 'Choose a reason.'; render(); return; }
+    S.report = null;
+    toast('Thanks. Your report was sent to the AccApp team.');
+  },
+  'block': el => {
+    const c = CONVS.find(x => x.id === el.dataset.id); if (!c) return;
+    S.blockTarget = c.id;
+    S.dialog = { id: 'block', title: 'Block ' + firstName(peerName(c)) + '?', body: 'They won\'t be able to message you, and they aren\'t told. You can unblock them later.',
+      actions: [{ label: 'Cancel', action: 'dlg-keep' }, { label: 'Block', action: 'block-confirm', kind: 'danger' }] };
+    render();
+  },
+  'block-confirm': () => {
+    const c = CONVS.find(x => x.id === S.blockTarget);
+    S.dialog = null; S.blockTarget = null;
+    if (c && S.me) { c.blockedBy = S.me.role; toast('Blocked. They can\'t message you.'); } else render();
+  },
+  'unblock': el => { const c = CONVS.find(x => x.id === el.dataset.id); if (c) c.blockedBy = null; toast('Unblocked.'); },
+  'email-unsub': () => { S.emailOn = false; S.emailNote = null; clearTimeout(noteTimer); go('#/email-off'); },
+  'add-pf': () => { const f = S.editor.f; f.portfolio.push({ title: '', sector: '', work: '', result: '' }); S.editor.dirty = true; S.focusSel = '#f-pf-' + (f.portfolio.length - 1) + '-title'; render(); },
+  'del-pf': el => { S.editor.f.portfolio.splice(+el.dataset.i, 1); S.editor.errors = {}; S.editor.dirty = true; S.focusSel = '#add-pf'; render(); },
+  'retry-dir': () => { if (S.dirScenario === 'error') S.dirScenario = 'normal'; resetDir(); render(); },
+  'clear-search': () => { S.dir.search = ''; S.dir.service = ''; S.dir.shown = PAGE; S.focusSel = '#q'; render(); },
+  'service': el => { S.dir.service = el.dataset.val; S.dir.shown = PAGE; render(); },
+  'more': () => {
+    const list = filtered(), next = list[S.dir.shown];
+    S.dir.shown += PAGE;
+    if (next) S.focusSel = '[data-fkey="card-' + next.id + '"]';
+    render();
+  },
+  'start-signin': el => { S.signin = { step: 'choose', next: el.dataset.next || '#/directory' }; go('#/signin'); },
+  'provider': el => {
+    const si = S.signin; if (!si) return;
+    si.step = 'opening'; si.provider = el.dataset.provider; si.error = null;
+    render();
+    const tok = ++signTok;
+    setTimeout(() => {
+      if (tok !== signTok || !S.signin || S.signin.step !== 'opening') return;
+      if (!S.online) { S.signin.step = 'choose'; S.signin.error = 'Couldn\'t reach AccApp. Check your connection and try again.'; }
+      else S.signin.step = 'role';
+      render();
+    }, 1400);
+  },
+  'signin-cancel': () => { signTok++; if (S.signin) { S.signin.step = 'choose'; S.signin.error = null; } render(); announce('Sign-in cancelled.'); },
+  'choose-role': el => {
+    const si = S.signin || {};
+    const prov = si.provider || 'Google', next = si.next || '#/directory';
+    S.signin = null;
+    if (el.dataset.role === 'client') {
+      S.me = Object.assign({}, PERSONAS.client, { provider: prov });
+      go(next === '#/signin' || next === '#/me/profile' ? '#/directory' : next);
+      toast('Signed in as ' + S.me.name + '.');
+    } else {
+      S.me = Object.assign({}, PERSONAS.newAccountant, { provider: prov });
+      S.editor = null;
+      go('#/me/profile');
+      toast(next.indexOf('#/compose/') === 0 ? 'Accountants can\'t start chats. Create your profile so clients can find you.' : 'Signed in. Create your profile so clients can find you.');
+    }
+  },
+  'send': el => send(el.dataset.key),
+  'retry-msg': el => {
+    let m = null;
+    CONVS.forEach(c => c.messages.forEach(x => { if (x.id === el.dataset.mid) m = x; }));
+    if (!m) return;
+    if (!S.online) { toast('You\'re still offline. The message is kept.'); return; }
+    m.status = 'sending'; render();
+    setTimeout(() => { m.status = 'sent'; render(); announce('Message sent.'); }, 700);
+  },
+  'sign-out': () => { S.me = null; S.editor = null; S.emailNote = null; go('#/directory'); toast('Signed out.'); },
+  'toggle-email': () => { S.emailOn = !S.emailOn; toast(S.emailOn ? 'Email notifications are on.' : 'Email notifications are off.'); },
+  'open-note': () => {
+    const n = S.emailNote; S.emailNote = null; clearTimeout(noteTimer);
+    if (!n) return;
+    if (!S.me) { S.signin = { step: 'choose', next: '#/chats' }; go('#/signin'); return; }
+    go('#/thread/' + n.convId);
+  },
+  'add-exp': () => { const f = S.editor.f; f.experience.push({ role: '', org: '', start: '', end: '', current: false }); S.editor.dirty = true; S.focusSel = '#f-exp-' + (f.experience.length - 1) + '-role'; render(); },
+  'del-exp': el => { S.editor.f.experience.splice(+el.dataset.i, 1); S.editor.errors = {}; S.editor.dirty = true; S.focusSel = '[data-fkey="add-exp"]'; render(); },
+  'add-svc': () => { const f = S.editor.f; f.services.push({ name: '', desc: '' }); S.editor.dirty = true; S.focusSel = '#f-svc-' + (f.services.length - 1) + '-name'; render(); },
+  'del-svc': el => { S.editor.f.services.splice(+el.dataset.i, 1); S.editor.errors = {}; S.editor.dirty = true; S.focusSel = '[data-fkey="add-svc"]'; render(); },
+  'save-profile': () => saveEditor(),
+  'focus-field': el => { const t = app.querySelector('#' + el.dataset.target); if (t) { t.focus({ preventScroll: true }); reveal(t); } },
+  'del-continue': () => { S.del.step = 2; S.focusSel = '[data-fkey="del-confirm"]'; render(); },
+  'del-confirm': () => {
+    const d = S.del;
+    if (!S.online) { d.status = 'failed'; render(); return; }
+    d.status = 'deleting'; render();
+    setTimeout(() => {
+      if (S.del !== d || d.status !== 'deleting') return;
+      if (S.me && S.me.role === 'accountant') { const p = PROFILES.find(x => x.id === S.me.accountantId); if (p) { p.deleted = true; p.listed = false; } }
+      S.me = null; S.editor = null; S.emailOn = true; S.emailNote = null; S.del = null;
+      resetDir();
+      go('#/directory');
+      toast('Your account was deleted.');
+    }, 1100);
+  },
+  'dlg-keep': () => { S.dialog = null; S.guardTarget = null; render(); },
+  'dlg-discard': () => { const t = S.guardTarget; S.dialog = null; S.guardTarget = null; S.editor = null; if (t) location.hash = t; else render(); }
+};
+function edTouched() {
+  S.editor.dirty = true;
+  if (S.editor.status === 'saved' || S.editor.status === 'failed') {
+    S.editor.status = 'idle';
+    const s = app.querySelector('[data-save-status]');
+    if (s) { s.textContent = ''; s.className = 'save-status'; }
+  }
+  const cl = app.querySelector('[data-checklist]');
+  if (cl) {
+    const prof = PROFILES.find(p => p.id === S.editor.accId);
+    cl.innerHTML = checklistInner(S.editor.f, !!(prof && prof.listed && !prof.deleted));
+  }
+}
+function tryAction(kind, k, v) {
+  switch (kind) {
+    case 'scenario': S[k] = v; if (k === 'dirScenario') resetDir(); render(); break;
+    case 'go': go(v); break;
+    case 'role': setPersona(v); render(); break;
+    case 'device': S.device = v; render(); break;
+    case 'offline': S.online = false; render(); break;
+    case 'offline-reload': S.online = false; resetDir(); render(); break;
+    case 'push': if (!S.me || S.me.role !== 'accountant') setPersona('accountant'); simulatePush(); render(); break;
+    case 'jump': if (JUMPS[v]) JUMPS[v](); break;
+  }
+}
+
+/* ---------- Events ---------- */
+app.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el || !app.contains(el)) return;
+  const h = ACTIONS[el.dataset.action];
+  if (h) { e.preventDefault(); h(el, e); }
+});
+app.addEventListener('input', e => {
+  const el = e.target, b = el.dataset ? el.dataset.bind : null;
+  if (!b) return;
+  if (b === 'search') { S.dir.search = el.value; S.dir.shown = PAGE; updateDirResults(); }
+  else if (b === 'draft') { S.drafts[el.dataset.key] = el.value; updateComposer(el.dataset.key); autoGrow(el); }
+  else if (b === 'ed' && el.type !== 'checkbox') {
+    S.editor.f[el.dataset.field] = el.value; edTouched();
+    if (el.dataset.field === 'summary') { const c = app.querySelector('[data-count-summary]'); if (c) c.textContent = num(el.value.length); }
+  }
+  else if (b === 'ed-exp') { S.editor.f.experience[+el.dataset.i][el.dataset.field] = el.value; edTouched(); }
+  else if (b === 'ed-pf') { S.editor.f.portfolio[+el.dataset.i][el.dataset.field] = el.value; edTouched(); }
+  else if (b === 'review-text') { if (S.review) S.review.text = el.value; }
+  else if (b === 'reply-draft') { S.replyDraft = el.value; }
+  else if (b === 'report-details') { if (S.report) S.report.details = el.value; }
+  else if (b === 'ed-svc' && el.tagName !== 'SELECT') { S.editor.f.services[+el.dataset.i][el.dataset.field] = el.value; edTouched(); }
+});
+app.addEventListener('change', e => {
+  const el = e.target, b = el.dataset ? el.dataset.bind : null;
+  if (!b) return;
+  if (b === 'service-select') { S.dir.service = el.value; S.dir.shown = PAGE; render(); }
+  else if (b === 'sort-select') { S.dir.sort = el.value; S.dir.shown = PAGE; render(); }
+  else if (b === 'agree') { if (S.signin) S.signin.agree = el.checked; render(); }
+  else if (b === 'ed' && el.type === 'checkbox') { S.editor.f[el.dataset.field] = el.checked; edTouched(); render(); }
+  else if (b === 'ed-exp-current') { const x = S.editor.f.experience[+el.dataset.i]; x.current = el.checked; if (el.checked) x.end = ''; edTouched(); render(); }
+  else if (b === 'ed-svc' && el.tagName === 'SELECT') { S.editor.f.services[+el.dataset.i].name = el.value; edTouched(); }
+});
+app.addEventListener('keydown', e => {
+  const el = e.target;
+  if (el.id === 'composer' && S.device === 'desktop' && e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); send(el.dataset.key); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (S.dialog) ACTIONS['dlg-keep']();
+  else if (S.report) ACTIONS['report-cancel']();
+});
+notesEl.addEventListener('click', e => {
+  const b = e.target.closest('[data-try]');
+  if (b) tryAction(b.dataset.try, b.dataset.k, b.dataset.v);
+});
+window.addEventListener('hashchange', () => {
+  const target = location.hash;
+  if (S.route === '#/me/profile' && target !== '#/me/profile' && S.editor && S.editor.dirty) {
+    S.guardTarget = target;
+    history.replaceState(null, '', S.route);
+    S.dialog = { id: 'discard', title: 'Discard your changes?', body: 'Your profile edits haven\'t been saved.',
+      actions: [{ label: 'Keep editing', action: 'dlg-keep' }, { label: 'Discard', action: 'dlg-discard', kind: 'danger' }] };
+    render();
+    return;
+  }
+  onRoute();
+});
+
+/* Prototype controls */
+$id('dev-phone').addEventListener('click', () => { S.device = 'phone'; render(); });
+$id('dev-desktop').addEventListener('click', () => { S.device = 'desktop'; render(); });
+$id('sel-role').addEventListener('change', e => { setPersona(e.target.value); render(); });
+$id('net-on').addEventListener('click', () => { S.online = true; render(); });
+$id('net-off').addEventListener('click', () => { S.online = false; render(); });
+$id('sel-theme').addEventListener('change', e => { S.theme = e.target.value; applyTheme(); });
+$id('sel-look').addEventListener('change', e => { S.look = e.target.value; render(); });
+$id('sel-dir').addEventListener('change', e => { S.dirScenario = e.target.value; resetDir(); render(); });
+$id('sel-send').addEventListener('change', e => { S.sendScenario = e.target.value; });
+$id('btn-push').addEventListener('click', simulatePush);
+$id('sel-jump').addEventListener('change', e => { const v = e.target.value; e.target.value = ''; if (JUMPS[v]) JUMPS[v](); });
+$id('chk-notes').addEventListener('change', e => { S.notes = e.target.checked; render(); });
+$id('btn-reset').addEventListener('click', () => { history.replaceState(null, '', location.pathname + '#/directory'); location.reload(); });
+
+/* Start */
+themeQuery.addEventListener('change', applyTheme);
+applyTheme();
+if (!location.hash) history.replaceState(null, '', location.pathname + location.search + '#/directory');
+S.route = location.hash;
+if (parseRoute().name === 'signin') S.signin = { step: 'choose', next: '#/directory' };
+render();
+})();
+</script>
+</body>
+</html>

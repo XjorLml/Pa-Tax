@@ -1,68 +1,82 @@
 # Verification plan
 
-**Template. Authority:** procedures, environments, expected outcomes, and acceptance gates. [PRD](../PRD.md) owns behavior; [STATUS](STATUS.md) owns results. Adapt these example procedures to actual requirements before treating them as gates.
+**Authority:** procedures, environments, expected outcomes, and acceptance gates. [PRD](../PRD.md) owns behavior; [STATUS](STATUS.md) owns results. Procedures are defined for release 1 scope; none has been executed. Rewritten on 2026-11-11 for the web platform; procedure IDs are unchanged, TP11 was retired and TP15 added. TP16–TP18 were added the same day for ratings, reports and the information pages.
 
 ## Environments and boundaries
 
 | Boundary | What it establishes | What it cannot establish |
 |---|---|---|
-| Domain/unit tests | Exercised rules with controlled inputs/time | Native UI, startup/DI and device integration |
-| Persistence integration | Real provider behavior, migrations and reopened data | Device filesystem/backup behavior without native tests |
-| Presentation/service tests | State transitions, retry, concurrency, committed outcomes | XAML, handlers, Shell, permissions or OS lifecycle |
-| Actual App target build | Compilation, generated bindings, resource packaging for that target | Runtime behavior or user acceptance |
-| Signed Release device checks | Observed behavior on the recorded artifact/device | Other OS versions, devices, or unchecked scenarios |
-| HTTP client tests, if an API is used | Request building, error mapping, timeout/retry decisions with a fake `HttpMessageHandler` | Real server behavior, TLS or device networking |
-| API integration tests, if the app has its own API | Endpoints, authorization, validation and server data through `WebApplicationFactory` with an isolated test database | Hosting configuration, real networks or released apps |
-| Contract compatibility, if an API is used | Reviewed OpenAPI diff; older client types read newer responses | Clients or versions that were not tested |
+| Domain/unit tests (Core.Tests) | Validation and authorization rules (BR01–BR08) with controlled inputs and time | Pages, sign-in, browser behavior |
+| Data tests (Core.Tests) | Real database provider behavior, migrations, paging order | Hosting configuration; behavior on another provider |
+| Web integration tests (Web.Tests) | Public pages, forms, antiforgery, authorization and status codes through `WebApplicationFactory`, with an isolated test database and a test sign-in scheme | Real Google/Microsoft sign-in, real email delivery, JavaScript and live connection behavior |
+| Component tests, where used | Interactive component state changes | The real browser, connection loss |
+| Web project build | Compilation and Razor checks | Runtime behavior |
+| Browser checks on a local run | Observed behavior in the recorded browser and screen size | Other browsers, real phones, the deployed host |
+| Deployed-site checks | Observed behavior of the recorded build on the real host, with real sign-in and email | Other browsers or unchecked scenarios |
 | Acceptance decision | Owner's decision against required gates | Untested functionality outside that decision |
 
-With source-linked App tests, note that the App assembly and DI graph are not loaded. Keep compiler/package settings aligned and build the real target separately. Use isolated temporary databases, controllable clocks, and synthetic data; do not rely solely on mocks for persistence contracts.
+Use isolated test databases, controllable clocks and synthetic accountant and client data. Do not rely on an in-memory database substitute for persistence rules. Emails in tests go to a capturing test sender, never to real addresses.
 
 ## Scenario mapping
 
 | Procedure / requirement | Preconditions and action | Expected observable result | Boundary / environment |
 |---|---|---|---|
-| TP01 / {{R01}} | Complete the first approved workflow, then relaunch | {{Visible state and persistence outcome}} | {{Unit/integration + selected device}} |
-| TP02 / {{Requirement}} | Invalid input, repeated taps, controlled operation failure, retry | {{No invalid/duplicate mutation; retained input; truthful recovery}} | {{Relevant tests + native flow}} |
-| TP03 / {{Requirement}} | Refresh fails after successful load | {{Last good data remains visibly stale; retry recovers}} | {{Presentation + native}} |
-| TP04 / {{DataRequirement}} | Upgrade a real old-schema fixture, reopen; fail migration part-way | {{Fields retained; atomic rollback/version behavior; no destructive reset}} | {{Provider integration + upgrade on device}} |
-| TP05 / {{LifecycleRequirement}} | Navigate/Back, background/resume, terminate/restart, optional deep link | {{Contract-defined selection/draft/committed state}} | {{Native target}} |
-| TP06 / {{DesignRequirement}} | Themes, maximum supported text scale, screen reader, keyboard, smallest width | {{Reachable/readable actions, correct labels/focus; no clipping}} | {{Each shipping target}} |
-| TP07 / {{ReleaseRequirement}} | Verify signed package, install/update, start normally | {{Intended identity, data preservation, successful launch}} | {{Release artifact/device}} |
+| TP01 / R01, R03 | As a visitor, open the directory, open a profile, reload, and open the profile's address in a new tab | List and profile load without sign-in; every published profile field is shown; the address alone reproduces the page | Web.Tests + browser |
+| TP02 / R05, R06, BR04 | Empty or whitespace message; incomplete profile; repeated clicks on Send and Save; a controlled save failure, then retry | No invalid or duplicate message or profile change; typed text kept; truthful error, then success on retry | Core/Web tests + browser |
+| TP03 / R10 | On a chat page with typed text, cut the network, wait for the notice, restore it; repeat and reload the tab instead | A connection-lost notice appears; the text is still there after reconnecting and after a reload; nothing was sent meanwhile | Browser |
+| TP04 / server schema | Apply each new migration to a database at the previous schema with synthetic data; make a migration fail part-way | Data kept; a failed migration leaves the previous schema usable | Data tests with isolated database |
+| TP05 / R01, R06, R07 | Back and Forward through directory, profile and chat; share a filtered directory address; keep the same account open in two tabs and send from one | Back and shared addresses show the same list; the second tab shows the new message without a duplicate | Browser |
+| TP06 / DESIGN | Light and dark themes, browser zoom to the D15 target, a screen reader, keyboard only, the smallest supported width | All actions reachable and readable; labels and focus order correct; no clipped or overlapping content | Each browser in the matrix |
+| TP07 / RELEASE | Deploy a recorded build to the test site; check the health address, HTTPS, sign-in with Google and with Microsoft, one message, one email | The deployed revision matches; both providers sign in and return to the site; the message and email arrive | Deployed site |
+| TP08 / R10 | Stop the server, or go offline, during a directory load and during a message send; restore and retry | Error or connection-lost state shown, never an empty list; typed text kept; retry succeeds; nothing is sent automatically later | Web.Tests + browser |
+| TP09 / R06, BR04 | Make the response to a send get lost after the message is saved, then retry | Exactly one message exists; the site reports the real outcome | Core/Web tests |
+| TP10 / R04, R11, BR05 | Let the session expire, then act; sign in as a second client and a second accountant; request another user's conversation address directly | Sign-in, then back to the same page with the draft kept; no user can read or post to a conversation they are not part of; client details never appear on public pages | Web.Tests + browser |
+| TP11 | Retired 2026-11-11. It tested an older installed app against a newer API, which no longer exists | — | — |
+| TP12 / RELEASE | Inspect the deployed configuration | HTTPS redirect and HSTS on; secure session cookie; detailed error pages off; no development secrets, test sign-in scheme or development email sender; public pages follow the D19 indexing decision | Deployed site |
+| TP13 / R08, BR08 | A user is not on the site; the other person sends two messages; repeat for a client and for an accountant, with emails turned off, through the email's own "turn off" link, and with the email service failing | One email per the D18 frequency rule, with no message text and a working link; none when turned off; with the service failing, the message is still saved and the email is retried | Web.Tests with capturing sender + deployed site |
+| TP14 / R09, BR06 | Delete an accountant account and a client account with existing conversations | Confirmation required. Afterwards the profile is gone from the directory and from old links, signing in again starts a fresh registration, and no more emails are sent. Chat handling follows D07 | Core/Web tests + browser |
+| TP15 / RELEASE | Restart or redeploy the server while a chat page with typed text is open | A reconnecting notice, then a working page with the typed text restored; no message lost or duplicated | Browser against a local or deployed run |
+| TP16 / R13, R14, BR09–BR11 | Try to review as a visitor, as a client with no reply from the accountant, as an accountant, and twice as an eligible client; change and delete a review; reply as the accountant and as someone else | Only the eligible client can post, once; the average and count follow every change; only the reviewed accountant can reply, and nobody can alter another person's review | Core/Web tests + browser |
+| TP17 / R15, BR12 | Report a profile, a review and a conversation; block and unblock in a chat; try to message while blocked | A report without a reason is refused; a sent report reaches the owner's inbox with what was reported; the blocked person cannot send and is not told why | Core/Web tests with a capturing sender + browser |
+| TP18 / R16–R18 | Finish a first sign-in without agreeing; open each information page signed out; request an unknown address; force a server failure | Registration cannot finish without agreement; every page loads without sign-in; unknown addresses return HTTP 404 with the not-found page; failures show the error page with a support code | Web.Tests + browser |
 
-Remove nonapplicable rows explicitly and add domain-specific boundaries: date rollover/timezone/DST when relevant, amount precision/overflow, deterministic query ties, unsupported schema, permissions, offline transitions, and post-commit follow-up failure. Avoid asserting only that a method was called; observe state and persisted effects.
+Domain-specific boundaries to add as features are specified:
+- directory ties with an equal sort key (BR02);
+- message ordering when two messages arrive at the same time;
+- display of times around midnight in Asia/Manila;
+- profile edits from two browsers (conflict state).
 
-## Remote API procedures
+Not applicable: device data migrations, app packaging and signing, and money precision (no money fields).
 
-Only when the app calls a remote API ([API](../API.md)); otherwise remove these rows. TP12 extends the TP07 Release check to network configuration.
+## Execution and browser matrix
 
-| Procedure / requirement | Preconditions and action | Expected observable result | Boundary / environment |
+Commands and versions: [SETUP](../SETUP.md). The supported browsers are Chrome, Edge, Firefox, Brave and Safari (PRD D17, decided 2026-11-11).
+
+| Browser | Device | Screen | State on 2026-11-11 |
 |---|---|---|---|
-| TP08 / {{Requirement}} | Turn on airplane mode, or stop the API, during a load and during a save; reconnect and retry | {{Offline or error state shown; input kept; retry succeeds}} | {{HTTP client tests + native}} |
-| TP09 / {{Requirement}} | Lose the response after a create is sent (timeout), then retry | {{Exactly one record exists; the app reports the real outcome}} | {{HTTP client + API integration}} |
-| TP10 / {{Requirement}} | Expire or revoke the session, then act; sign in as a second user | {{Refresh or sign-in prompt; draft kept; no other user's data reachable}} | {{API integration + native}} |
-| TP11 / {{Requirement}} | Run the previous released app, or its client types, against the new API | {{Previous app keeps working or shows the defined update message}} | {{Contract tests + device}} |
-| TP12 / {{Requirement}} | Inspect the Release package and its network configuration | {{Production URL only; no cleartext exception, certificate bypass or secret}} | {{Release artifact}} |
+| Google Chrome | This development PC, Windows 11 Pro 10.0.26300 | Desktop window, and a narrow window | Installed (157.0.8103.39); nothing to run yet |
+| Microsoft Edge | Same PC | Same | Installed (157.0.4341.46) |
+| Mozilla Firefox | Same PC | Same | Installed (159.0.1). An earlier version of this table said it was not installed; that was not checked and was wrong |
+| Brave | Same PC | Same, with tracking protection left on | Installed (157.1.99.56) |
+| Safari on macOS | A Mac | Desktop window | No device recorded |
+| Chrome and Brave on Android | A real phone | Phone | No device recorded |
+| Safari on iOS | A real iPhone | Phone | No device recorded |
 
-`System.Text.Json` skips unknown properties by default, but rejects unknown enum names when enums travel as strings. Include a "newer server" response fixture in TP11.
+A narrow desktop window or the browser's device emulation checks layout only. It does not establish behavior on a real phone browser.
 
-## Execution and native matrix
-
-Commands and versions: [SETUP](../SETUP.md). Native environment matrix: {{Platform, device/emulator, OS, architecture, screen size, selected artifact}}.
-
-For each native run, record preconditions, exact artifact, expected/actual result, screenshots only when appropriate, and restoration of modified settings/fixtures. Background delivery needs actual OS scheduling observations; forced callbacks establish a narrower boundary.
+For each run, record the browser and version, the build or revision, expected and actual results, and the restoration of anything changed (network settings, zoom, theme). Screenshots must not show real users' chats or contact details.
 
 ## Gate definitions
 
 | Gate | Required evidence | Decision owner |
 |---|---|---|
-| Feature implementation | Required scenarios implemented, reviewed against contracts | {{Owner}} |
-| Automated/platform validation | Relevant tests and real target builds pass on recorded source | {{Owner}} |
-| Native acceptance | Required device procedures pass for each shipping target/artifact | {{Owner}} |
-| Release acceptance | Required gates closed, identity verified, limitations and decision recorded | {{Owner}} |
+| Feature implementation | Required scenarios implemented, reviewed against contracts | lumabanls |
+| Automated validation | Relevant tests pass and the web project builds on recorded source | lumabanls |
+| Browser acceptance | Required browser procedures pass in each browser of the agreed matrix | lumabanls |
+| Release acceptance (test site) | Required gates closed, deployed revision verified (TP07, TP12), limitations and decision recorded | lumabanls |
 
 Optional checks must be labeled optional; do not let absent optional features block unrelated scope. Exceptions need a recorded decision, not an assumed pass.
 
 ## Documentation-only checks
 
-Check local Markdown paths and heading anchors, authority/requirement traceability, template placeholder consistency, history preservation, and the final diff. Test copyable templates independently of their source repository. Record existing unrelated broken links separately from new defects. Application tests/builds are unnecessary when only documentation changes.
+Check local Markdown paths and heading anchors, authority/requirement traceability, template placeholder consistency, history preservation, and the final diff. Record existing unrelated broken links separately from new defects. Application tests/builds are unnecessary when only documentation changes.

@@ -1,60 +1,61 @@
 # Development standards
 
-**Future-project baseline.** Adopt and tailor these proposed practices; implementation and verification must be established in the new project. [SDD](SDD.md) owns actual project contracts. Each exception should have a reason and an owner.
+**Adopted baseline (2026-11-11) for a Blazor Web App.** It replaces the MAUI baseline inherited from the starter kit. No source exists yet, so none of these practices has been exercised in this repository. [SDD](SDD.md) owns actual project contracts. Each exception should have a reason and an owner.
 
 ## Essential practices
 
 | Area | Standard and purpose | Review / verification |
 |---|---|---|
-| Scope and architecture | Link work to stable requirement/scenario IDs; keep platform-independent rules outside native UI code | Review changed source against PRD/SDD; record contradictions |
-| MVVM | Use observable state and awaited commands; validate domain invariants independently of UI; keep code-behind for presentation adapters | Tests cover invalid input, state transitions and persistence effects |
-| Binding | Use correct `x:DataType` on pages and data templates; review binding/compiler warnings | Build actual App targets and test Release runtime behavior |
-| DI | Prefer constructor dependencies; register at the composition root; document lifetime/retention and disposal | Check singleton dependencies, cached pages, and per-window/draft state |
-| Async | Return/await Task; reserve async void for required event adapters; handle failures at those boundaries; avoid blocking waits | Controlled failure, repeated tap, overlap, and late-result tests |
-| Ownership | Give each operation an owner; define cancellation, stale-result rejection and completion-after-navigation behavior | Cancel/leave/resume scenarios; canceled committed writes retain truthful outcomes |
-| UI threading | Perform bound state/collection changes on the UI thread; move blocking database/CPU work behind an explicit boundary | Responsiveness checks with realistic data; thread assertions where valuable |
-| Lifecycle | Define refresh on appearance/resume, shared in-flight loads, draft retention, timers and event cleanup | Repeated navigation, background/foreground, process termination/restart |
-| Navigation | Pass validated IDs/typed values; define Back/deep-link/stale-target behavior and prevent duplicate navigation | Native routing tests; distinguish commit success from return-navigation failure |
-| Storage, if used | Parameterize SQL; encode dates/instants/currency deliberately; use atomic migrations and explicit ordering | Reopen-file tests, upgrade/failure tests, equal-sort-key cases |
-| Remote calls, if used | Typed clients registered with `IHttpClientFactory` at the composition root; cancellation tokens from the screen's lifetime; retries only where repeating is safe; Problem Details mapped to [API](API.md) error categories | Fake-handler client tests, API integration tests and TEST-PLAN TP08–TP12 |
-| Error recovery | Separate loading/empty/stale/error states; preserve useful data and drafts; allow appropriate retry | Controlled read/write/startup/navigation failures |
-| Diagnostics | Log sanitized event IDs, categories, duration and recovery outcome; keep sensitive fields out | Review each logged field; test failure paths without leaking fixtures or secrets |
-| Security | Use only required permissions; implement the chosen backup/retention policy; protect credentials and signing material | Inspect manifests/entitlements and packaged configuration |
-| UI and locale | Follow DESIGN tokens, semantic labels, scaling and culture rules; use typed filter/status keys | Native accessibility/layout checks and localized/pseudo-localized cases |
-| Verification | Combine plain .NET tests, real target builds, and scenario-based native checks | Evidence includes revision/artifact, environment, date, attribution, result |
+| Scope and architecture | Link work to stable requirement/scenario IDs. Keep rules in Core, away from pages | Review changed source against PRD/SDD; record contradictions |
+| Components | Pages render state and forward user actions to Application services. No database access or business rules in `.razor` files | Tests cover invalid input, state changes and saved effects through the services |
+| Render modes | Public pages stay static. Add interactivity per page, only where the SDD lists it. Interactive pages prerender by default, so start-up code must be safe to run twice | Check each new page's mode in review; test that loading a page does not repeat a write |
+| Authorization | Enforce every rule in Application services on the server. Hiding a link or button is not a check | Integration tests call each protected operation as the wrong user and as a visitor |
+| Forms | Antiforgery on every form. Validate on the server; client checks are for convenience only | Integration tests post invalid and forged input |
+| DI and lifetimes | Constructor dependencies, registered in `Program.cs`. A scoped service on an interactive page lives as long as the connection, so it holds no per-request state | Review singleton and scoped dependencies; document lifetimes in SDD |
+| Database access | One short-lived context per operation, from the context factory. Parameterized queries, explicit ordering | Data tests against the real provider, including equal-sort-key cases |
+| Async and events | Return and await tasks; no blocking waits. Disable a button while its operation runs so repeated clicks can't run it twice | Controlled failure, repeated click and late-result tests |
+| Lifecycle | Components cancel work and unsubscribe when disposed. State kept only in server memory can vanish on reconnect; durable state goes to the database, the address, or browser storage | Lost-connection and reload checks (TP03, TP15) |
+| Navigation | Validate route and query values. Return addresses after sign-in must be local | Tests with malformed IDs and external return addresses |
+| Schema changes | EF Core migrations in source control; never edit an applied migration | Upgrade tests from the previous schema (TP04) |
+| Error recovery | Separate loading, empty, error and "not available" states; keep the user's input | Controlled read, write and start-up failures |
+| Diagnostics | Log event IDs, categories, duration and correlation IDs. Never log message text, email addresses, contact details or tokens | Review each logged field; test failure paths |
+| Security | HTTPS and HSTS, secure cookies, rate limits, capped input sizes, secrets outside the repository | Inspect production configuration (TP12) |
+| UI and locale | Follow DESIGN tokens, semantic HTML, labels and focus order. Format times through the one Asia/Manila helper | Browser accessibility and layout checks (TP06) |
+| Verification | Combine unit tests, data tests on the real provider, integration tests and browser checks | Evidence includes revision, environment, date, attribution, result |
 | Documentation | Update the owning contract and link it from specs; preserve attributed history | Link/anchor checks and final diff review |
 
-Compiled bindings improve compile-time checking; full trimming/NativeAOT require them. Review applicability for the chosen MAUI version. [Microsoft compiled-binding guidance](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/data-binding/compiled-bindings?view=net-maui-10.0).
-
-Shell query handling through `IQueryAttributable` avoids the trimming limitation documented for `QueryPropertyAttribute`; validate input and account for its string-decoding behavior. [Microsoft Shell guidance](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/shell/navigation?view=net-maui-10.0).
-
-For Microsoft.Data.Sqlite, Task-returning ADO.NET methods execute synchronously. Choose a deliberate background/serialization boundary and avoid assuming `await` moves work off the UI thread. WAL and connection policy are workload-specific choices, not substitutes for UI dispatch. [Microsoft SQLite async guidance](https://learn.microsoft.com/en-us/dotnet/standard/data/sqlite/async).
-
-Window lifecycle events are the cross-platform integration points; stopped apps may not resume. Persist committed work when it happens and define background-task/timer cleanup. [Microsoft lifecycle guidance](https://learn.microsoft.com/en-us/dotnet/maui/fundamentals/app-lifecycle?view=net-maui-10.0).
+The official guidance behind the render-mode, context-factory, authorization and repeated-event rows is in [REFERENCES](REFERENCES.md#implementation-and-hosting).
 
 ## CI baseline
 
-1. On proposed merges and pushes to maintained branches, run the relevant plain .NET tests. For a solo project, choose the simplest equivalent trigger policy explicitly.
-2. Build every shipping App target on an appropriate host, using SETUP's pinned toolchain. Keep fast tests separate from more expensive platform jobs.
-3. Preserve useful sanitized test/build artifacts. Check nullable, compiler, binding and trimming warnings; document justified exceptions rather than hiding all warnings.
-4. Run link/anchor checks for documentation changes. Run native smoke checks appropriate to the release risk; a green pure-test job does not accept native behavior.
-5. Separate packaging/distribution jobs from ordinary contributions. Use minimal permissions and protected signing material; untrusted contributions must not receive signing secrets.
+No CI exists yet, and there is no remote repository. When one is added:
 
-Record an actual successful remote run before claiming CI works. Choose runner/action versions at setup time and maintain them; this kit supplies no floating-version workflow to copy blindly.
+1. On proposed merges and pushes to maintained branches, run both test projects and build the web project with SETUP's pinned SDK.
+2. Check nullable and compiler warnings; document justified exceptions rather than hiding all warnings.
+3. Run the documentation checker for documentation changes.
+4. Keep deployment jobs separate from ordinary contributions, with minimal permissions and protected secrets.
+
+Record an actual successful remote run before claiming CI works. Choose runner and action versions at setup time and maintain them.
 
 ## Optional additions and triggers
 
 | Addition | Add when | Tradeoff |
 |---|---|---|
-| Presentation/Infrastructure projects | Source linking or dependency boundaries become costly | More projects, clearer compiled boundaries |
-| Structured telemetry/crash reporting | There is a defined support need and privacy policy | Useful diagnosis; data retention, user expectations and operations costs |
-| API/authentication/sync | Approved workflows require them | Network, expiry, authorization and conflict contracts become mandatory; fill in [API](API.md) |
-| Automated native UI suite | Repeated regressions justify maintenance | Device infrastructure and selectors need ownership |
-| Background notifications | Product explicitly requires them | OS-specific permissions, timing limits and lifecycle tests |
-| Performance/paging/caching | Measured data scale or latency exceeds an approved target | Complexity and cache invalidation; measure first |
+| Browser automation tests | Repeated regressions in browser-only behavior | Test infrastructure and selectors need ownership |
+| Component test library | Interactive components gain logic worth testing in isolation | Another dependency to keep current |
+| Telemetry and error reporting | There is a defined support need and privacy policy | Useful diagnosis; data retention and operations costs |
+| Separate API project | A native app or third-party client is approved | Versioning and compatibility contracts become mandatory |
+| Caching and paging changes | Measured data scale or latency exceeds an approved target | Complexity and invalidation; measure first |
 
-For a small local app, a concrete service may be enough. Introduce interfaces for meaningful substitution, platform seams, or tests; avoid creating an interface for every class. Keep human-readable status labels independent from enum/ID logic so localization cannot change behavior.
+Introduce interfaces for meaningful substitution (email sending, the clock) or for tests. Avoid creating an interface for every class. Keep human-readable labels separate from enum and ID logic.
 
 ## Change completion
 
-{{Record the team's review policy and required checks.}} A completed change has its authorized behavior implemented, appropriate observed verification, updated contracts/evidence, and explicit remaining acceptance. Documentation-only changes require documentation checks, not application test runs.
+Review policy (Proposed, solo developer lumabanls). Before merging to `main`:
+- review the full diff yourself;
+- run the documentation checker for documentation changes;
+- run the relevant test projects and builds for code changes, as defined in [TEST-PLAN](delivery/TEST-PLAN.md).
+
+Branches and pull requests are optional while there is no remote. Revisit this policy when a second contributor or CI is added.
+
+A completed change has its authorized behavior implemented, appropriate observed verification, updated contracts/evidence, and explicit remaining acceptance. Documentation-only changes require documentation checks, not application test runs.
