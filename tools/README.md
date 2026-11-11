@@ -36,6 +36,20 @@ Run the reusable failure/recovery tests with:
 python -m unittest discover -s tools/tests -v
 ```
 
+## Check the prototype
+
+Requires Node 22+ with the built-in WebSocket client and an installed Chromium-based browser. No npm packages or browser download. From the repository root, pass the browser's absolute executable path:
+
+```powershell
+node tools/check_prototype.mjs "<absolute-path-to-browser-executable>"
+```
+
+Optionally pass an artifact directory as the second argument; default is ignored `artifacts/brand-refresh`. The helper opens the local prototype with synthetic data using a new isolated browser profile. It checks directory recovery, profile content, draft retention through simulated sign-in, send retry, reviews/replies, block/unblock, unsaved edits, layouts, comparison looks and reduced motion. It writes screenshots and `results.json`, exits 0 on pass or nonzero on failure, closes only its own browser, and removes its temporary profile. If renderer startup is restricted, running the same helper with the executor's approved process permissions may be necessary. A CDP timeout is not a product failure or a passing browser result.
+
+This is a prototype DOM/layout check in the supplied browser, not real device, screen-reader, zoom, OAuth, email, persistence or Blazor verification. Screenshot inspection is a separate observation. Keep artifacts local unless deliberately selected as sanitized evidence. Syntax can be checked by extracting the prototype's inline script and running `node --check` on it.
+
+F03 extends the helper with private client/added-accountant lists, request/accept/decline, task progress, shared notes, role guards, generated sample document validation/retry/removal, and account changes during upload. The download check intercepts the final anchor handoff to inspect a generated synthetic PDF Blob; it does not establish operating-system download behavior. Run `node --check prototypes/service-workspace.js` for the external module. Pass `artifacts/client-services` as the optional output directory to keep the current run separate from F02 artifacts; retained reports include source SHA-256 values. No actual user file or real upload is used.
+
 ## Add automation when needed
 
 Add repeatable build/test entry points only after actual projects and verified commands exist. Add browser automation helpers only when their maintenance cost is justified.

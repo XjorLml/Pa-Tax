@@ -2,7 +2,7 @@
 
 **Authority:** current implementation, verification, and acceptance state. Behavior belongs in [PRD](../PRD.md); procedures in [TEST-PLAN](TEST-PLAN.md).
 
-Last update: 2026-11-11. Source baseline: `b9b50f3` (untouched template copy) plus uncommitted documentation and prototype work. Current focus: platform change to a web application; prototype review. Release readiness: **Not assessed**.
+Last update: 2026-11-11. Repository HEAD: `668a9a9e122787f2c86f6f6b4a63c398cc78d282`; F03 began with F02's uncommitted branding/prototype/docs work already present and preserved. Earlier evidence retains its own exact source identity. Current focus: client/service/progress/document prototype expansion and unresolved policies D24–D28. Release readiness: **Not assessed**.
 
 ## Feature state
 
@@ -21,6 +21,7 @@ No application source exists. Every row is at its starting state.
 | R13, R14 ratings, reviews and replies | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R15 report and block | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R16–R18 legal, information and error pages | Not started (no spec) | Not run | Not run | Not run | Pending |
+| R19–R23 / [F03 client services](../../specs/client-services/spec.md) | Application not started; documentation/prototype task separate below | Application tests not run | Not run | Application not run | Pending; policies D24–D28 open |
 
 States:
 - Implementation: not started, in progress, or implemented.
@@ -29,12 +30,21 @@ States:
 
 Use separate browser rows when outcomes differ. A blocked check requires a concrete reason and next action.
 
+### Prototype work, separate from application implementation
+
+| Work | Implementation | Verification | Acceptance |
+|---|---|---|---|
+| [F02 Kuwenta brand/design refresh](../../specs/brand-design-refresh/spec.md) | Applied locally: name, original SVG logos/favicon, light/dark direction, directory/profile/shell refinements, current documentation | Historical observation for the fingerprinted F02 artifact: 78 Edge prototype checks, 34 contrast pairs, syntax/SVG/docs checks passed; screenshots agent-reviewed ([evidence](evidence/2026-11-11-kuwenta-refresh.md)). Not automatically transferred to F03 | User delegated the design choice; owner walkthrough and product/release acceptance pending. No application behavior is established |
+| [F03 client services/progress/documents](../../specs/client-services/spec.md) | Docs and local prototype updated: private lists, request/acceptance, per-client services, checklist/progress/history and generated sample file lifecycle | 142 Edge checks passed, including rerun of prior flows and 34 contrast pairs; syntax, documentation, identifier/table and source-hash checks pass; responsive screenshots agent-reviewed ([evidence](evidence/2026-11-11-client-services.md)) | Owner confirmed private-save/request/accept model; remaining D24–D28 policies and overall prototype/release acceptance pending. Real uploads/storage and server behavior unimplemented |
+
 ## Evidence register
 
 | Evidence record | Date | Source / artifact | Environment | Attribution | Result / limits |
 |---|---|---|---|---|---|
 | [Documentation setup checks](evidence/2026-11-10-documentation-setup.md) | 2026-11-10 | `b9b50f3` plus uncommitted documentation changes | Windows 11 Pro 10.0.26300; uv-managed CPython 3.14.4 | Agent-observed | Documentation checks passed for the MAUI plan of that day. Host inventory recorded. Nothing about app behavior is established |
 | [Web platform change checks](evidence/2026-11-11-web-platform-change.md) | 2026-11-11 | `b9b50f3` plus uncommitted documentation and prototype changes | Same PC; headless Microsoft Edge for the prototype | Agent-observed | Documentation checks pass after the platform change; prototype walk-through passes. No application exists, so nothing about app behavior is established |
+| [Kuwenta brand and prototype checks](evidence/2026-11-11-kuwenta-refresh.md) | 2026-11-11 | `668a9a9` plus F02 changes; source SHA-256 values retained with report | Windows 10.0.26300 x64, Node 24.16.0, headless Edge 157.0.4341.42 | Agent-observed | 78 prototype checks, 34 semantic contrast pairs, syntax/SVG/docs checks pass. Screen readers, other browsers and application acceptance remain pending |
+| [Client services prototype checks](evidence/2026-11-11-client-services.md) | 2026-11-11 | Preserved F02 working tree plus F03; exact HTML/CSS/module/checker/asset hashes in report | Windows 10.0.26300 x64, Node 24.16.0, Edge 157.0.4341.42 | Agent-observed | 142 checks and static checks pass; screenshots reviewed; generated fixtures only. TP19–TP22 production boundaries untested |
 
 Use the [evidence template](evidence/TEMPLATE.md). A template/procedure is not a completed execution record. A previous pass does not automatically apply to changed source or another platform.
 
@@ -49,12 +59,13 @@ Use the [evidence template](evidence/TEMPLATE.md). A template/procedure is not a
 | G5 F01 blocking decisions (PRD D04, D05) | lumabanls | Profile fields; search fields, filters and order | Decide before building the data model |
 | G6 Database and hosting (PRD D11) | lumabanls | Database decided: Supabase. No Supabase project exists yet. Host decided: Render. Neither a Supabase project nor a Render service exists yet ([ADR 007](../adr/007-supabase-brevo-container-host.md)) | Create a development Supabase project before F01; create the Render service before the first deployment |
 | G7 PRD approval | lumabanls | PRD is Draft | Review the PRD and its open decisions; record approval with a date |
-| G8 Initial commit of the customized documentation | lumabanls | Customization is uncommitted for review | Review the diff against `b9b50f3`, then commit |
-| G9 Design prototype review | lumabanls | The [prototype](../../prototypes/README.md) shows proposals for D03–D06, D08 and D18, and four visual directions, with Modern recommended ([DESIGN-DIRECTIONS](../../prototypes/DESIGN-DIRECTIONS.md)); none is decided | Walk through the prototype, pick a look, and record each decision in the PRD or DESIGN before implementing F01 |
+| G8 Review current changes | lumabanls | F02/F03 prototype/doc changes are uncommitted against `668a9a9`; the former customization is already in the baseline | Review the current diff; commit when ready |
+| G9 Design prototype walkthrough | lumabanls | Kuwenta is applied under the delegated design brief ([DESIGN](../DESIGN.md#visual-system)); owner walkthrough, unresolved D03–D06/D18 behavior, and production accessibility are still pending | Walk through the refreshed [prototype](../../prototypes/README.md), decide remaining behavior and record acceptance before implementing F01 |
 | G10 Devices for browser checks (PRD D17) | lumabanls | Browsers decided, and Chrome, Edge, Firefox and Brave are installed on the PC. No Mac, iPhone or Android phone is recorded for Safari and phone checks | Record the devices in the TEST-PLAN matrix |
 | G11 Email service (PRD D18) | lumabanls | Service decided: Brevo. No account, sender address or sender domain yet | Needed before R08 work, not before F01 |
 | G12 Report handling (PRD D22) | lumabanls | Reports go to the owner by email and there is no admin page. No inbox, response time or removal steps are defined | Decide before anyone beyond people you know uses the site |
 | G13 Legal text (PRD D10) | lumabanls | The privacy and terms pages hold an outline only | Have the text written or reviewed before real users sign in |
+| G14 Private service workflow and file policies | lumabanls | R19–R23 categories authorized; private-save/request/accept confirmed; remaining lifecycle, completion/sign-off, file types/quotas, deletion/retention and private storage/scanning D24–D28 open | Review the [F03 proposal](../../specs/client-services/spec.md) and resolve policies before implementing real service/file intake |
 
 ## Recent delivery changes
 
@@ -72,4 +83,6 @@ Use the [evidence template](evidence/TEMPLATE.md). A template/procedure is not a
 - A second design pass studied reference websites and added a Modern look and a website layout to the prototype, as proposals.
 - The owner set a new product direction: a portfolio site with client ratings and no approval of accountants ([ADR 008](../adr/008-portfolio-ratings-no-approval.md)). Requirements R12–R18 were added, and the prototype gained portfolio highlights, ratings and reviews, report and block, legal and information pages, and emails for clients.
 
-Documentation-only work: no application verification or acceptance changed ([evidence](evidence/2026-11-11-web-platform-change.md)).
+The earlier web-platform documentation work established no application verification ([evidence](evidence/2026-11-11-web-platform-change.md)). The later Kuwenta refresh applied the delegated brand/design choice and verified only the local prototype ([evidence](evidence/2026-11-11-kuwenta-refresh.md)); application verification and acceptance remain unchanged.
+
+The subsequent F03 expansion added PRD R19–R23, ADR 009, private workspace contracts and clickable client/service/progress/document screens. The owner confirmed private saving followed by service request and accountant acceptance. Remaining lifecycle/edit/file policies stay explicit; [new prototype observations](evidence/2026-11-11-client-services.md) establish no production file or server behavior.

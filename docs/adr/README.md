@@ -12,6 +12,7 @@ The [template](TEMPLATE.md) is not an accepted ADR.
 | [006 Google/Microsoft sign-in on the web](006-web-sign-in.md) | Accepted | 2026-11-11 | Supersedes 004 |
 | [007 Supabase database, Brevo email, and a host other than Vercel](007-supabase-brevo-container-host.md) | Accepted; Render chosen as the host | 2026-11-11 | None |
 | [008 A portfolio site with client ratings and no approval](008-portfolio-ratings-no-approval.md) | Accepted; reviewer naming, report handling and portfolio limits Proposed | 2026-11-11 | None |
+| [009 Private service workspaces](009-private-service-workspaces.md) | Accepted scope and private-save/request/accept model; remaining lifecycle, permissions and storage Proposed | 2026-11-11 | None; extends 008; chat stays text only |
 | [001 Android and Windows only](001-platform-scope-android-windows.md) | Superseded | 2026-11-10 | Superseded by 005 |
 | [002 Own API, shared Contracts, online-only client](002-own-api-online-only.md) | Superseded | 2026-11-10 | Superseded by 005 |
 | [003 .NET 11 after GA](003-dotnet-11-toolchain.md) | Superseded (was Proposed) | 2026-11-10 | Superseded by 005 |

@@ -8,7 +8,7 @@ State on 2026-11-11: no build, host or domain exists. The first audience is invi
 
 | Item | Selected value / owner |
 |---|---|
-| Site name and domain | Not chosen (PRD D01) |
+| Site name and domain | Kuwenta, applied under the user's delegated branding brief (PRD D01); domain and name availability checks remain open |
 | Environments | Local development, and one test site for invited testers. A separate production site is decided before public launch (PRD D11) |
 | Who can use the test site | Invited testers only; the mechanism is open (PRD D20) |
 | Version identity | Proposed: each deployment records its git commit, shown on a health or about page, so a tester's report can be tied to a build |
@@ -25,7 +25,7 @@ There is no app package, store listing or code-signing certificate: nothing is i
 No recipe yet. After the scaffold step, record the exact publish command and its output here, starting from:
 
 ```powershell
-dotnet publish src/AccApp.Web/AccApp.Web.csproj -c Release
+dotnet publish src/Kuwenta.Web/Kuwenta.Web.csproj -c Release
 ```
 
 This command has not been executed. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.
@@ -68,3 +68,7 @@ Internal testing: testers report problems directly to lumabanls. Reports carry t
 - **Leaked secret:** rotate it at the provider and in the host's secret store, then redeploy.
 
 Preserve released migration scripts and deployment evidence.
+
+## Private service documents gate
+
+R19–R23 ([ADR 009](adr/009-private-service-workspaces.md)) are currently documentation/prototype work. Before real client documents or durable service work are enabled, resolve PRD D24–D28 and implement the [SDD private-workspace contract](SDD.md#private-service-workspaces): relationship permissions, task/completion policy, types/quotas, file deletion/retention/account deletion, private storage provider and validation/scanning/recovery. Record storage credentials/configuration outside source control, migrations, cleanup, access-isolation tests, operations ownership and actual deployment checks. Progress adds no new email events. The prototype's generated samples are not production upload evidence.

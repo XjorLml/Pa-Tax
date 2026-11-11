@@ -24,6 +24,8 @@ State on 2026-11-11: documentation only. The toolchain is chosen: an ASP.NET Cor
 
 The Android items recorded on 2026-11-10 (missing JDK, missing emulator, `ANDROID_SDK_ROOT` pointing to a missing folder) no longer matter for this project. They are kept in the [2026-11-10 evidence record](delivery/evidence/2026-11-10-documentation-setup.md).
 
+Prototype refresh tooling observed on 2026-11-11: Node 24.16.0 and Python 3.14.6 are on PATH in the agent execution environment. The new dependency-free browser checker requires Node 22+ and a supplied Chromium executable ([tools guide](../tools/README.md#check-the-prototype)); it does not change the application's toolchain. Earlier inventory above is historical; installed SDKs and other browser versions were not re-inventoried in this task. Each run records the browser's own returned version.
+
 ## SDK selection
 
 After installing the SDK, create a root `global.json` ([global.json reference](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json)):
@@ -51,10 +53,10 @@ Then, after the scaffold step creates the projects:
 PowerShell commands for after scaffolding. They have not been executed, because the projects do not exist yet:
 
 ```powershell
-dotnet test tests/AccApp.Core.Tests/AccApp.Core.Tests.csproj -c Release
-dotnet test tests/AccApp.Web.Tests/AccApp.Web.Tests.csproj -c Release
-dotnet build src/AccApp.Web/AccApp.Web.csproj -c Release
-dotnet run --project src/AccApp.Web/AccApp.Web.csproj --launch-profile https
+dotnet test tests/Kuwenta.Core.Tests/Kuwenta.Core.Tests.csproj -c Release
+dotnet test tests/Kuwenta.Web.Tests/Kuwenta.Web.Tests.csproj -c Release
+dotnet build src/Kuwenta.Web/Kuwenta.Web.csproj -c Release
+dotnet run --project src/Kuwenta.Web/Kuwenta.Web.csproj --launch-profile https
 ```
 
 ## Configuration and dependencies
@@ -67,14 +69,14 @@ dotnet run --project src/AccApp.Web/AccApp.Web.csproj --launch-profile https
 
 ## Local development
 
-The values below are filled when `AccApp.Web` is created and verified.
+The values below are filled when `Kuwenta.Web` is created and verified.
 
 | Item | Selected value |
 |---|---|
-| Web project and local addresses | `src/AccApp.Web/AccApp.Web.csproj`; `https://localhost:<port>` from its launch settings, recorded at scaffold |
+| Web project and local addresses | `src/Kuwenta.Web/Kuwenta.Web.csproj`; `https://localhost:<port>` from its launch settings, recorded at scaffold |
 | Google sign-in (development registration) | Redirect address `https://localhost:<port>/signin-google`. Secret keys `Authentication:Google:ClientId` and `Authentication:Google:ClientSecret` in user-secrets |
 | Microsoft sign-in (development registration) | Redirect address: the handler's callback path, confirmed at implementation. Secret keys `Authentication:Microsoft:ClientId` and `Authentication:Microsoft:ClientSecret` in user-secrets |
-| Development database | A Supabase project used only for development and tests, with synthetic data and a reset-and-seed command. Connection string in user-secrets under `ConnectionStrings:AccApp` (Proposed). Use the session pooler address on port 5432 if this network has no IPv6. Data tests run against it in their own schema (Proposed); a local PostgreSQL can replace it later |
+| Development database | A Supabase project used only for development and tests, with synthetic data and a reset-and-seed command. Connection string in user-secrets under `ConnectionStrings:Kuwenta` (Proposed). Use the session pooler address on port 5432 if this network has no IPv6. Data tests run against it in their own schema (Proposed); a local PostgreSQL can replace it later |
 | Email in development | A development sender that writes emails to a local ignored folder or the log. No real email is sent |
 | Testing from a phone | Open: reach the PC over the local network with a firewall rule, or use a development tunnel. Sign-in redirect addresses must match the address used |
 
@@ -84,8 +86,8 @@ The values below are filled when `AccApp.Web` is created and verified.
 PowerShell commands for after scaffolding:
 
 ```powershell
-dotnet user-secrets list --project src/AccApp.Web/AccApp.Web.csproj
-dotnet run --project src/AccApp.Web/AccApp.Web.csproj --launch-profile https
+dotnet user-secrets list --project src/Kuwenta.Web/Kuwenta.Web.csproj
+dotnet run --project src/Kuwenta.Web/Kuwenta.Web.csproj --launch-profile https
 ```
 
 ## Troubleshooting and maintenance

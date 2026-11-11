@@ -1,6 +1,24 @@
-# AccApp design directions
+# Kuwenta design directions and earlier AccApp studies
 
-**Proposal for review (2026-11-11), not an approved design.** This records a design review of the [prototype](README.md), a study of reference websites, four visual directions built into it, and the user-experience changes made alongside. Nothing here is decided: the visual system in [DESIGN](../docs/DESIGN.md) stays "not chosen" until the owner picks. Scope stays in the [PRD](../docs/PRD.md).
+**Current direction: Kuwenta (2026-11-11).** The user asked to execute the branding/design brief and delegated the name, logo and visual choice. The agent selected Kuwenta and applied a paper/forest direction to the existing prototype. [DESIGN](../docs/DESIGN.md#visual-system) owns current tokens and implementation guidance; [F02](../specs/brand-design-refresh/spec.md) records scope and acceptance scenarios. Product scope stays in the [PRD](../docs/PRD.md); owner walkthrough and release acceptance remain pending.
+
+## Current design review
+
+The earlier prototype already covered the important flows, but retained a placeholder identity, four competing palettes, an oversized centered introduction, and controls whose hierarchy competed with profile comparison. The refresh adds:
+
+- A name broad enough for bookkeeping, payroll, portfolio work and messaging, rather than a tax-only label. Kuwenta is a creative choice under the brief; no external name clearance is claimed.
+- An original ledger/conversation mark and geometric wordmark, with light/dark SVG variants and favicon ([assets](assets/README.md)).
+- Serif headlines, readable system sans controls, forest actions and warm paper surfaces. The chosen values are centralized in `kuwenta.css` and map to the approved Tailwind/Blazor stack.
+- An asymmetric desktop introduction with a small ledger illustration, labelled search and quiet service filters; results lead into comparable cards rather than promotional statistics.
+- Clearer card structure, contact-panel emphasis, responsive container breakpoints, compact phone layouts and information links on additional mobile screens.
+
+The four previous looks remain in the Look control as historical comparisons. Their historical contrast figures below describe those palettes, not the new Kuwenta palette. Current verification is linked from [STATUS](../docs/delivery/STATUS.md).
+
+The later client-service expansion uses the same direction, with private list summaries, grouped service cards, a two-column desktop checklist/history view, and stacked phone checklists/files/history ([DESIGN service presentation](../docs/DESIGN.md#service-workspace-presentation), [F03](../specs/client-services/spec.md)). Its generated sample uploads do not introduce public profile images or chat attachments.
+
+## Earlier studies preserved below
+
+The remaining sections record earlier work from 2026-11-11 under the AccApp working name. Recommendations and claims that a choice remains open describe that earlier state; the current visual contract above supersedes them. Earlier reference-site observations are retained with their original attribution and have not been re-executed in this refresh.
 
 To compare the directions, open [index.html](index.html) and use the **Look** control in the top bar.
 

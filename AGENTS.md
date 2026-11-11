@@ -1,6 +1,6 @@
 # Agent workflow
 
-AccApp (working name): a website built as one ASP.NET Core Blazor Web App on .NET 11, connecting clients with accountants through a directory and chat. As of 2026-11-11 the repository holds documentation and a design prototype only. Its scope comes from owner decisions recorded in the PRD and ADRs; a "Proposed" or "Open" marking means not yet approved.
+Kuwenta (formerly AccApp): a website built as one ASP.NET Core Blazor Web App on .NET 11, connecting clients with accountants through a directory, chat and private service workspaces. As of 2026-11-11 the repository holds documentation and a design prototype only. Its scope comes from owner decisions recorded in the PRD and ADRs; a "Proposed" or "Open" marking means not yet approved.
 
 Start with [docs/README.md](docs/README.md), then read only the documents relevant to the task. Inspect applicable source and tests before making implementation claims.
 

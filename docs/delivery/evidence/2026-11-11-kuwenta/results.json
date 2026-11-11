@@ -1,0 +1,330 @@
+{
+  "browser": "Edg/157.0.4341.42",
+  "node": "v24.16.0",
+  "observedAt": "2026-11-11T13:05:57.495Z",
+  "sourceHashes": {
+    "prototypes/index.html": "2a26c527ba12abd775cd4b46d48f5ffe4b4a5c39fbd8624a9cf33d3c1ff815dc",
+    "prototypes/kuwenta.css": "5ccd78e75871958d5a9ecff5b8846332b950f0220982aaefd8f3ca858b0998f7",
+    "tools/check_prototype.mjs": "574b8c3c3ae784d48b34371df6efe5a61e62c86b65ea7d703509c2ca1078fd87",
+    "prototypes/assets/kuwenta-logo-light.svg": "67a53d7bfca4e8dddb11032cb12906f667f54a164a8f1f6f99a5699b9f87a5b2",
+    "prototypes/assets/kuwenta-logo-dark.svg": "16ab7b293cc26eb522236dd78a82f2bb725d9f9329693a50d1434005604da283",
+    "prototypes/assets/kuwenta-icon.svg": "b11ceba2f274348340165cf9006fe116ef974b4238bf2e0190d9db931d55d373",
+    "prototypes/assets/kuwenta-icon-dark.svg": "a34a2d9ef806134a60d0727cb71cd863570f35d1b069a659c0180259af947784",
+    "prototypes/assets/favicon.svg": "32c9d934cab55bcf5049be0ed61da7537bffe9af6e2fa32f313cd4e7620b3f06"
+  },
+  "results": [
+    {
+      "name": "Desktop default and Kuwenta name",
+      "pass": true
+    },
+    {
+      "name": "Desktop directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "Desktop directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "Six initial cards",
+      "pass": true
+    },
+    {
+      "name": "Paging adds remaining cards",
+      "pass": true
+    },
+    {
+      "name": "No match has recovery",
+      "pass": true
+    },
+    {
+      "name": "Service filter is selected",
+      "pass": true
+    },
+    {
+      "name": "Empty directory distinct from no-match",
+      "pass": true
+    },
+    {
+      "name": "Load failure distinct from empty",
+      "pass": true
+    },
+    {
+      "name": "Directory retry recovers",
+      "pass": true
+    },
+    {
+      "name": "Desktop profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "Desktop profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "Profile contains portfolio, reviews and contact action",
+      "pass": true
+    },
+    {
+      "name": "Removed profile state",
+      "pass": true
+    },
+    {
+      "name": "Visitor draft shown at sign-in",
+      "pass": true
+    },
+    {
+      "name": "Agreement required before role choice",
+      "pass": true
+    },
+    {
+      "name": "Draft retained after sign-in",
+      "pass": true
+    },
+    {
+      "name": "Failed send offers retry",
+      "pass": true
+    },
+    {
+      "name": "Retry avoids duplicate message",
+      "pass": true
+    },
+    {
+      "name": "Offline notice and draft",
+      "pass": true
+    },
+    {
+      "name": "Email preference toggles",
+      "pass": true
+    },
+    {
+      "name": "Review requires stars",
+      "pass": true
+    },
+    {
+      "name": "Review shown under abbreviated name",
+      "pass": true
+    },
+    {
+      "name": "Accountant reply is displayed",
+      "pass": true
+    },
+    {
+      "name": "Block requires confirmation",
+      "pass": true
+    },
+    {
+      "name": "Blocked chat hides composer",
+      "pass": true
+    },
+    {
+      "name": "Unblock restores composer",
+      "pass": true
+    },
+    {
+      "name": "Unsaved profile guard",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "kuwenta comparison direction",
+      "pass": true
+    },
+    {
+      "name": "modern comparison direction",
+      "pass": true
+    },
+    {
+      "name": "ledger comparison direction",
+      "pass": true
+    },
+    {
+      "name": "neighbourly comparison direction",
+      "pass": true
+    },
+    {
+      "name": "clear comparison direction",
+      "pass": true
+    },
+    {
+      "name": "Reduced motion removes transitions",
+      "pass": true
+    },
+    {
+      "name": "#/about renders",
+      "pass": true
+    },
+    {
+      "name": "#/help renders",
+      "pass": true
+    },
+    {
+      "name": "#/for-accountants renders",
+      "pass": true
+    },
+    {
+      "name": "#/privacy renders",
+      "pass": true
+    },
+    {
+      "name": "#/terms renders",
+      "pass": true
+    },
+    {
+      "name": "#/no-such-page renders",
+      "pass": true
+    },
+    {
+      "name": "#/error renders",
+      "pass": true
+    },
+    {
+      "name": "No stale working name in visible page",
+      "pass": true
+    },
+    {
+      "name": "light: 17 semantic contrast pairs",
+      "pass": true
+    },
+    {
+      "name": "dark: 17 semantic contrast pairs",
+      "pass": true
+    },
+    {
+      "name": "Phone simulation controls start collapsed",
+      "pass": true
+    },
+    {
+      "name": "Keyboard reaches visible skip link",
+      "pass": true
+    },
+    {
+      "name": "Skip link preserves route and focuses prototype",
+      "pass": true
+    },
+    {
+      "name": "Phone controls meet 44px target",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

@@ -6,12 +6,12 @@
 
 | Module / source path | Planned change | Governing contract / scenario |
 |---|---|---|
-| `src/AccApp.Core/Domain/` | Accountant profile model, typed IDs, the "listed" rule | BR01; FT01, FT05 |
-| `src/AccApp.Core/Application/` | Directory use case: list with search, filter and paging; get one listed profile | [SDD data contracts](../../docs/SDD.md#data-and-persistence-contracts); BR02; FT01–FT05 |
-| `src/AccApp.Core/Data/` | Database context, first migration, directory queries, a synthetic seed command for development | [SDD data contracts](../../docs/SDD.md#data-and-persistence-contracts) |
-| `src/AccApp.Web/Components/Pages/` | Directory page (`/`) and profile page (`/accountants/{id}`), both static server-rendered; "not available" and error pages | [SDD navigation](../../docs/SDD.md#navigation-and-screen-state); [DESIGN states](../../docs/DESIGN.md#screen-and-component-states) |
-| `src/AccApp.Web/Program.cs` | Register the context factory and directory use case; error handling; no-index header for public pages | [SDD errors and security](../../docs/SDD.md#errors-diagnostics-and-security) |
-| `tests/AccApp.Core.Tests/`, `tests/AccApp.Web.Tests/` | Scenario tests listed under Verification | [TEST-PLAN](../../docs/delivery/TEST-PLAN.md) |
+| `src/Kuwenta.Core/Domain/` | Accountant profile model, typed IDs, the "listed" rule | BR01; FT01, FT05 |
+| `src/Kuwenta.Core/Application/` | Directory use case: list with search, filter and paging; get one listed profile | [SDD data contracts](../../docs/SDD.md#data-and-persistence-contracts); BR02; FT01–FT05 |
+| `src/Kuwenta.Core/Data/` | Database context, first migration, directory queries, a synthetic seed command for development | [SDD data contracts](../../docs/SDD.md#data-and-persistence-contracts) |
+| `src/Kuwenta.Web/Components/Pages/` | Directory page (`/`) and profile page (`/accountants/{id}`), both static server-rendered; "not available" and error pages | [SDD navigation](../../docs/SDD.md#navigation-and-screen-state); [DESIGN states](../../docs/DESIGN.md#screen-and-component-states) |
+| `src/Kuwenta.Web/Program.cs` | Register the context factory and directory use case; error handling; no-index header for public pages | [SDD errors and security](../../docs/SDD.md#errors-diagnostics-and-security) |
+| `tests/Kuwenta.Core.Tests/`, `tests/Kuwenta.Web.Tests/` | Scenario tests listed under Verification | [TEST-PLAN](../../docs/delivery/TEST-PLAN.md) |
 
 ## Dependencies and approach
 

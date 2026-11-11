@@ -1,4 +1,4 @@
-# AccApp documentation
+# Kuwenta documentation
 
 This index owns document navigation and authority. Link new feature, decision and evidence records here as they are created. Keep the root README short so it does not become a second status or requirements document.
 
@@ -42,8 +42,10 @@ This index owns document navigation and authority. Link new feature, decision an
 | Feature | Requirements | Files | State |
 |---|---|---|---|
 | F01 Browse accountants and view a profile | R01–R03, R10, R11 | [spec](../specs/browse-accountants/spec.md), [plan](../specs/browse-accountants/plan.md), [tasks](../specs/browse-accountants/tasks.md) | Draft; not started |
+| F02 Kuwenta brand and prototype refresh | D01; R01–R18 presentation | [spec](../specs/brand-design-refresh/spec.md), [plan](../specs/brand-design-refresh/plan.md), [tasks](../specs/brand-design-refresh/tasks.md) | Local prototype design; application implementation remains not started |
+| F03 Client relationships, service progress and private documents | R19–R23, R10–R11 | [spec](../specs/client-services/spec.md), [plan](../specs/client-services/plan.md), [tasks](../specs/client-services/tasks.md) | Authorized expansion; private-save/request/accept confirmed; remaining D24–D28 policies open; application not started |
 
-New features start from the [feature template](../specs/feature-template/spec.md) (with its [plan](../specs/feature-template/plan.md) and [tasks](../specs/feature-template/tasks.md)), copied to `specs/<feature>/`. Decisions: [ADR index](adr/README.md). ADRs 005 to 008 are current; 001–004 are superseded.
+New features start from the [feature template](../specs/feature-template/spec.md) (with its [plan](../specs/feature-template/plan.md) and [tasks](../specs/feature-template/tasks.md)), copied to `specs/<feature>/`. Decisions: [ADR index](adr/README.md). ADRs 005 to 009 are current; 001–004 are superseded.
 
 ## History and unresolved conflicts
 
@@ -53,6 +55,6 @@ New features start from the [feature template](../specs/feature-template/spec.md
 | Conflict ID | Conflicting sources | Effect | Owner / resolution |
 |---|---|---|---|
 | C01 | ADR 001 targeted Windows and ADR 004 chose browser-based Google/Microsoft sign-in, but MAUI's WebAuthenticator was documented as not working on Windows | Sign-in would not have worked in a Windows app | Resolved 2026-11-11: the platform changed to the web, where redirect sign-in is the standard flow ([ADR 006](adr/006-web-sign-in.md)) |
-| C02 | The owner chose Vercel for hosting, but the design in ADR 005 needs a host that keeps the app running with long-lived WebSockets. Vercel lists no .NET runtime, and its container option stops idle apps and closes connections at the function time limit ([REFERENCES](REFERENCES.md#hosting-database-and-email-services)) | Live chat pages and the background email sender would not work reliably on Vercel | Resolved 2026-11-11: the owner kept the Blazor design and gave up Vercel ([ADR 007](adr/007-supabase-brevo-container-host.md)). The replacement host is open (PRD D11) |
+| C02 | The owner chose Vercel for hosting, but the design in ADR 005 needs a host that keeps the app running with long-lived WebSockets. Vercel lists no .NET runtime, and its container option stops idle apps and closes connections at the function time limit ([REFERENCES](REFERENCES.md#hosting-database-and-email-services)) | Live chat pages and the background email sender would not work reliably on Vercel | Resolved 2026-11-11: the owner kept the Blazor design and gave up Vercel ([ADR 007](adr/007-supabase-brevo-container-host.md)). Render was subsequently chosen the same day ([SDD stack](SDD.md#technology-stack)); plan and environment details remain in PRD D11 |
 
 No conflicts are open. Requirements describe intended behavior, source shows implementation, and execution records show verified behavior. Record discrepancies explicitly. Archived records retain provenance and do not override current authorities.

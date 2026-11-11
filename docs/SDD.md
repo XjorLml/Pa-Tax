@@ -1,20 +1,20 @@
-# AccApp software design
+# Kuwenta software design
 
 **Authority:** architecture and technical contracts. [PRD](PRD.md) owns behavior. [SETUP](SETUP.md) owns chosen tool versions; [DEVELOPMENT](DEVELOPMENT.md) owns coding practices. Status: Proposed — no source exists yet. Reviewed: 2026-11-11 against repository baseline `b9b50f3` (documentation only).
 
 ## Architecture and dependencies
 
-AccApp is one ASP.NET Core Blazor Web App on .NET 11 ([ADR 005](adr/005-web-platform-blazor.md)). There is no separate API and no installed client. None of these projects exist yet; they are created at the scaffold step.
+Kuwenta is one ASP.NET Core Blazor Web App on .NET 11 ([ADR 005](adr/005-web-platform-blazor.md)). There is no separate API and no installed client. None of these projects exist yet; they are created at the scaffold step.
 
 ```text
-AccApp.slnx
+Kuwenta.slnx
 global.json                    # created when the .NET 11 SDK is installed (SETUP)
 src/
-  AccApp.Core/                 # class library; no web UI types
+  Kuwenta.Core/                 # class library; no web UI types
     Domain/                    # typed IDs, roles, profile and message rules; interfaces for email and the clock
     Application/               # use cases: directory, profiles, conversations, accounts, notifications
     Data/                      # EF Core context, mappings, migrations, queries
-  AccApp.Web/                  # Blazor Web App; the composition root
+  Kuwenta.Web/                  # Blazor Web App; the composition root
     Program.cs                 # services, sign-in, rate limits, health checks
     Components/
       Layout/ Pages/ Shared/   # Razor components
@@ -22,18 +22,18 @@ src/
     Services/                  # email sender, live chat notifier, background email worker
     wwwroot/                   # styles and static assets
 tests/
-  AccApp.Core.Tests/           # domain rules; data tests against the real database provider
-  AccApp.Web.Tests/            # integration tests through WebApplicationFactory; component tests where useful
+  Kuwenta.Core.Tests/           # domain rules; data tests against the real database provider
+  Kuwenta.Web.Tests/            # integration tests through WebApplicationFactory; component tests where useful
 ```
 
 | Component | Responsibility | Allowed dependencies | Source |
 |---|---|---|---|
-| Domain (Core) | Typed IDs, roles, validation rules (BR01–BR08), interfaces for email sending and the clock | .NET base library only | `src/AccApp.Core/Domain/` (planned) |
-| Application (Core) | Use-case services. Every authorization rule is enforced here, not in the UI | Domain | `src/AccApp.Core/Application/` (planned) |
-| Data (Core) | EF Core context, migrations, queries, user store | Domain, Application interfaces, EF Core, the chosen database provider | `src/AccApp.Core/Data/` (planned) |
-| Pages and components (Web) | Rendering, forms, validation display, draft retention | Application services | `src/AccApp.Web/Components/` (planned) |
-| Account endpoints (Web) | External sign-in challenge and callback, sign-out, cookie session | ASP.NET Core authentication, Application | `src/AccApp.Web/Account/` (planned) |
-| Services (Web) | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/AccApp.Web/Services/` (planned) |
+| Domain (Core) | Typed IDs, roles, validation rules (BR01–BR08), interfaces for email sending and the clock | .NET base library only | `src/Kuwenta.Core/Domain/` (planned) |
+| Application (Core) | Use-case services. Every authorization rule is enforced here, not in the UI | Domain | `src/Kuwenta.Core/Application/` (planned) |
+| Data (Core) | EF Core context, migrations, queries, user store | Domain, Application interfaces, EF Core, the chosen database provider | `src/Kuwenta.Core/Data/` (planned) |
+| Pages and components (Web) | Rendering, forms, validation display, draft retention | Application services | `src/Kuwenta.Web/Components/` (planned) |
+| Account endpoints (Web) | External sign-in challenge and callback, sign-out, cookie session | ASP.NET Core authentication, Application | `src/Kuwenta.Web/Account/` (planned) |
+| Services (Web) | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/Kuwenta.Web/Services/` (planned) |
 
 Dependency rules:
 - Web → Core. Core never references Web.
@@ -45,7 +45,7 @@ Render modes (Proposed in ADR 005; modes per the [render modes reference](REFERE
 | Pages | Render mode | Why |
 |---|---|---|
 | Directory, profile, sign-in, error pages | Static server rendering (the Blazor default) | Fast first load, plain links and forms, shareable addresses, works before any script loads |
-| Chats, chat thread, profile editor, account | Interactive Server | Live chat updates and rich forms over the page's server connection (the "circuit") |
+| Chats, chat thread, profile editor, account; private lists, service requests and progress/documents | Interactive Server | Live chat updates and rich forms over the page's server connection (the "circuit"); service routes are proposed in F03 |
 
 There is no WebAssembly client project. Cost of this choice: every signed-in interactive page holds a server connection, and that connection drops when the server restarts.
 
@@ -64,7 +64,7 @@ One table for the whole stack. The owner approved every choice in this table on 
 | Data access | Entity Framework Core with the Npgsql provider | Decided 2026-11-11 |
 | Sign-in | Google and Microsoft accounts through ASP.NET Core authentication | Decided ([ADR 006](adr/006-web-sign-in.md)) |
 | User store | ASP.NET Core Identity | Decided 2026-11-11 (ADR 006) |
-| Styling | Tailwind CSS, with the chosen look's colors as theme values. No component library | Decided 2026-11-11; the look itself is not chosen |
+| Styling | Tailwind CSS, with Kuwenta's semantic colors as theme values. No component library | Stack decided 2026-11-11; current prototype direction applied under the delegated design brief ([DESIGN](DESIGN.md#visual-system)); application acceptance pending |
 | Email | Brevo, called from a background service in the application | Decided 2026-11-11 (ADR 007) |
 | Background work | ASP.NET Core's built-in hosted services | Decided 2026-11-11 |
 | Tests | xUnit; `WebApplicationFactory` for integration tests; bUnit for components where useful | Decided 2026-11-11 |
@@ -99,7 +99,7 @@ The server database is the only store of record.
 | Failure/downgrade | Each migration step is atomic where the provider allows. A rollback plan is recorded with each release that changes the schema |
 | Ratings | One review per client and accountant, enforced by a unique constraint. The average and count are computed from the reviews, never stored by hand. The reviewer's short name is produced when the page is rendered |
 | Reports and blocks | A report stores who reported, what was reported, the reason and the time, and emails the site owner (D22). A block is stored per conversation with who set it |
-| Retention and backup | Account deletion removes the profile, the external sign-in links and the email preference (BR06). Chat retention per D07 and D14. Backup policy belongs to D11 |
+| Retention and backup | Account deletion removes the profile, external sign-in links and email preference (BR06). Chat/service retention per D07/D14; private files and relationship termination per D27. Backup policy belongs to D11 |
 
 For SQL: parameterized queries only, constraints for the rules the database can enforce, and tests that run against the real provider rather than an in-memory substitute.
 
@@ -112,7 +112,7 @@ Supabase is used as a PostgreSQL database only (Proposed in ADR 007). Sign-in st
 
 | Decision | Selected approach |
 |---|---|
-| Sign-in method | Google or Microsoft account through ASP.NET Core external authentication ([ADR 006](adr/006-web-sign-in.md)). The browser is redirected to the provider and back to the site's callback address. No AccApp passwords |
+| Sign-in method | Google or Microsoft account through ASP.NET Core external authentication ([ADR 006](adr/006-web-sign-in.md)). The browser is redirected to the provider and back to the site's callback address. No Kuwenta passwords |
 | User store | ASP.NET Core Identity with external sign-ins only (Proposed in ADR 006) |
 | Session | A cookie that is HTTPS-only and unreadable by scripts. Lifetime is set at implementation |
 | Expired session | The next action sends the user to sign-in and then back to the same address. Unsent chat text is kept |
@@ -129,10 +129,47 @@ Authorization rules, enforced in Application services on the server:
 - A client can write a review only for an accountant who has sent a message in their conversation, once, and only that client can change or delete it (BR09).
 - Only the reviewed accountant can reply to a review. Nobody can edit another person's review (BR11).
 - Reporting and blocking need a signed-in user. A blocked person cannot add messages to that conversation (R15).
+- Saved-accountant lists belong to their authenticated client. A private client list is scoped to its accountant; saving alone never exposes a client's account in the confirmed save/request/accept model.
+- Service tasks, updates and files inherit both participant IDs from their engagement. Every read/write/download/removal resolves the parent relationship and current actor, including asynchronous completion. Proposed editor/removal permissions follow the private-workspace table below; UI guards do not enforce security.
 
 A record ID in an address or a form is never proof of access. Hiding a button is not authorization: the service behind it checks again.
 
 Provider client secrets stay on the server: user-secrets in development, the host's secret store in production ([SETUP](SETUP.md#local-development)).
+
+## Private service workspaces
+
+[PRD](PRD.md) R19–R23 / BR14–BR18 own behavior; [F03](../specs/client-services/spec.md) refines scenarios; [ADR 009](adr/009-private-service-workspaces.md) records scope and storage boundaries. This is a proposed implementation contract, not existing .NET source. D24–D28 must be resolved before production implementation/intake.
+
+| Planned entity | Ownership / constraints |
+|---|---|
+| SavedAccountant | Client ID + accountant ID unique pair; private bookmark independent of shared work |
+| ClientRelationship | Client ID + accountant ID; remaining lifecycle/termination under D24. Not created by public profile views, saves or chat alone in the confirmed model |
+| ServiceEngagement | Parent participant pair, service name snapshot, requested/active/declined phase, version. Request acceptance is transactional; repeated requests/retries use operation IDs. Prototype deduplicates an existing non-declined service by pair/name; repeat-service policy remains D24 |
+| ServiceTask | Engagement FK, title, explicit status, stable ordering and version. Completion/progress per D25; do not store an unrelated percentage |
+| ServiceUpdate | Engagement FK, author, UTC instant, shared note or activity record. Exclude contents from logs; ordering uses timestamp plus unique tie-breaker |
+| ServiceFile | Engagement FK, optional task FK verified to belong to that engagement, uploader, opaque storage key, original display name, validated media type/length, lifecycle state and operation ID. Original filename is never a storage path or authorization token |
+
+All new IDs are server-generated GUIDs in the application (short fixture IDs in the prototype). Database constraints enforce parent associations and uniqueness; application services enforce the current participant and relationship state on every operation. Proposed permission matrix:
+
+| Operation | Client participant | Accountant participant | Visitor / unrelated actor |
+|---|---|---|---|
+| Save/remove personal accountant entry | Own list | No | No |
+| Request service | Own pair with listed accountant | No; may add work for an existing accepted relationship (D24) | No |
+| Accept/decline service | Read result | Own received request | No |
+| Read service/tasks/shared updates/files | Yes | Yes | No |
+| Add tasks, change statuses, post shared progress note | Read-only progress | Yes, accepted work (D25) | No |
+| Attach/download service documents | Yes, accepted work | Yes, accepted work | No |
+| Remove document | Own uploaded file only (D27 proposal) | Own uploaded file only (D27 proposal) | No |
+
+Application services are planned in Core/Application (relationship, engagement, progress and document use cases), with EF metadata in Core/Data and thin Razor views in Web. A private file-store interface separates metadata from bytes. The provider and scanning/quarantine implementation are open D28; Supabase's file-storage service is not silently enabled. A database blob approach or separate private byte store requires an explicit decision and operations plan.
+
+Real upload contract: authenticate/authorize before intake; antiforgery on mutating forms; enforce D26 byte/type/quantity limits on the server while streaming; treat client type/name as untrusted; keep incomplete/unvalidated/quarantined bytes unavailable. Metadata becomes Available only after the byte write and required validation/scanning complete. Coordinate partial-write cleanup and retries with operation IDs; a timeout does not prove failure. Downloads resolve current permission and Available state, return an attachment with an escaped/sanitized filename and safe response headers, and never reveal storage credentials or public object URLs. Removal rechecks uploader rights and retention policy, records the event, and coordinates byte/metadata cleanup. Revoked sessions/relationships cannot complete writes under an earlier actor's authorization.
+
+Progress writes use optimistic concurrency; a stale version returns a conflict with the draft retained and current values for review. New shared updates appear on reload/reconnect; live cross-tab refresh can reuse the application's notifier when implemented. No service-progress emails are added to R08. Relationship deletion/blocking implications remain D24/D27; chat block semantics are not silently extended to revoke file access.
+
+Proposed same-site routes: `/workspace` (role-aware private list), `/clients/{clientId}` (accountant-only grouped services), `/accountants/{id}/request-service`, `/work/{engagementId}` and application-owned file form/download endpoints beneath `/work/{engagementId}/files/{fileId}`. These are routes/endpoints of the one web app, not a new public API. URL IDs never grant access. Unauthorized/missing records show a generic unavailable state without other participants' details.
+
+Prototype boundary: all service metadata lives in memory; drafts are separated by actor/service, survive simulated failures within the loaded page, and clear on reload. Upload uses generated sample selections, not a real file picker. Download generates synthetic PDF/CSV/TXT bytes locally. The production lifecycle, persistence and security contract above is not exercised by the HTML artifact.
 
 ## Live chat and email notifications
 
@@ -163,7 +200,8 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `/chats/{id}` | GUID; the user must be a participant | Unsent text kept across a lost connection and a reload of the tab | Not a participant, or unknown ID: "not available", never another user's content |
 | `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Becomes the existing conversation if the pair already has one (per D06) |
 | `/account/profile` | Signed-in accountant | Unsaved edits; confirmation on leave | A save that succeeded is reported as saved even if the next navigation fails |
-| `/account`, `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/` |
+| `/account`, `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/`; service/file handling still requires D27 |
+| `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service`, `/work/{id}` | Authenticated participant and valid parent IDs; [private-workspace contract](#private-service-workspaces) | Draft request/task/note state retained on failed write; real file reselect/retry strategy decided at implementation | Missing/unauthorized is generic unavailable; proposed routes; durable metadata reloaded from server in the application |
 
 A submit button is disabled while its operation runs, so a double click can't run it twice.
 
@@ -215,6 +253,7 @@ Interactive components read the signed-in user from the authentication state the
 | R13, R14 | Review use cases, rating queries, review and profile pages | Core.Tests, Web.Tests; TP16 |
 | R15 | Report and block use cases; report email | Core.Tests, Web.Tests; TP17 |
 | R16–R18 | Static pages, sign-in agreement, not-found and error handling | Web.Tests; TP18 |
+| R19–R23 / F03 CS01–CS10 | Private relationship/engagement/progress/document use cases, EF metadata and private byte-store boundary | TP19–TP22 application checks; CS prototype checks recorded separately |
 
 Significant rationale: [ADR index](adr/README.md). Conflicts: none open ([docs index](README.md#history-and-unresolved-conflicts)). Remaining technical risks, owner lumabanls:
 - Restarts and deployments drop interactive connections (TP15 checks what users see).
