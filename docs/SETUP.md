@@ -53,10 +53,10 @@ Then, after the scaffold step creates the projects:
 PowerShell commands for after scaffolding. They have not been executed, because the projects do not exist yet:
 
 ```powershell
-dotnet test tests/Kuwenta.Core.Tests/Kuwenta.Core.Tests.csproj -c Release
-dotnet test tests/Kuwenta.Web.Tests/Kuwenta.Web.Tests.csproj -c Release
-dotnet build src/Kuwenta.Web/Kuwenta.Web.csproj -c Release
-dotnet run --project src/Kuwenta.Web/Kuwenta.Web.csproj --launch-profile https
+dotnet test tests/TaxBuddy.Core.Tests/TaxBuddy.Core.Tests.csproj -c Release
+dotnet test tests/TaxBuddy.Web.Tests/TaxBuddy.Web.Tests.csproj -c Release
+dotnet build src/TaxBuddy.Web/TaxBuddy.Web.csproj -c Release
+dotnet run --project src/TaxBuddy.Web/TaxBuddy.Web.csproj --launch-profile https
 ```
 
 ## Configuration and dependencies
@@ -69,14 +69,14 @@ dotnet run --project src/Kuwenta.Web/Kuwenta.Web.csproj --launch-profile https
 
 ## Local development
 
-The values below are filled when `Kuwenta.Web` is created and verified.
+The values below are filled when `TaxBuddy.Web` is created and verified.
 
 | Item | Selected value |
 |---|---|
-| Web project and local addresses | `src/Kuwenta.Web/Kuwenta.Web.csproj`; `https://localhost:<port>` from its launch settings, recorded at scaffold |
+| Web project and local addresses | `src/TaxBuddy.Web/TaxBuddy.Web.csproj`; `https://localhost:<port>` from its launch settings, recorded at scaffold |
 | Google sign-in (development registration) | Redirect address `https://localhost:<port>/signin-google`. Secret keys `Authentication:Google:ClientId` and `Authentication:Google:ClientSecret` in user-secrets |
 | Microsoft sign-in (development registration) | Redirect address: the handler's callback path, confirmed at implementation. Secret keys `Authentication:Microsoft:ClientId` and `Authentication:Microsoft:ClientSecret` in user-secrets |
-| Development database | A Supabase project used only for development and tests, with synthetic data and a reset-and-seed command. Connection string in user-secrets under `ConnectionStrings:Kuwenta` (Proposed). Use the session pooler address on port 5432 if this network has no IPv6. Data tests run against it in their own schema (Proposed); a local PostgreSQL can replace it later |
+| Development database | A Supabase project used only for development and tests, with synthetic data and a reset-and-seed command. Connection string in user-secrets under `ConnectionStrings:TaxBuddy` (Proposed). Use the session pooler address on port 5432 if this network has no IPv6. Data tests run against it in their own schema (Proposed); a local PostgreSQL can replace it later |
 | Email in development | A development sender that writes emails to a local ignored folder or the log. No real email is sent |
 | Testing from a phone | Open: reach the PC over the local network with a firewall rule, or use a development tunnel. Sign-in redirect addresses must match the address used |
 
@@ -86,8 +86,8 @@ The values below are filled when `Kuwenta.Web` is created and verified.
 PowerShell commands for after scaffolding:
 
 ```powershell
-dotnet user-secrets list --project src/Kuwenta.Web/Kuwenta.Web.csproj
-dotnet run --project src/Kuwenta.Web/Kuwenta.Web.csproj --launch-profile https
+dotnet user-secrets list --project src/TaxBuddy.Web/TaxBuddy.Web.csproj
+dotnet run --project src/TaxBuddy.Web/TaxBuddy.Web.csproj --launch-profile https
 ```
 
 ## Troubleshooting and maintenance

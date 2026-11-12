@@ -1,0 +1,121 @@
+[
+  {
+    "fg": "text",
+    "bg": "surface",
+    "ratio": 13.58434152436051,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "text",
+    "bg": "app-bg",
+    "ratio": 15.269774714232467,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "muted",
+    "bg": "surface",
+    "ratio": 8.213204454956776,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "muted",
+    "bg": "app-bg",
+    "ratio": 9.232231204156532,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "muted",
+    "bg": "hero",
+    "ratio": 7.065018393281911,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "muted",
+    "bg": "hero-art",
+    "ratio": 5.428663283560194,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "link",
+    "bg": "surface",
+    "ratio": 9.887517318896926,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "on-primary",
+    "bg": "primary",
+    "ratio": 9.348826890663888,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "on-primary",
+    "bg": "primary-strong",
+    "ratio": 11.040127631465856,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "on-soft",
+    "bg": "primary-soft",
+    "ratio": 8.849635901871938,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "danger",
+    "bg": "danger-soft",
+    "ratio": 8.22239743168069,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "warn",
+    "bg": "warn-soft",
+    "ratio": 8.129772829863938,
+    "minimum": 4.5,
+    "pass": true
+  },
+  {
+    "fg": "ctl",
+    "bg": "surface",
+    "ratio": 4.723716480052306,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "fg": "ctl",
+    "bg": "app-bg",
+    "ratio": 5.309796307384981,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "fg": "ctl",
+    "bg": "hero",
+    "ratio": 4.063352373515712,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "fg": "focus",
+    "bg": "surface",
+    "ratio": 9.887517318896926,
+    "minimum": 3,
+    "pass": true
+  },
+  {
+    "fg": "focus",
+    "bg": "hero",
+    "ratio": 8.505266379889221,
+    "minimum": 3,
+    "pass": true
+  }
+]

@@ -1,0 +1,587 @@
+{
+  "browser": "Edg/157.0.4341.46",
+  "node": "v22.12.0",
+  "observedAt": "2026-11-12T01:26:03.344Z",
+  "sourceHashes": {
+    "prototypes/index.html": "469a5309687b226853bff384edbaff34874aa4aa929825deca50f146d6f95b45",
+    "prototypes/taxbuddy.css": "5a65cc833b446440711ea50a45766489e39796a37c0ef8eb640c29be4cbbe985",
+    "prototypes/service-workspace.js": "cc83306f3db10889a7c26b3b5f0a8e1a9ebc4abba66e3d314883efe8eb85ab8b",
+    "tools/check_prototype.mjs": "2d586d14a2031862d2932e50ce3ba77eeb76a6657e41b32cc950bbec4670976f",
+    "prototypes/assets/taxbuddy-logo-light.svg": "04d8e8c091cf2d80082dcfcca9415efdd640b68de0e553c84deeb115bab51708",
+    "prototypes/assets/taxbuddy-logo-dark.svg": "86a98e06b534ddb5f64d03bf0d1f1636ccd65fa1a64d40bd2bcab742c13b7e36",
+    "prototypes/assets/taxbuddy-icon.svg": "100a5e6c45375d2523f5f02fb8500625996f19a69c6251615e7451f4d2272f63",
+    "prototypes/assets/taxbuddy-icon-dark.svg": "0a2727bd40c5206d52579dc61f0f249cd8bb8f40a1cf9ad37c98bde21ac922b8",
+    "prototypes/assets/favicon.svg": "32c9d934cab55bcf5049be0ed61da7537bffe9af6e2fa32f313cd4e7620b3f06"
+  },
+  "results": [
+    {
+      "name": "Desktop default and Tax Buddy name",
+      "pass": true
+    },
+    {
+      "name": "Desktop directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "Desktop directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "Six initial cards",
+      "pass": true
+    },
+    {
+      "name": "Paging adds remaining cards",
+      "pass": true
+    },
+    {
+      "name": "No match has recovery",
+      "pass": true
+    },
+    {
+      "name": "Service filter is selected",
+      "pass": true
+    },
+    {
+      "name": "Empty directory distinct from no-match",
+      "pass": true
+    },
+    {
+      "name": "Load failure distinct from empty",
+      "pass": true
+    },
+    {
+      "name": "Directory retry recovers",
+      "pass": true
+    },
+    {
+      "name": "Desktop profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "Desktop profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "Profile contains portfolio, reviews and contact action",
+      "pass": true
+    },
+    {
+      "name": "Removed profile state",
+      "pass": true
+    },
+    {
+      "name": "Visitor draft shown at sign-in",
+      "pass": true
+    },
+    {
+      "name": "Agreement required before role choice",
+      "pass": true
+    },
+    {
+      "name": "Draft retained after sign-in",
+      "pass": true
+    },
+    {
+      "name": "Failed send offers retry",
+      "pass": true
+    },
+    {
+      "name": "Retry avoids duplicate message",
+      "pass": true
+    },
+    {
+      "name": "Offline notice and draft",
+      "pass": true
+    },
+    {
+      "name": "Email preference toggles",
+      "pass": true
+    },
+    {
+      "name": "Review requires stars",
+      "pass": true
+    },
+    {
+      "name": "Review shown under abbreviated name",
+      "pass": true
+    },
+    {
+      "name": "Accountant reply is displayed",
+      "pass": true
+    },
+    {
+      "name": "Block requires confirmation",
+      "pass": true
+    },
+    {
+      "name": "Blocked chat hides composer",
+      "pass": true
+    },
+    {
+      "name": "Unblock restores composer",
+      "pass": true
+    },
+    {
+      "name": "Unsaved profile guard",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-1440-dark chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-390-dark chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "phone-320-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light directory: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light directory: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light profile: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light profile: local image assets",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light chat: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "desktop-700-light chat: local image assets",
+      "pass": true
+    },
+    {
+      "name": "taxbuddy comparison direction",
+      "pass": true
+    },
+    {
+      "name": "modern comparison direction",
+      "pass": true
+    },
+    {
+      "name": "ledger comparison direction",
+      "pass": true
+    },
+    {
+      "name": "neighbourly comparison direction",
+      "pass": true
+    },
+    {
+      "name": "clear comparison direction",
+      "pass": true
+    },
+    {
+      "name": "Reduced motion removes transitions",
+      "pass": true
+    },
+    {
+      "name": "#/about renders",
+      "pass": true
+    },
+    {
+      "name": "#/help renders",
+      "pass": true
+    },
+    {
+      "name": "#/for-accountants renders",
+      "pass": true
+    },
+    {
+      "name": "#/privacy renders",
+      "pass": true
+    },
+    {
+      "name": "#/terms renders",
+      "pass": true
+    },
+    {
+      "name": "#/no-such-page renders",
+      "pass": true
+    },
+    {
+      "name": "#/error renders",
+      "pass": true
+    },
+    {
+      "name": "No stale earlier names in visible page",
+      "pass": true
+    },
+    {
+      "name": "light: 17 semantic contrast pairs",
+      "pass": true
+    },
+    {
+      "name": "dark: 17 semantic contrast pairs",
+      "pass": true
+    },
+    {
+      "name": "Phone simulation controls start collapsed",
+      "pass": true
+    },
+    {
+      "name": "Keyboard reaches visible skip link",
+      "pass": true
+    },
+    {
+      "name": "Skip link preserves route and focuses prototype",
+      "pass": true
+    },
+    {
+      "name": "Phone controls meet 44px target",
+      "pass": true
+    },
+    {
+      "name": "CS05 visitor workspace is private",
+      "pass": true
+    },
+    {
+      "name": "CS01 accountant groups three scoped clients",
+      "pass": true
+    },
+    {
+      "name": "Accountant client list: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "Accountant client list: local image assets",
+      "pass": true
+    },
+    {
+      "name": "Workspace loading state",
+      "pass": true
+    },
+    {
+      "name": "Workspace empty state",
+      "pass": true
+    },
+    {
+      "name": "Workspace load error retries",
+      "pass": true
+    },
+    {
+      "name": "Client detail shows only scoped services",
+      "pass": true
+    },
+    {
+      "name": "Accountant assigns service to an accepted client",
+      "pass": true
+    },
+    {
+      "name": "Repeated accountant service assignment reuses workspace",
+      "pass": true
+    },
+    {
+      "name": "Unknown client unavailable",
+      "pass": true
+    },
+    {
+      "name": "CS02 client has two added accountants",
+      "pass": true
+    },
+    {
+      "name": "Adding accountant populates private list",
+      "pass": true
+    },
+    {
+      "name": "Added accountant has no duplicate add control",
+      "pass": true
+    },
+    {
+      "name": "Removing saved entry keeps service work",
+      "pass": true
+    },
+    {
+      "name": "Client cannot open accountant client list",
+      "pass": true
+    },
+    {
+      "name": "Request validates selected offered service",
+      "pass": true
+    },
+    {
+      "name": "CS03 request awaits acceptance without edit controls",
+      "pass": true
+    },
+    {
+      "name": "Repeated service request reuses workspace",
+      "pass": true
+    },
+    {
+      "name": "Acceptance creates starting checklist",
+      "pass": true
+    },
+    {
+      "name": "Client sees accepted read-only checklist",
+      "pass": true
+    },
+    {
+      "name": "Decline distinct from active work",
+      "pass": true
+    },
+    {
+      "name": "CS04 failed progress save preserves draft and saved total",
+      "pass": true
+    },
+    {
+      "name": "Offline progress never queues",
+      "pass": true
+    },
+    {
+      "name": "Saved progress recomputes completed ratio",
+      "pass": true
+    },
+    {
+      "name": "Adding a task updates denominator",
+      "pass": true
+    },
+    {
+      "name": "Failed shared note retains text",
+      "pass": true
+    },
+    {
+      "name": "Shared note has author and timestamp",
+      "pass": true
+    },
+    {
+      "name": "Checklist checkbox can reopen a completed task",
+      "pass": true
+    },
+    {
+      "name": "Checklist checkbox saves completion",
+      "pass": true
+    },
+    {
+      "name": "Client sees saved progress and note without write controls",
+      "pass": true
+    },
+    {
+      "name": "CS07 oversize rejected",
+      "pass": true
+    },
+    {
+      "name": "Unsupported file type rejected",
+      "pass": true
+    },
+    {
+      "name": "Upload exposes busy progress and disables repetition",
+      "pass": true
+    },
+    {
+      "name": "Upload failure keeps sample/task selection",
+      "pass": true
+    },
+    {
+      "name": "CS06 retry adds one task-associated file",
+      "pass": true
+    },
+    {
+      "name": "Counterpart downloads but cannot remove uploaded file",
+      "pass": true
+    },
+    {
+      "name": "Generated PDF download is a synthetic fixture",
+      "pass": true
+    },
+    {
+      "name": "Loss of connection during upload preserves file count",
+      "pass": true
+    },
+    {
+      "name": "Account switch prevents late upload insertion",
+      "pass": true
+    },
+    {
+      "name": "Interrupted uploader gets explicit retry state",
+      "pass": true
+    },
+    {
+      "name": "CS08 document removal requires confirmation",
+      "pass": true
+    },
+    {
+      "name": "Cancel removal preserves file",
+      "pass": true
+    },
+    {
+      "name": "Confirmed own-file removal updates workspace",
+      "pass": true
+    },
+    {
+      "name": "CS05 unrelated accountant cannot inspect service or files",
+      "pass": true
+    },
+    {
+      "name": "Unrelated accountant has empty scoped list",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-1440-light-accountant list: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-1440-light-accountant list: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-1440-light-accountant service: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-1440-light-accountant service: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-390-dark-client list: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-phone-390-dark-client list: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-390-dark-client service: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-phone-390-dark-client service: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-390-dark-client service touch targets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-320-light-accountant list: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-phone-320-light-accountant list: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-320-light-accountant service: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-phone-320-light-accountant service: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-phone-320-light-accountant service touch targets",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-700-dark-client list: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-700-dark-client list: local image assets",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-700-dark-client service: no horizontal overflow",
+      "pass": true
+    },
+    {
+      "name": "work-desktop-700-dark-client service: local image assets",
+      "pass": true
+    }
+  ],
+  "errors": []
+}

@@ -133,12 +133,12 @@ window.createServiceWorkspace = function (ctx) {
   }
   function syntheticBytes(sample) {
     if(sample==='receipts') {
-      const stream='BT /F1 14 Tf 40 180 Td (Kuwenta synthetic service document) Tj 0 -24 Td (Demo only - no client records.) Tj ET';
+      const stream='BT /F1 14 Tf 40 180 Td (Tax Buddy synthetic service document) Tj 0 -24 Td (Demo only - no client records.) Tj ET';
       const objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 400 240] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>','<< /Length '+stream.length+' >>\nstream\n'+stream+'\nendstream'];
       let pdf='%PDF-1.4\n',offsets=[0];objects.forEach((o,i)=>{offsets.push(pdf.length);pdf+=(i+1)+' 0 obj\n'+o+'\nendobj\n';});
       const start=pdf.length;pdf+='xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+'trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n'+start+'\n%%EOF\n';return pdf;
     }
-    return sample==='sales'?'record,note\nDEMO-001,Synthetic sample only - no client records\n':'Kuwenta synthetic service document\nDemo only. No client records.\n';
+    return sample==='sales'?'record,note\nDEMO-001,Synthetic sample only - no client records\n':'Tax Buddy synthetic service document\nDemo only. No client records.\n';
   }
   api.actions = {
     'ws-retry-load':()=>{api.dataMode='normal';render();},

@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Kuwenta Prototype</title>
-<meta name="description" content="Clickable design prototype of Kuwenta release 1. A proposal for review, not an approved design.">
+<title>Tax Buddy Prototype</title>
+<meta name="description" content="Clickable design prototype of Tax Buddy release 1. A proposal for review, not an approved design.">
 <style>
 /* ===== Prototype chrome: not part of the site, so it stays neutral for every look ===== */
 :root{--page:#E9ECEF;--bar:#F8F9FA;--frame:#1F2328;--c-surface:#FFFFFF;--c-surface-2:#EEF0F2;--c-text:#1A1D21;--c-muted:#565D66;--c-border:#C3CAD2;--c-accent:#30363D;--c-on-accent:#FFFFFF;--c-focus:#2563EB;--shadow:0 10px 30px rgba(20,24,28,.18);color-scheme:light}
@@ -442,21 +442,24 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
 .osnote{cursor:default}
 .osnote .actions{margin-top:8px;gap:6px}
 </style>
-<link rel="stylesheet" href="kuwenta.css">
+<link rel="stylesheet" href="taxbuddy.css">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 </head>
 <body>
 <a class="skip-link" href="#device">Skip prototype controls</a>
 <header class="pbar" aria-label="Prototype controls">
  <details id="prototype-controls" class="prototype-controls">
-  <summary><strong>Kuwenta prototype</strong><span>Design review · synthetic data</span><span class="controls-label">Simulation controls</span></summary>
+  <summary><strong>Tax Buddy prototype</strong><span>Design review · synthetic data</span><span class="controls-label">Simulation controls</span></summary>
   <div class="prow">
-    <div class="ptitle"><strong>Kuwenta prototype</strong><span>Release 1 proposal for review · not approved · all data is synthetic</span></div>
+    <div class="ptitle"><strong>Tax Buddy prototype</strong><span>Release 1 proposal for review · not approved · all data is synthetic</span></div>
     <div class="pctl"><span id="lbl-device">Device</span>
       <div class="seg" role="group" aria-labelledby="lbl-device"><button type="button" id="dev-phone">Phone browser</button><button type="button" id="dev-desktop">Desktop browser</button></div>
     </div>
     <label class="pctl">Look
-      <select id="sel-look"><option value="kuwenta">Kuwenta</option><option value="modern">Modern (earlier)</option><option value="ledger">Ledger (earlier)</option><option value="neighbourly">Neighbourly (earlier)</option><option value="clear">Clear (earlier)</option></select>
+      <select id="sel-look"><option value="taxbuddy">Tax Buddy</option><option value="modern">Modern (earlier)</option><option value="ledger">Ledger (earlier)</option><option value="neighbourly">Neighbourly (earlier)</option><option value="clear">Clear (earlier)</option></select>
+    </label>
+    <label class="pctl">Palette
+      <select id="sel-palette"><option value="forest">Paper &amp; Forest (current)</option><option value="ink">Ink &amp; Ledger Blue (option)</option><option value="lagoon">Lagoon Teal (option)</option><option value="plum">Plum &amp; Blush (option)</option><option value="marigold">Marigold &amp; Charcoal (option)</option></select>
     </label>
     <label class="pctl">Signed in as
       <select id="sel-role">
@@ -643,7 +646,7 @@ const PERSONAS = {
 
 /* ---------- State ---------- */
 const S = {
-  device: window.innerWidth >= 900 ? 'desktop' : 'phone', theme: 'system', look: 'kuwenta', online: true, notes: true, howOpen: false,
+  device: window.innerWidth >= 900 ? 'desktop' : 'phone', theme: 'system', look: 'taxbuddy', palette: 'forest', online: true, notes: true, howOpen: false,
   dirScenario: 'normal', sendScenario: 'ok',
   me: null,
   dir: { status: 'idle', data: [], search: '', service: '', sort: 'name', shown: PAGE },
@@ -660,7 +663,10 @@ if (PERSONAS[qs.get('role')]) S.me = Object.assign({}, PERSONAS[qs.get('role')])
 if (qs.get('offline') === '1') S.online = false;
 if (qs.get('email') === 'off') S.emailOn = false;
 if (qs.get('notes') === '0') S.notes = false;
-if (['kuwenta', 'modern', 'ledger', 'neighbourly', 'clear'].indexOf(qs.get('look')) >= 0) S.look = qs.get('look');
+if (['taxbuddy', 'modern', 'ledger', 'neighbourly', 'clear'].indexOf(qs.get('look')) >= 0) S.look = qs.get('look');
+/* Palette options for the Tax Buddy look: proposals for comparison. 'forest' is the current palette. */
+const PALETTES = { forest: 'Paper & Forest', ink: 'Ink & Ledger Blue', lagoon: 'Lagoon Teal', plum: 'Plum & Blush', marigold: 'Marigold & Charcoal' };
+if (PALETTES[qs.get('palette')]) S.palette = qs.get('palette');
 
 /* ---------- Helpers ---------- */
 const $id = id => document.getElementById(id);
@@ -844,7 +850,7 @@ function addressText() {
     if (S.dir.sort === 'rating') q.push('sort=rating');
     if (q.length) p += '?' + q.join('&');
   }
-  return 'kuwenta.example' + p;
+  return 'taxbuddy.example' + p;
 }
 const addressPill = () => '<span class="addr">' + icon('lock', 12) + '<span data-address>' + esc(addressText()) + '</span></span>';
 function statusbarHTML() {
@@ -852,7 +858,20 @@ function statusbarHTML() {
   return '<div class="statusbar" aria-hidden="true"><span>' + t + '</span><span class="sb-ic">' + (S.online ? icon('signal', 14) : icon('wifiOff', 14)) + '<span class="batt"></span></span></div>' +
     '<div class="urlbar" aria-hidden="true">' + addressPill() + '</div>';
 }
-const titlebarHTML = () => '<div class="titlebar" aria-hidden="true"><span class="tabname"><span class="appdot" aria-hidden="true"><img class="brand-symbol symbol-light" src="assets/kuwenta-icon.svg" alt=""><img class="brand-symbol symbol-dark" src="assets/kuwenta-icon-dark.svg" alt=""></span>Kuwenta</span>' + addressPill() + '<span class="tb-ctrls"><span>&#8212;</span><span>&#9744;</span><span>&#10005;</span></span></div>';
+/* Brand marks. The current palette uses the SVG files; a palette option draws the same paths inline so they take its tokens. */
+const altPalette = () => S.look === 'taxbuddy' && S.palette !== 'forest';
+const MARK_SVG = '<rect class="lg-bg" x="2" y="2" width="44" height="44" rx="12"/><g class="lg-ink" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 12h12c4 0 6 2 6 5v16c-2-2-5-3-8-3H12zM30 17c2-3 5-5 8-5v18c-3 0-6 1-8 3M17 18h6m-6 5h6"/><path class="lg-bub" d="M9 30h13v8h-5l-4 3v-3H9z"/></g>';
+const WORDMARK_SVG = '<g class="lg-wm" transform="translate(58 4)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5v23q0 6 7 5m-14-21h16 M43 21q0-10-9-10t-9 12q0 11 9 11t9-11m0-11v21 M53 12l16 21m0-21-16 21 M89 21q0-10 9-10t9 12q0 11-9 11t-9-11M89 5v28 M117 12v14q0 8 8 8t8-8V12 M161 21q0-10-9-10t-9 12q0 11 9 11t9-11M161 5v28 M189 21q0-10-9-10t-9 12q0 11 9 11t9-11M189 5v28 M199 12l8.5 19m7.5-19-11 28"/></g>';
+const brandSymbolHTML = () => altPalette()
+  ? '<svg class="brand-symbol brand-inline" viewBox="0 0 48 48" aria-hidden="true">' + MARK_SVG + '</svg>'
+  : '<img class="brand-symbol symbol-light" src="assets/taxbuddy-icon.svg" alt=""><img class="brand-symbol symbol-dark" src="assets/taxbuddy-icon-dark.svg" alt="">';
+const brandLogoHTML = () => altPalette()
+  ? '<svg class="brand-logo brand-inline" viewBox="0 0 280 48" width="175" height="30" role="img" aria-label="Tax Buddy">' + MARK_SVG + WORDMARK_SVG + '</svg>'
+  : '<img class="brand-logo symbol-light" src="assets/taxbuddy-logo-light.svg" width="175" height="30" alt="Tax Buddy"><img class="brand-logo symbol-dark" src="assets/taxbuddy-logo-dark.svg" width="175" height="30" alt="Tax Buddy">';
+const brandIconHTML = () => altPalette()
+  ? '<svg class="brand-inline" viewBox="0 0 48 48" width="30" height="30" aria-hidden="true">' + MARK_SVG + '</svg>'
+  : '<img width="30" height="30" src="assets/taxbuddy-icon.svg" alt="">';
+const titlebarHTML = () => '<div class="titlebar" aria-hidden="true"><span class="tabname"><span class="appdot" aria-hidden="true">' + brandSymbolHTML() + '</span>Tax Buddy</span>' + addressPill() + '<span class="tb-ctrls"><span>&#8212;</span><span>&#9744;</span><span>&#10005;</span></span></div>';
 
 /* ---------- Directory ---------- */
 function searchHTML() {
@@ -886,7 +905,7 @@ function dirResultsHTML(sel) {
   const d = S.dir;
   if (d.status === 'idle' || d.status === 'loading') return skeletonHTML();
   if (d.status === 'error') {
-    return stateHTML('alert', S.online ? 'We couldn\'t load the accountants' : 'Can\'t reach Kuwenta',
+    return stateHTML('alert', S.online ? 'We couldn\'t load the accountants' : 'Can\'t reach Tax Buddy',
       S.online ? 'That\'s a problem on our side, not yours. Please try again.' : 'Check your connection and try again.',
       '<button class="btn primary" data-action="retry-dir" data-fkey="retry-dir">Try again</button>');
   }
@@ -942,7 +961,7 @@ function profileBodyHTML(id, desktop) {
     '<li><strong>' + esc(e.role) + '</strong>' + esc(e.org) + '<br><span class="muted small">' + fmtMonth(e.start) + ' – ' + fmtMonth(e.current ? '' : e.end) + '</span></li>').join('') + '</ol>' : '<p class="muted">No experience listed.</p>') + '</section>';
   const contacts = [p.email ? ['mail', p.email] : null, p.phone ? ['phone', p.phone] : null, p.website ? ['globe', p.website] : null].filter(Boolean);
   const contactList = '<ul class="contact">' + contacts.map(c => '<li>' + icon(c[0], 18) + '<span>' + esc(c[1]) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Shown publicly by the accountant.</p>';
-  const note = '<p class="note">' + icon('info', 18) + '<span>Accountants write their own profiles. Kuwenta doesn\'t check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>';
+  const note = '<p class="note">' + icon('info', 18) + '<span>Accountants write their own profiles. Tax Buddy doesn\'t check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>';
   const own = S.me && S.me.role === 'accountant' && S.me.accountantId === p.id;
   const report = own ? '' : '<p class="report-row"><button class="linkbtn" data-action="report" data-kind="profile" data-id="' + p.id + '" data-fkey="report-profile">Report this profile</button></p>';
   const main = about + services + portfolio + experience + reviewsHTML(p);
@@ -1047,11 +1066,11 @@ function signinHTML() {
   if (S.me) return stateHTML('check', 'You\'re signed in as ' + esc(S.me.name), '', '<a class="btn" href="#/directory">Go to directory</a>');
   const si = S.signin;
   if (si.step === 'opening') {
-    return '<div class="state" role="status"><span class="spin lg" aria-hidden="true"></span><h2>Redirecting to ' + esc(si.provider) + '…</h2><p>Sign in there. You\'ll come back to Kuwenta automatically.</p><button class="btn" data-action="signin-cancel" data-fkey="si-cancel">Cancel</button></div>';
+    return '<div class="state" role="status"><span class="spin lg" aria-hidden="true"></span><h2>Redirecting to ' + esc(si.provider) + '…</h2><p>Sign in there. You\'ll come back to Tax Buddy automatically.</p><button class="btn" data-action="signin-cancel" data-fkey="si-cancel">Cancel</button></div>';
   }
   if (si.step === 'role') {
     const off = si.agree ? '' : ' disabled';
-    return '<div class="center-col"><h2 class="h2">How will you use Kuwenta?</h2><p class="muted">Signed in with ' + esc(si.provider) + '. Choose one: an account is either a client or an accountant.</p>' +
+    return '<div class="center-col"><h2 class="h2">How will you use Tax Buddy?</h2><p class="muted">Signed in with ' + esc(si.provider) + '. Choose one: an account is either a client or an accountant.</p>' +
       '<label class="check agree"><input type="checkbox" id="agree" data-bind="agree" data-fkey="agree"' + (si.agree ? ' checked' : '') + '><span>I agree to the <a href="#/terms">Terms of use</a> and the <a href="#/privacy">Privacy policy</a>.</span></label>' +
       '<div class="choices">' +
       '<button class="choice" data-action="choose-role" data-role="client" data-fkey="role-client"' + off + '><strong>I\'m looking for an accountant</strong><span>Browse accountants, message them, and review the ones who help you.</span></button>' +
@@ -1063,12 +1082,12 @@ function signinHTML() {
   const lead = acc ? 'Sign in to send your message to ' + esc(firstName(acc.name)) + '.' + (draft ? ' It\'s saved and ready:' : '')
     : si.next === '#/me/profile' ? 'Sign in to create your accountant profile. You\'ll choose “I\'m an accountant” on the next step.'
     : 'Sign in to message accountants, or to publish your profile as an accountant.';
-  return '<div class="center-col"><span class="appdot xl" aria-hidden="true"><img class="brand-symbol symbol-light" src="assets/kuwenta-icon.svg" alt=""><img class="brand-symbol symbol-dark" src="assets/kuwenta-icon-dark.svg" alt=""></span><h2 class="h2">Welcome to Kuwenta</h2><p>' + lead + '</p>' +
+  return '<div class="center-col"><span class="appdot xl" aria-hidden="true">' + brandSymbolHTML() + '</span><h2 class="h2">Welcome to Tax Buddy</h2><p>' + lead + '</p>' +
     (draft ? '<blockquote class="quote">' + esc(draft) + '</blockquote>' : '') +
     (si.error ? '<div class="banner danger inline" role="alert" style="margin-top:14px">' + icon('alert', 18) + '<div>' + esc(si.error) + '</div></div>' : '') +
     '<div class="stack"><button class="btn block" data-action="provider" data-provider="Google" data-fkey="p-google">Continue with Google</button>' +
     '<button class="btn block" data-action="provider" data-provider="Microsoft" data-fkey="p-ms">Continue with Microsoft</button></div>' +
-    '<p class="muted small">Kuwenta never sees your Google or Microsoft password.</p></div>';
+    '<p class="muted small">Tax Buddy never sees your Google or Microsoft password.</p></div>';
 }
 
 /* ---------- Account ---------- */
@@ -1187,7 +1206,7 @@ function editorParts() {
     fld('f-phone', 'Phone', f.phone, { field: 'phone', type: 'tel', ph: '+63 900 000 0000' }) +
     fld('f-website', 'Website', f.website, { field: 'website', ph: 'example.com' }) +
     '<label class="check"><input type="checkbox" id="f-consent" data-fkey="f-consent" data-bind="ed" data-field="consent"' + (f.consent ? ' checked' : '') + '>' +
-    '<span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using Kuwenta can see them, including people who aren\'t signed in.</span></span></label></fieldset>';
+    '<span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using Tax Buddy can see them, including people who aren\'t signed in.</span></span></label></fieldset>';
   const msgText = ed.status === 'saved' ? (listed ? 'Saved. Your profile is listed in the directory.' : 'Saved. Not listed yet: add ' + missing.join(', ') + '.')
     : ed.status === 'failed' ? 'Not saved: no connection. Your changes are still here.' : '';
   h += '<p class="save-status ' + (ed.status === 'saved' ? 'ok' : ed.status === 'failed' ? 'fail' : '') + '" data-save-status role="status">' + esc(msgText) + '</p>';
@@ -1227,7 +1246,7 @@ function deleteHTML() {
   if (!S.me) return stateHTML('user', 'Sign in to manage your account', '', signinBtn('#/me'));
   const d = S.del || (S.del = { step: 1, status: 'idle' });
   const isAcc = S.me.role === 'accountant';
-  const items = ['Your Kuwenta sign-in. Your ' + esc(S.me.provider) + ' account itself is not affected.'];
+  const items = ['Your Tax Buddy sign-in. Your ' + esc(S.me.provider) + ' account itself is not affected.'];
   if (isAcc) items.push('Your public profile. It leaves the directory immediately.');
   items.push('Email notifications for this account.');
   if (d.step === 1) {
@@ -1243,7 +1262,7 @@ function deleteHTML() {
 
 /* ---------- Design rework: looks, hero, filter, checklist ---------- */
 const LOOKS = {
-  kuwenta: { name: 'Kuwenta', mood: 'considered, approachable, grounded',
+  taxbuddy: { name: 'Tax Buddy', mood: 'considered, approachable, grounded',
     heroTitle: 'Good numbers start with the right person.', heroSub: 'Find an accountant who understands your business. Explore their work, compare services, and start a conversation.' },
   modern: { name: 'Modern', mood: 'modern, crisp, confident',
     heroTitle: 'Find an accountant who fits your business', heroSub: 'Compare experience and services, then message them directly.' },
@@ -1323,8 +1342,8 @@ function howHTML(desktop) {
   const forAcc = '<p class="hero-foot">Are you an accountant? <a href="#/for-accountants">See how listing works</a></p>';
   return desktop ? '<section class="how" aria-labelledby="how-t"><h2 id="how-t">How it works</h2>' + steps + forAcc + '</section>' : steps + forAcc;
 }
-const footerHTML = () => '<footer class="sitefoot"><div class="container"><span class="brand"><img class="brand-logo symbol-light" src="assets/kuwenta-logo-light.svg" width="159" height="30" alt="Kuwenta"><img class="brand-logo symbol-dark" src="assets/kuwenta-logo-dark.svg" width="159" height="30" alt="Kuwenta"></span>' +
-  '<span class="small">Accountants write their own profiles. Kuwenta doesn\'t check licences or qualifications.</span>' + infoLinksHTML() + '</div></footer>';
+const footerHTML = () => '<footer class="sitefoot"><div class="container"><span class="brand">' + brandLogoHTML() + '</span>' +
+  '<span class="small">Accountants write their own profiles. Tax Buddy doesn\'t check licences or qualifications.</span>' + infoLinksHTML() + '</div></footer>';
 
 const W = window.createServiceWorkspace({ S, PROFILES, CONVS, esc, initials, tone, fmtShort, fmtTime, nid, ago, render, toast, go, icon, getListed, signinBtn, stateHTML, announce });
 
@@ -1370,7 +1389,7 @@ function canReview(accId) {
   if (!conv || !conv.messages.some(m => m.from === 'accountant')) return { ok: false, why: 'nochat' };
   return { ok: true, mine: REVIEWS.find(r => r.accountantId === accId && r.clientId === S.me.clientId) };
 }
-const infoLinksHTML = () => '<nav class="infolinks" aria-label="About Kuwenta"><a href="#/about">About</a><a href="#/help">Help</a><a href="#/for-accountants">For accountants</a><a href="#/privacy">Privacy</a><a href="#/terms">Terms</a></nav>';
+const infoLinksHTML = () => '<nav class="infolinks" aria-label="About Tax Buddy"><a href="#/about">About</a><a href="#/help">Help</a><a href="#/for-accountants">For accountants</a><a href="#/privacy">Privacy</a><a href="#/terms">Terms</a></nav>';
 function reviewsHTML(p) {
   const rs = reviewsFor(p.id), rt = ratingOf(p.id), can = canReview(p.id), first = esc(firstName(p.name));
   const own = !!(S.me && S.me.role === 'accountant' && S.me.accountantId === p.id);
@@ -1396,7 +1415,7 @@ function reviewsHTML(p) {
       (S.me && !mine ? '<button class="linkbtn rev-report" data-action="report" data-kind="review" data-id="' + r.id + '">Report this review</button>' : '') + '</li>';
   }).join('');
   return '<section class="section"><h3 id="reviews-h" tabindex="-1">Reviews</h3>' + head + (rs.length ? '<ul class="revs">' + list + '</ul>' : '') +
-    '<p class="muted small" style="margin-top:10px">Only clients this accountant has replied to can leave a review. Kuwenta doesn\'t edit or check reviews.</p></section>';
+    '<p class="muted small" style="margin-top:10px">Only clients this accountant has replied to can leave a review. Tax Buddy doesn\'t edit or check reviews.</p></section>';
 }
 function reviewPageHTML(accId) {
   const p = getListed(accId);
@@ -1422,30 +1441,30 @@ function infoPage(page) {
   const sec = (h, t) => '<section class="section"><h3>' + h + '</h3><p>' + t + '</p></section>';
   switch (page) {
     case 'privacy': return { title: 'Privacy', body: draft +
-      sec('What Kuwenta keeps', 'Your sign-in details, profile, chats and reviews; your private saved accountants, service requests, checklists, shared progress notes and service document metadata. Real file storage and retention policies still need decisions.') +
+      sec('What Tax Buddy keeps', 'Your sign-in details, profile, chats and reviews; your private saved accountants, service requests, checklists, shared progress notes and service document metadata. Real file storage and retention policies still need decisions.') +
       sec('What is public', 'Accountant profiles, portfolio highlights, reviews and replies. A review shows the client\'s first name and last initial.') +
       sec('What is private', 'Chats and service work are visible only to the relevant client and accountant. Your saved-accountant list is private to you. Client accounts are never publicly listed. Service documents are not public profile files or chat attachments.') +
-      sec('Emails', 'Kuwenta emails you about new messages. The emails don\'t include the message text, and you can turn them off.') +
+      sec('Emails', 'Tax Buddy emails you about new messages. The emails don\'t include the message text, and you can turn them off.') +
       sec('Deleting your data', 'You can delete your account in Account. What happens to your chats and reviews is still being decided (decision D07).') };
     case 'terms': return { title: 'Terms of use', body: draft +
-      sec('Using Kuwenta', 'Browsing is free. You sign in with Google or Microsoft to message, review or publish a profile.') +
-      sec('Accountant profiles', 'Accountants write their own profiles and are responsible for what they say. Kuwenta doesn\'t check licences or qualifications.') +
+      sec('Using Tax Buddy', 'Browsing is free. You sign in with Google or Microsoft to message, review or publish a profile.') +
+      sec('Accountant profiles', 'Accountants write their own profiles and are responsible for what they say. Tax Buddy doesn\'t check licences or qualifications.') +
       sec('Reviews', 'A client can review an accountant who has replied to them, once, and can change or delete it. Reviews must describe the reviewer\'s own experience.') +
-      sec('Reports and blocking', 'Anyone signed in can report a profile, review or conversation, and block someone from messaging them. Kuwenta may remove content or close accounts that break these terms.') +
-      sec('Agreements between you', 'Work, fees and deadlines are agreed between the client and the accountant. Kuwenta is not a party to them.') };
-    case 'about': return { title: 'About Kuwenta', body:
-      '<p class="lead">Kuwenta is where accountants show their work and people find one they trust.</p>' +
+      sec('Reports and blocking', 'Anyone signed in can report a profile, review or conversation, and block someone from messaging them. Tax Buddy may remove content or close accounts that break these terms.') +
+      sec('Agreements between you', 'Work, fees and deadlines are agreed between the client and the accountant. Tax Buddy is not a party to them.') };
+    case 'about': return { title: 'About Tax Buddy', body:
+      '<p class="lead">Tax Buddy is where accountants show their work and people find one they trust.</p>' +
       sec('For people looking for an accountant', 'Read portfolios and reviews, compare experience and services, then message the accountant directly.') +
       sec('For accountants', 'Publish a profile with your services, experience and portfolio highlights. There is no approval step. <a href="#/for-accountants">See how listing works</a>.') +
-      sec('How trust works here', 'Kuwenta doesn\'t verify accountants. Ratings come only from clients an accountant has replied to, and anyone signed in can report a profile or review.') +
-      '<p class="note placeholder"><span>Who runs Kuwenta and how to reach them: to be written.</span></p>' };
+      sec('How trust works here', 'Tax Buddy doesn\'t verify accountants. Ratings come only from clients an accountant has replied to, and anyone signed in can report a profile or review.') +
+      '<p class="note placeholder"><span>Who runs Tax Buddy and how to reach them: to be written.</span></p>' };
     case 'help': return { title: 'Help and contact', body:
       '<dl class="faq"><dt>How do I track a service?</dt><dd>Add an accountant from their profile, request a service, and open My accountants. Once accepted, both participants see the checklist and shared updates. This is the proposed workflow; fees and bookings are outside this site.</dd><dt>Can I attach documents?</dt><dd>Service documents belong to a service or checklist task. This prototype uses generated samples only; chat remains text only.</dd><dt>How do I message an accountant?</dt><dd>Open their profile and choose Message. You sign in with Google or Microsoft before the message is sent.</dd>' +
       '<dt>Who can leave a review?</dt><dd>A client can review an accountant after that accountant has replied to them in chat. One review each, which you can edit or delete.</dd>' +
       '<dt>How do I report or block someone?</dt><dd>Use Report on a profile, a review or a chat. Use Block in a chat to stop someone messaging you. They aren\'t told.</dd>' +
       '<dt>How do I stop the emails?</dt><dd>Use the link in any notification email, or the switch in Account.</dd>' +
       '<dt>How do I delete my account?</dt><dd>Go to Account, then Delete account.</dd></dl>' +
-      sec('Contact', 'Email support@kuwenta.example. Include the support code if an error page showed one.') };
+      sec('Contact', 'Email support@taxbuddy.example. Include the support code if an error page showed one.') };
     case 'for-accountants': {
       const cta = S.me && S.me.role === 'accountant' ? '<a class="btn primary" href="#/me/profile">Go to my profile</a>'
         : '<button class="btn primary" data-action="start-signin" data-next="#/me/profile" data-fkey="acc-cta">Create your profile</button>';
@@ -1490,7 +1509,7 @@ function phoneScreen(r) {
   if (['workspace','client','work','request'].includes(r.name)) return W.page(r);
   switch (r.name) {
     case 'directory':
-      return { title: 'Kuwenta', body: directoryBodyHTML('', false), tabs: true };
+      return { title: 'Tax Buddy', body: directoryBodyHTML('', false), tabs: true };
     case 'profile': {
       const p = getListed(r.id);
       return { title: 'Profile', back: '#/directory', body: profileBodyHTML(r.id, false), footer: p && S.online ? profileAction(p) : '' };
@@ -1512,7 +1531,7 @@ function phoneShell(r) {
   const scroll = sc.scrollBottom ? ' data-scroll-bottom' : ' data-skey="p' + esc(location.hash) + '"';
   return '<header class="appbar' + (sc.back ? ' has-back' : '') + '">' +
     (sc.back ? '<a class="icon-btn" href="' + sc.back + '" aria-label="Back" data-fkey="back">' + icon('back') + '</a>' : '') +
-    '<h1 id="screen-title" tabindex="-1">' + (r.name === 'directory' ? '<span class="brand"><img width="30" height="30" src="assets/kuwenta-icon.svg" alt="">Kuwenta</span>' : esc(sc.title)) + '</h1>' + (sc.actions || '') + '</header>' +
+    '<h1 id="screen-title" tabindex="-1">' + (r.name === 'directory' ? '<span class="brand">' + brandIconHTML() + 'Tax Buddy</span>' : esc(sc.title)) + '</h1>' + (sc.actions || '') + '</header>' +
     offlineBanner() + '<div class="content"' + scroll + '>' + sc.body + (r.name !== 'directory' && r.name !== 'me' ? '<footer class="mobile-site-links">' + infoLinksHTML() + '</footer>' : '') + '</div>' +
     (sc.footer ? '<div class="footer">' + sc.footer + '</div>' : '') + (sc.tabs ? tabbarHTML(r) : '');
 }
@@ -1555,7 +1574,7 @@ function desktopShell(r) {
     ? '<a class="userlink" href="#/me"' + (cur === 'me' ? ' aria-current="page"' : '') + '><span class="avatar sm ' + tone(S.me.name) + '" aria-hidden="true">' + initials(S.me.name) + '</span><span>' + esc(S.me.name) + '</span></a>'
     : '<a class="btn ghost sm" href="#/for-accountants">For accountants</a>' +
       '<button class="btn primary sm" data-action="start-signin" data-next="#/directory" data-fkey="nav-signin">Sign in</button>';
-  return '<div class="shell"><header class="sitebar"><a class="brand" href="#/directory" aria-label="Kuwenta home"><img class="brand-logo symbol-light" src="assets/kuwenta-logo-light.svg" width="159" height="30" alt="Kuwenta"><img class="brand-logo symbol-dark" src="assets/kuwenta-logo-dark.svg" width="159" height="30" alt="Kuwenta"></a>' +
+  return '<div class="shell"><header class="sitebar"><a class="brand" href="#/directory" aria-label="Tax Buddy home">' + brandLogoHTML() + '</a>' +
     '<nav class="sitenav" aria-label="Main">' + link('directory', '#/directory', 'Find an accountant') +
     link('chats', '#/chats', 'Chats', u ? '<span class="badge">' + u + '<span class="sr-only"> unread</span></span>' : '') + (S.me ? link('workspace','#/workspace',S.me.role === 'accountant' ? 'Clients' : 'My accountants') : '') + '</nav>' +
     '<div class="siteuser">' + user + '</div></header>' +
@@ -1566,7 +1585,7 @@ function overlaysHTML() {
   if (S.report) {
     const rp = S.report, what = { profile: 'profile', review: 'review', chat: 'conversation' }[rp.kind];
     o += '<div class="overlay center"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="rep-t" style="width:min(440px,92%);border-radius:var(--r-lg)">' +
-      '<h2 id="rep-t">Report this ' + what + '</h2><p class="muted small">Reports go to the Kuwenta team, who review them by hand. The other person isn\'t told who reported them.</p>' +
+      '<h2 id="rep-t">Report this ' + what + '</h2><p class="muted small">Reports go to the Tax Buddy team, who review them by hand. The other person isn\'t told who reported them.</p>' +
       '<div class="reasons" role="radiogroup" aria-label="Reason">' + REPORT_REASONS.map((t, i) => '<button type="button" class="chip" role="radio" aria-checked="' + (rp.reason === t) + '" aria-pressed="' + (rp.reason === t) + '" data-action="report-reason" data-i="' + i + '" data-fkey="reason-' + i + '"' + (i === 0 ? ' data-dfocus' : '') + '>' + t + '</button>').join('') + '</div>' +
       '<div class="field"><label for="rep-d">Anything to add? <span class="req">(optional)</span></label><textarea id="rep-d" rows="3" maxlength="600" data-fkey="rep-d" data-bind="report-details">' + esc(rp.details) + '</textarea></div>' +
       (rp.error ? '<span class="ferr" role="alert">' + esc(rp.error) + '</span>' : '') +
@@ -1578,7 +1597,7 @@ function overlaysHTML() {
       S.dialog.actions.map((a, i) => '<button class="btn' + (a.kind ? ' ' + a.kind : '') + '" data-action="' + a.action + '"' + (i === 0 ? ' data-dfocus' : '') + '>' + esc(a.label) + '</button>').join('') + '</div></div></div>';
   }
   if (S.emailNote) {
-    o += '<div class="osnote" role="status"><span class="avatar" aria-hidden="true">' + icon('mail') + '</span><div><span class="muted small">Simulated email to ' + esc(S.emailNote.to) + '</span><br><strong>New message from ' + esc(S.emailNote.from) + '</strong><br><span class="small">Open Kuwenta to read it.</span>' +
+    o += '<div class="osnote" role="status"><span class="avatar" aria-hidden="true">' + icon('mail') + '</span><div><span class="muted small">Simulated email to ' + esc(S.emailNote.to) + '</span><br><strong>New message from ' + esc(S.emailNote.from) + '</strong><br><span class="small">Open Tax Buddy to read it.</span>' +
       '<div class="actions"><button class="btn primary sm" data-action="open-note" data-fkey="open-note">Open conversation</button><button class="btn ghost sm" data-action="email-unsub" data-fkey="email-unsub">Turn off these emails</button></div></div></div>';
   }
   if (S.toast) o += '<div class="toast">' + esc(S.toast.text) + '</div>';
@@ -1641,11 +1660,12 @@ function notesHTML() {
   const n = NOTES[key], L = LOOKS[S.look];
   const li = x => '<li><span class="id">' + esc(x[0]) + '</span> ' + esc(x[1]) + '</li>';
   return '<h2>Screen notes: ' + esc(n.title) + '</h2><p class="muted small">IDs refer to docs/PRD.md, the ADRs and feature specs, including specs/client-services.</p>' +
-    '<h3>Look</h3><p class="small"><strong>' + esc(L.name) + '</strong>: ' + esc(L.mood) + '. Kuwenta is the current direction; earlier alternatives remain in the Look control. See prototypes/DESIGN-DIRECTIONS.md.</p>' +
+    '<h3>Look</h3><p class="small"><strong>' + esc(L.name) + '</strong>: ' + esc(L.mood) + '. Tax Buddy is the current direction; earlier alternatives remain in the Look control. See prototypes/DESIGN-DIRECTIONS.md.</p>' +
+    (S.look === 'taxbuddy' ? '<h3>Palette</h3><p class="small"><strong>' + esc(PALETTES[S.palette]) + '</strong>: ' + (S.palette === 'forest' ? 'the current palette.' : 'a colour proposal for comparison, not chosen. Only colours change; Paper & Forest stays current until the owner decides.') + '</p>' : '') +
     '<h3>Requirements shown</h3><ul>' + n.refs.map(li).join('') + '</ul>' +
     '<h3>Open decisions (proposals shown)</h3><ul>' + n.open.map(li).join('') + '</ul>' +
     '<h3>Try</h3><div class="tries">' + n.tries.map(t => '<button type="button" class="pbtn" data-try="' + t[1] + '" data-k="' + (t[2] || '') + '" data-v="' + esc(t[3] || '') + '">' + esc(t[0]) + '</button>').join('') + '</div>' +
-    '<h3>About this prototype</h3><p class="small">All people, companies and contact details are synthetic. Kuwenta is the applied visual direction. Unresolved behavior remains a proposal. Dashed boxes mark text that waits on a decision. This prototype does not authorize building these screens, and it is not accessibility evidence.</p>';
+    '<h3>About this prototype</h3><p class="small">All people, companies and contact details are synthetic. Tax Buddy is the applied visual direction. Unresolved behavior remains a proposal. Dashed boxes mark text that waits on a decision. This prototype does not authorize building these screens, and it is not accessibility evidence.</p>';
 }
 
 /* ---------- Render ---------- */
@@ -1663,6 +1683,7 @@ function render() {
   app.querySelectorAll('[data-skey]').forEach(el => { scrollMem[el.dataset.skey] = el.scrollTop; });
   deviceEl.className = 'device ' + S.device;
   deviceEl.dataset.look = S.look;
+  deviceEl.dataset.palette = S.palette;
   stageEl.classList.toggle('desk', S.device === 'desktop');
   app.innerHTML = buildApp();
   notesEl.hidden = !S.notes;
@@ -1718,6 +1739,9 @@ function syncToolbar() {
   $id('net-on').setAttribute('aria-pressed', String(S.online));
   $id('net-off').setAttribute('aria-pressed', String(!S.online));
   $id('sel-look').value = S.look;
+  $id('sel-palette').value = S.palette;
+  $id('sel-palette').disabled = S.look !== 'taxbuddy';
+  $id('sel-palette').title = S.look === 'taxbuddy' ? 'Colour proposals for the Tax Buddy look' : 'Palette options apply to the Tax Buddy look only';
   $id('sel-role').value = S.me ? (S.me.accountantId === 'a-new' ? 'newAccountant' : S.me.role) : 'visitor';
   $id('sel-theme').value = S.theme;
   $id('sel-dir').value = S.dirScenario;
@@ -1876,7 +1900,7 @@ const ACTIONS = {
     if (!S.report) return;
     if (!S.report.reason) { S.report.error = 'Choose a reason.'; render(); return; }
     S.report = null;
-    toast('Thanks. Your report was sent to the Kuwenta team.');
+    toast('Thanks. Your report was sent to the Tax Buddy team.');
   },
   'block': el => {
     const c = CONVS.find(x => x.id === el.dataset.id); if (!c) return;
@@ -1911,7 +1935,7 @@ const ACTIONS = {
     const tok = ++signTok;
     setTimeout(() => {
       if (tok !== signTok || !S.signin || S.signin.step !== 'opening') return;
-      if (!S.online) { S.signin.step = 'choose'; S.signin.error = 'Couldn\'t reach Kuwenta. Check your connection and try again.'; }
+      if (!S.online) { S.signin.step = 'choose'; S.signin.error = 'Couldn\'t reach Tax Buddy. Check your connection and try again.'; }
       else S.signin.step = 'role';
       render();
     }, 1400);
@@ -2069,6 +2093,7 @@ $id('net-on').addEventListener('click', () => { S.online = true; render(); });
 $id('net-off').addEventListener('click', () => { S.online = false; render(); });
 $id('sel-theme').addEventListener('change', e => { S.theme = e.target.value; applyTheme(); });
 $id('sel-look').addEventListener('change', e => { S.look = e.target.value; render(); });
+$id('sel-palette').addEventListener('change', e => { S.palette = e.target.value; render(); });
 $id('sel-dir').addEventListener('change', e => { S.dirScenario = e.target.value; resetDir(); render(); });
 $id('sel-send').addEventListener('change', e => { S.sendScenario = e.target.value; });
 $id('btn-push').addEventListener('click', simulatePush);

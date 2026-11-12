@@ -1,8 +1,8 @@
-# Kuwenta design prototype
+# Tax Buddy design prototype
 
-**Interactive design artifact; product acceptance remains pending.** [index.html](index.html) shows release 1 pages in a phone or desktop browser. The user's design brief of 2026-11-11 delegates choosing the new name, logo and visual direction. Kuwenta replaces AccApp, with original SVG branding, a paper/forest palette, editorial typography, clearer directory hierarchy and responsive refinements ([F02](../specs/brand-design-refresh/spec.md)). [DESIGN](../docs/DESIGN.md#visual-system) owns the current visual contract.
+**Interactive design artifact; product acceptance remains pending.** [index.html](index.html) shows release 1 pages in a phone or desktop browser. The user's design brief of 2026-11-11 delegates choosing the new name, logo and visual direction. That refresh replaced AccApp with Kuwenta and added original SVG branding, a paper/forest palette, editorial typography, clearer directory hierarchy and responsive refinements. On 2026-11-12 the user instructed renaming the app to Tax Buddy; the look is unchanged and the logo wordmark was redrawn ([F02](../specs/brand-design-refresh/spec.md)). [DESIGN](../docs/DESIGN.md#visual-system) owns the current visual contract.
 
-The prototype was created on 2026-11-10 for the MAUI plan, then reworked for the web on 2026-11-11 ([ADR 005](../docs/adr/005-web-platform-blazor.md)). Earlier passes and their four visual directions remain in [DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md) as history. Kuwenta is now the default; the earlier looks are comparison options.
+The prototype was created on 2026-11-10 for the MAUI plan, then reworked for the web on 2026-11-11 ([ADR 005](../docs/adr/005-web-platform-blazor.md)). Earlier passes and their four visual directions remain in [DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md) as history. Tax Buddy is now the default; the earlier looks are comparison options.
 
 What it is not:
 - It does not authorize building these pages. Scope stays in the [PRD](../docs/PRD.md).
@@ -12,13 +12,14 @@ What it is not:
 
 All people, companies and contact details in it are synthetic.
 
-[brand-options.html](brand-options.html) preserves fourteen earlier name sketches. The current Kuwenta logo, compact icons and favicon are in [assets](assets/README.md). Name/domain availability has not been checked; domain selection remains PRD D01.
+[brand-options.html](brand-options.html) preserves fourteen earlier name sketches. The current Tax Buddy logo, compact icons and favicon are in [assets](assets/README.md). Tax Buddy is not one of the fourteen sketches; the closest is Buwis Buddy. Name/domain availability has not been checked; domain selection remains PRD D01.
 
 ## Open it
 
-Double-click `index.html`, keeping `kuwenta.css`, `service-workspace.js` and the `assets` folder beside it. Everything is local: no install, network or build. The initial frame follows the window width (desktop from 900 px), and can be overridden. The bar at the top is not part of the site. Its simulation controls start collapsed on small screens. It switches:
+Double-click `index.html`, keeping `taxbuddy.css`, `service-workspace.js` and the `assets` folder beside it. Everything is local: no install, network or build. The initial frame follows the window width (desktop from 900 px), and can be overridden. The bar at the top is not part of the site. Its simulation controls start collapsed on small screens. It switches:
 - the frame (phone browser or desktop browser);
-- the look (Kuwenta, or the earlier Modern, Ledger, Neighbourly and Clear directions);
+- the look (Tax Buddy, or the earlier Modern, Ledger, Neighbourly and Clear directions);
+- the palette of the Tax Buddy look: Paper & Forest (current), or four proposals added on 2026-11-12 for comparison ([DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md#palette-options)). No proposal is chosen;
 - who is signed in (visitor, client, accountant, or a new accountant);
 - online or offline;
 - the theme;
@@ -33,14 +34,15 @@ Optional URL settings, useful for sharing a specific state:
 | Setting | Values |
 |---|---|
 | `device` | `desktop`, `phone` (default follows initial window width) |
-| `look` | `kuwenta` (default), `modern`, `ledger`, `neighbourly`, `clear` |
+| `look` | `taxbuddy` (default), `modern`, `ledger`, `neighbourly`, `clear` |
+| `palette` | `forest` (default, current), `ink`, `lagoon`, `plum`, `marigold`; applies to the `taxbuddy` look only |
 | `role` | `client`, `accountant`, `newAccountant` (default is a visitor) |
 | `theme` | `light`, `dark` (default follows the system) |
 | `offline` | `1` |
 | `email` | `off` to start with email notifications turned off |
 | `notes` | `0` to hide the notes panel |
 
-Example: `index.html?device=desktop&look=kuwenta&theme=dark&role=accountant#/chats`.
+Example: `index.html?device=desktop&look=taxbuddy&theme=dark&role=accountant#/chats`.
 
 ## What it covers
 
@@ -73,10 +75,12 @@ The prototype shows one option for each of these PRD [open decisions](../docs/PR
 | D21 | A review shows the client's first name and last initial |
 | D23 | Up to six portfolio highlights, each with a title, type of client, the work and the result |
 | D18 | At most one email per conversation until the accountant opens it; the email goes to the sign-in address and has no message text |
-| D09 | A note on each profile saying Kuwenta does not verify accountants; its wording needs review |
-| Visual system | Kuwenta is applied under the delegated design brief; four earlier looks remain for comparison. Current tokens and stack mapping belong in [DESIGN](../docs/DESIGN.md#visual-system). Owner walkthrough and production accessibility remain pending |
+| D09 | A note on each profile saying Tax Buddy does not verify accountants; its wording needs review |
+| Visual system | The Tax Buddy look (named Kuwenta until 2026-11-12) is applied under the delegated design brief; four earlier looks remain for comparison. Current tokens and stack mapping belong in [DESIGN](../docs/DESIGN.md#visual-system). Owner walkthrough and production accessibility remain pending |
 
 After review, record each decision in the PRD or DESIGN (not here), then update the prototype or mark it superseded.
+
+A 2026-11-12 agent read-through compared this prototype with the PRD, SDD and DESIGN ([review record](../docs/delivery/evidence/2026-11-12-prototype-scope-review.md)). It opened two conflicts, [C03 and C04](../docs/README.md#history-and-unresolved-conflicts): the directory here filters, sorts and pages in the page while the planned directory is a static page with a submitted form, and the offline messages shown inside forms here cannot be drawn by the planned server-connected pages. The prototype was not changed.
 
 ## Checks run before this refresh
 
@@ -92,7 +96,7 @@ Not checked: other browsers, real phones, screen readers, keyboard-only use beyo
 
 ## Verify the current prototype
 
-Use the dependency-free [browser checker](../tools/check_prototype.mjs) as documented in the [tools guide](../tools/README.md#check-the-prototype). The prior [F02 execution record](../docs/delivery/evidence/2026-11-11-kuwenta-refresh.md) records its 78 passing Edge prototype checks, 34 passing contrast pairs, source fingerprints and screenshot observations; these results describe that earlier artifact. [STATUS](../docs/delivery/STATUS.md) tracks the remaining acceptance. These checks use only synthetic data and cannot establish Blazor, database, provider or email behavior.
+Use the dependency-free [browser checker](../tools/check_prototype.mjs) as documented in the [tools guide](../tools/README.md#check-the-prototype). The prior [F02 execution record](../docs/delivery/evidence/2026-11-11-kuwenta-refresh.md) records its 78 passing Edge prototype checks, 34 passing contrast pairs, source fingerprints and screenshot observations; these results describe that earlier artifact, under its then name Kuwenta. The checks rerun after the rename are in the [2026-11-12 record](../docs/delivery/evidence/2026-11-12-tax-buddy-rename.md), and the palette options have their own [record](../docs/delivery/evidence/2026-11-12-palette-options.md). [STATUS](../docs/delivery/STATUS.md) tracks the remaining acceptance. These checks use only synthetic data and cannot establish Blazor, database, provider or email behavior.
 
 ## Client services and progress prototype
 

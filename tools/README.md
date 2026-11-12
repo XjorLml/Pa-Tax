@@ -50,6 +50,8 @@ This is a prototype DOM/layout check in the supplied browser, not real device, s
 
 F03 extends the helper with private client/added-accountant lists, request/accept/decline, task progress, shared notes, role guards, generated sample document validation/retry/removal, and account changes during upload. The download check intercepts the final anchor handoff to inspect a generated synthetic PDF Blob; it does not establish operating-system download behavior. Run `node --check prototypes/service-workspace.js` for the external module. Pass `artifacts/client-services` as the optional output directory to keep the current run separate from F02 artifacts; retained reports include source SHA-256 values. No actual user file or real upload is used.
 
+The helper also covers the palette options (F02 BD08): the default palette, each option in light and dark with its 17 contrast pairs, the phone frame, and the Palette control. It writes `contrast-palettes.json` beside the other reports. Pass `artifacts/palette-options` as the output directory to keep that run separate.
+
 ## Add automation when needed
 
 Add repeatable build/test entry points only after actual projects and verified commands exist. Add browser automation helpers only when their maintenance cost is justified.

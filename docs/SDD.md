@@ -1,20 +1,20 @@
-# Kuwenta software design
+# Tax Buddy software design
 
 **Authority:** architecture and technical contracts. [PRD](PRD.md) owns behavior. [SETUP](SETUP.md) owns chosen tool versions; [DEVELOPMENT](DEVELOPMENT.md) owns coding practices. Status: Proposed — no source exists yet. Reviewed: 2026-11-11 against repository baseline `b9b50f3` (documentation only).
 
 ## Architecture and dependencies
 
-Kuwenta is one ASP.NET Core Blazor Web App on .NET 11 ([ADR 005](adr/005-web-platform-blazor.md)). There is no separate API and no installed client. None of these projects exist yet; they are created at the scaffold step.
+Tax Buddy is one ASP.NET Core Blazor Web App on .NET 11 ([ADR 005](adr/005-web-platform-blazor.md)). There is no separate API and no installed client. None of these projects exist yet; they are created at the scaffold step.
 
 ```text
-Kuwenta.slnx
+TaxBuddy.slnx
 global.json                    # created when the .NET 11 SDK is installed (SETUP)
 src/
-  Kuwenta.Core/                 # class library; no web UI types
+  TaxBuddy.Core/                 # class library; no web UI types
     Domain/                    # typed IDs, roles, profile and message rules; interfaces for email and the clock
     Application/               # use cases: directory, profiles, conversations, accounts, notifications
     Data/                      # EF Core context, mappings, migrations, queries
-  Kuwenta.Web/                  # Blazor Web App; the composition root
+  TaxBuddy.Web/                  # Blazor Web App; the composition root
     Program.cs                 # services, sign-in, rate limits, health checks
     Components/
       Layout/ Pages/ Shared/   # Razor components
@@ -22,18 +22,18 @@ src/
     Services/                  # email sender, live chat notifier, background email worker
     wwwroot/                   # styles and static assets
 tests/
-  Kuwenta.Core.Tests/           # domain rules; data tests against the real database provider
-  Kuwenta.Web.Tests/            # integration tests through WebApplicationFactory; component tests where useful
+  TaxBuddy.Core.Tests/           # domain rules; data tests against the real database provider
+  TaxBuddy.Web.Tests/            # integration tests through WebApplicationFactory; component tests where useful
 ```
 
 | Component | Responsibility | Allowed dependencies | Source |
 |---|---|---|---|
-| Domain (Core) | Typed IDs, roles, validation rules (BR01–BR08), interfaces for email sending and the clock | .NET base library only | `src/Kuwenta.Core/Domain/` (planned) |
-| Application (Core) | Use-case services. Every authorization rule is enforced here, not in the UI | Domain | `src/Kuwenta.Core/Application/` (planned) |
-| Data (Core) | EF Core context, migrations, queries, user store | Domain, Application interfaces, EF Core, the chosen database provider | `src/Kuwenta.Core/Data/` (planned) |
-| Pages and components (Web) | Rendering, forms, validation display, draft retention | Application services | `src/Kuwenta.Web/Components/` (planned) |
-| Account endpoints (Web) | External sign-in challenge and callback, sign-out, cookie session | ASP.NET Core authentication, Application | `src/Kuwenta.Web/Account/` (planned) |
-| Services (Web) | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/Kuwenta.Web/Services/` (planned) |
+| Domain (Core) | Typed IDs, roles, validation rules (BR01–BR08), interfaces for email sending and the clock | .NET base library only | `src/TaxBuddy.Core/Domain/` (planned) |
+| Application (Core) | Use-case services. Every authorization rule is enforced here, not in the UI | Domain | `src/TaxBuddy.Core/Application/` (planned) |
+| Data (Core) | EF Core context, migrations, queries, user store | Domain, Application interfaces, EF Core, the chosen database provider | `src/TaxBuddy.Core/Data/` (planned) |
+| Pages and components (Web) | Rendering, forms, validation display, draft retention | Application services | `src/TaxBuddy.Web/Components/` (planned) |
+| Account endpoints (Web) | External sign-in challenge and callback, sign-out, cookie session | ASP.NET Core authentication, Application | `src/TaxBuddy.Web/Account/` (planned) |
+| Services (Web) | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/TaxBuddy.Web/Services/` (planned) |
 
 Dependency rules:
 - Web → Core. Core never references Web.
@@ -64,7 +64,7 @@ One table for the whole stack. The owner approved every choice in this table on 
 | Data access | Entity Framework Core with the Npgsql provider | Decided 2026-11-11 |
 | Sign-in | Google and Microsoft accounts through ASP.NET Core authentication | Decided ([ADR 006](adr/006-web-sign-in.md)) |
 | User store | ASP.NET Core Identity | Decided 2026-11-11 (ADR 006) |
-| Styling | Tailwind CSS, with Kuwenta's semantic colors as theme values. No component library | Stack decided 2026-11-11; current prototype direction applied under the delegated design brief ([DESIGN](DESIGN.md#visual-system)); application acceptance pending |
+| Styling | Tailwind CSS, with Tax Buddy's semantic colors as theme values. No component library | Stack decided 2026-11-11; current prototype direction applied under the delegated design brief ([DESIGN](DESIGN.md#visual-system)); application acceptance pending |
 | Email | Brevo, called from a background service in the application | Decided 2026-11-11 (ADR 007) |
 | Background work | ASP.NET Core's built-in hosted services | Decided 2026-11-11 |
 | Tests | xUnit; `WebApplicationFactory` for integration tests; bUnit for components where useful | Decided 2026-11-11 |
@@ -112,7 +112,7 @@ Supabase is used as a PostgreSQL database only (Proposed in ADR 007). Sign-in st
 
 | Decision | Selected approach |
 |---|---|
-| Sign-in method | Google or Microsoft account through ASP.NET Core external authentication ([ADR 006](adr/006-web-sign-in.md)). The browser is redirected to the provider and back to the site's callback address. No Kuwenta passwords |
+| Sign-in method | Google or Microsoft account through ASP.NET Core external authentication ([ADR 006](adr/006-web-sign-in.md)). The browser is redirected to the provider and back to the site's callback address. No Tax Buddy passwords |
 | User store | ASP.NET Core Identity with external sign-ins only (Proposed in ADR 006) |
 | Session | A cookie that is HTTPS-only and unreadable by scripts. Lifetime is set at implementation |
 | Expired session | The next action sends the user to sign-in and then back to the same address. Unsent chat text is kept |

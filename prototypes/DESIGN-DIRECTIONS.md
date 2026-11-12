@@ -1,20 +1,32 @@
-# Kuwenta design directions and earlier AccApp studies
+# Tax Buddy design directions and earlier AccApp studies
 
-**Current direction: Kuwenta (2026-11-11).** The user asked to execute the branding/design brief and delegated the name, logo and visual choice. The agent selected Kuwenta and applied a paper/forest direction to the existing prototype. [DESIGN](../docs/DESIGN.md#visual-system) owns current tokens and implementation guidance; [F02](../specs/brand-design-refresh/spec.md) records scope and acceptance scenarios. Product scope stays in the [PRD](../docs/PRD.md); owner walkthrough and release acceptance remain pending.
+**Current direction: Tax Buddy (visual direction 2026-11-11, name 2026-11-12).** The user asked to execute the branding/design brief and delegated the name, logo and visual choice. The agent selected the name Kuwenta and applied a paper/forest direction to the existing prototype. On 2026-11-12 the user instructed renaming the app to Tax Buddy; the visual direction and logo symbol are unchanged and the wordmark was redrawn. [DESIGN](../docs/DESIGN.md#visual-system) owns current tokens and implementation guidance; [F02](../specs/brand-design-refresh/spec.md) records scope and acceptance scenarios. Product scope stays in the [PRD](../docs/PRD.md); owner walkthrough and release acceptance remain pending.
 
 ## Current design review
 
 The earlier prototype already covered the important flows, but retained a placeholder identity, four competing palettes, an oversized centered introduction, and controls whose hierarchy competed with profile comparison. The refresh adds:
 
-- A name broad enough for bookkeeping, payroll, portfolio work and messaging, rather than a tax-only label. Kuwenta is a creative choice under the brief; no external name clearance is claimed.
+- A name. The 2026-11-11 refresh chose Kuwenta as broad enough for bookkeeping, payroll, portfolio work and messaging, rather than a tax-only label. The user replaced it with Tax Buddy on 2026-11-12. Recorded tension: the new name is tax-specific while the product scope in the PRD is unchanged and still covers the other services. No external name clearance is claimed for either name.
 - An original ledger/conversation mark and geometric wordmark, with light/dark SVG variants and favicon ([assets](assets/README.md)).
-- Serif headlines, readable system sans controls, forest actions and warm paper surfaces. The chosen values are centralized in `kuwenta.css` and map to the approved Tailwind/Blazor stack.
+- Serif headlines, readable system sans controls, forest actions and warm paper surfaces. The chosen values are centralized in `taxbuddy.css` and map to the approved Tailwind/Blazor stack.
 - An asymmetric desktop introduction with a small ledger illustration, labelled search and quiet service filters; results lead into comparable cards rather than promotional statistics.
 - Clearer card structure, contact-panel emphasis, responsive container breakpoints, compact phone layouts and information links on additional mobile screens.
 
-The four previous looks remain in the Look control as historical comparisons. Their historical contrast figures below describe those palettes, not the new Kuwenta palette. Current verification is linked from [STATUS](../docs/delivery/STATUS.md).
+The four previous looks remain in the Look control as historical comparisons. Their historical contrast figures below describe those palettes, not the new Tax Buddy palette. Current verification is linked from [STATUS](../docs/delivery/STATUS.md).
 
 The later client-service expansion uses the same direction, with private list summaries, grouped service cards, a two-column desktop checklist/history view, and stacked phone checklists/files/history ([DESIGN service presentation](../docs/DESIGN.md#service-workspace-presentation), [F03](../specs/client-services/spec.md)). Its generated sample uploads do not introduce public profile images or chat attachments.
+
+## Palette options
+
+Added 2026-11-12 at the user's request, as proposals. Each keeps the Tax Buddy type, spacing and layout and changes colour tokens only. Choose them with the **Palette** control or the `palette` URL setting; values are in `taxbuddy.css` and measured contrast is in the [dated evidence](../docs/delivery/evidence/2026-11-12-palette-options.md). Paper & Forest stays current until the owner decides.
+
+| Palette | `palette` value | Character | Watch out for |
+|---|---|---|---|
+| Paper & Forest (current) | `forest` | Calm, grounded | Nothing to change |
+| Ink & Ledger Blue | `ink` | Official, careful | The least distinctive; many banks and tax products are blue |
+| Lagoon Teal | `lagoon` | Fresh, approachable | The smallest change from the current green; teal is also common in finance apps |
+| Plum & Blush | `plum` | Warm, personal | Purple divides people; the error red sits close to plum |
+| Marigold & Charcoal | `marigold` | Friendly, sunny | The brand colour sits in backgrounds, not buttons; the amber warning colour would need a new hue |
 
 ## Earlier studies preserved below
 

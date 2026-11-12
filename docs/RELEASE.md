@@ -8,7 +8,7 @@ State on 2026-11-11: no build, host or domain exists. The first audience is invi
 
 | Item | Selected value / owner |
 |---|---|
-| Site name and domain | Kuwenta, applied under the user's delegated branding brief (PRD D01); domain and name availability checks remain open |
+| Site name and domain | Tax Buddy, by the user's instruction of 2026-11-12 (PRD D01); domain and name availability checks remain open |
 | Environments | Local development, and one test site for invited testers. A separate production site is decided before public launch (PRD D11) |
 | Who can use the test site | Invited testers only; the mechanism is open (PRD D20) |
 | Version identity | Proposed: each deployment records its git commit, shown on a health or about page, so a tester's report can be tied to a build |
@@ -25,7 +25,7 @@ There is no app package, store listing or code-signing certificate: nothing is i
 No recipe yet. After the scaffold step, record the exact publish command and its output here, starting from:
 
 ```powershell
-dotnet publish src/Kuwenta.Web/Kuwenta.Web.csproj -c Release
+dotnet publish src/TaxBuddy.Web/TaxBuddy.Web.csproj -c Release
 ```
 
 This command has not been executed. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.

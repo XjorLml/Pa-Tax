@@ -8,9 +8,9 @@ Status: documentation and prototype only. Scenarios: [spec](spec.md); tracking: 
 |---|---|---|
 | PRD, ADR 009 | Add stable requirements/rules; reconcile text-only chat and new service files; retain open policies | CS01–CS08 |
 | SDD, RELEASE | Private metadata/byte boundaries, per-operation authorization, proposed routes, storage decision and release dependencies | CS03–CS08 |
-| DESIGN | Reuse Kuwenta tokens; private lists, checklist/progress, timeline, upload/retry controls | CS01–CS09 |
+| DESIGN | Reuse Tax Buddy tokens; private lists, checklist/progress, timeline, upload/retry controls | CS01–CS09 |
 | `prototypes/service-workspace.js` | Isolated synthetic data, role-aware views/actions, per-actor drafts, generated files, failure simulation | CS01–CS08 |
-| `prototypes/index.html`, `prototypes/kuwenta.css` | Integrate navigation, profile action, phone/desktop routes, notes, controls and responsive styles | CS01–CS09 |
+| `prototypes/index.html`, `prototypes/taxbuddy.css` | Integrate navigation, profile action, phone/desktop routes, notes, controls and responsive styles | CS01–CS09 |
 | Prototype checker, TEST-PLAN, STATUS, evidence | Meaningful role/failure/layout regressions and artifact identity | CS09–CS10 |
 
 ## Approach
