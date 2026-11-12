@@ -1,6 +1,6 @@
-# Kuwenta UI and UX standards
+# Tax Buddy UI and UX standards
 
-**Authority:** visual and interaction standards. [PRD](PRD.md) owns feature scope. [SDD](SDD.md) owns technical implementation. Status: Kuwenta identity and visual direction applied to the prototype under the user's delegated design brief, 2026-11-11; product and release acceptance remain pending.
+**Authority:** visual and interaction standards. [PRD](PRD.md) owns feature scope. [SDD](SDD.md) owns technical implementation. Status: visual direction applied to the prototype under the user's delegated design brief, 2026-11-11 (then named Kuwenta); renamed Tax Buddy by the user's instruction, 2026-11-12. Product and release acceptance remain pending.
 
 ## Scope notice
 
@@ -16,21 +16,21 @@ Applies to the release 1 pages in the [SDD navigation table](SDD.md#navigation-a
 
 It is one responsive website, used in phone and desktop browsers.
 
-The clickable [design prototype](../prototypes/README.md) uses Kuwenta as its default direction. The user authorized executing a brief that delegates choosing the name, creating the logo and improving the prototype; [F02](../specs/brand-design-refresh/spec.md) records the scope and observable outcomes. The four earlier directions remain available for comparison and are preserved in [DESIGN-DIRECTIONS](../prototypes/DESIGN-DIRECTIONS.md). Behavior depending on D03–D06 and D18 remains a proposal. A prototype is not evidence of production accessibility or authorization to expand the feature scope.
+The clickable [design prototype](../prototypes/README.md) uses Tax Buddy as its default direction. The user authorized executing a brief that delegates choosing the name, creating the logo and improving the prototype, and on 2026-11-12 instructed renaming the result from Kuwenta to Tax Buddy; [F02](../specs/brand-design-refresh/spec.md) records the scope and observable outcomes. The four earlier directions remain available for comparison and are preserved in [DESIGN-DIRECTIONS](../prototypes/DESIGN-DIRECTIONS.md). Behavior depending on D03–D06 and D18 remains a proposal. A prototype is not evidence of production accessibility or authorization to expand the feature scope.
 
 ## Visual system
 
 | Role | Value / semantic resource | Rationale and verification |
 |---|---|---|
-| Brand identity | Kuwenta: a ledger with a conversation corner and an original geometric wordmark. [Assets and usage](../prototypes/assets/README.md). Domain remains PRD D01 | Original vector paths, no downloaded font or artwork. Applied under the delegated brief; no name/domain clearance or release approval claimed |
-| Color | Warm paper and forest green; exact semantic values below, implemented in [kuwenta.css](../prototypes/kuwenta.css) | Error and unread states retain text/icons; observed contrast belongs in the dated evidence |
+| Brand identity | Tax Buddy: a ledger with a conversation corner and an original geometric wordmark. [Assets and usage](../prototypes/assets/README.md). Domain remains PRD D01 | Original vector paths, no downloaded font or artwork. Symbol applied under the delegated brief; name set by the user on 2026-11-12 and the wordmark redrawn to match. No name/domain clearance or release approval claimed |
+| Color | Warm paper and forest green; exact semantic values below, implemented in [taxbuddy.css](../prototypes/taxbuddy.css) | Error and unread states retain text/icons; observed contrast belongs in the dated evidence |
 | Typography | Georgia/Times serif headings; Segoe UI/system sans body. Body 15 px; supporting text 12–14 px; section headings 24–30 px; hero 31–52 px | System fonts, no downloads. Logo paths do not depend on installed fonts. Browser zoom and screen-reader acceptance remain TP06 |
 | Layout | Spacing 4/8/12/16/24/32/48 px; 1040 px content including 32 px side padding; two desktop card columns. Container breakpoints 760/480 px, compact phone chrome at 420 px. Buttons normally 44 px; phone controls at least 44 px | Narrow widths are observations, not closure of D15. Fixed device frames are prototype controls, not a production layout requirement |
 | Motion | Pressed, loading and sending feedback only | Respect the browser's reduced-motion setting |
 
 Centralize the variables in one stylesheet. Decided on 2026-11-11: Tailwind CSS for styling, with these variables as its theme and no component library ([SDD](SDD.md#technology-stack)). Document exceptions instead of allowing each page to invent colors, spacing, and status symbols.
 
-### Kuwenta palette
+### Tax Buddy palette
 
 | Semantic token | Light | Dark |
 |---|---|---|
@@ -46,6 +46,8 @@ Centralize the variables in one stylesheet. Decided on 2026-11-11: Tailwind CSS 
 | `danger` / `danger-soft` | `#A32925` / `#FCEBE9` | `#FFB4A9` / `#40251F` |
 | `warn` / `warn-soft` | `#745010` / `#FAEED4` | `#ECCC8D` / `#3D321C` |
 | `hero` / `hero-art` | `#E9EDE1` / `#D9E1CD` | `#223328` / `#304631` |
+
+Palette proposals, 2026-11-12: the prototype's Palette control also offers Ink & Ledger Blue, Lagoon Teal, Plum & Blush and Marigold & Charcoal for comparison ([F02 BD08](../specs/brand-design-refresh/spec.md#palette-options-2026-11-12), [DESIGN-DIRECTIONS](../prototypes/DESIGN-DIRECTIONS.md#palette-options)). None is chosen. The table above remains the current palette until the owner decides; the proposals' values live only in the prototype stylesheet.
 
 ### Stack and component mapping
 
@@ -75,7 +77,7 @@ Link business rules to the PRD instead of redefining them. Keep keyboard focus w
 
 ## Service workspace presentation
 
-[PRD](PRD.md) R19–R23 / [F03](../specs/client-services/spec.md) add private work pages in the existing Kuwenta visual system. Keep the public directory separate from private progress; no public client names, service files, completion statistics or verification badges.
+[PRD](PRD.md) R19–R23 / [F03](../specs/client-services/spec.md) add private work pages in the existing Tax Buddy visual system. Keep the public directory separate from private progress; no public client names, service files, completion statistics or verification badges.
 
 | Component | States / presentation |
 |---|---|

@@ -1,22 +1,22 @@
-# Kuwenta product requirements
+# Tax Buddy product requirements
 
 **Authority:** approved product behavior, business rules, scope, and acceptance outcomes. Technical implementation belongs in [SDD](SDD.md); presentation in [DESIGN](DESIGN.md); evidence in [STATUS](delivery/STATUS.md).
 
 Status: Draft — scope answers recorded, not yet approved for release. Decision owner: lumabanls (project owner). Last reviewed: 2026-11-11.
 
-Kuwenta replaces the working name AccApp in the current prototype and planned project names. On 2026-11-11 the user authorized executing the design brief, including delegating the name/logo choice; the agent selected Kuwenta ([F02](../specs/brand-design-refresh/spec.md)). This is a branding change, not formal approval of this PRD or release. Domain selection remains [D01](#open-decisions).
+Tax Buddy is the current name in the prototype and planned project names. Name history: on 2026-11-11 the user authorized executing the design brief, including delegating the name/logo choice, and the agent selected Kuwenta to replace the working name AccApp; on 2026-11-12 the user instructed renaming the app to Tax Buddy ([F02](../specs/brand-design-refresh/spec.md)). These are branding changes, not formal approval of this PRD or release. Domain selection remains [D01](#open-decisions).
 
-Platform change, 2026-11-11: the owner changed Kuwenta from a .NET MAUI app for Android and Windows to a .NET web application ([ADR 005](adr/005-web-platform-blazor.md)). Requirement IDs are unchanged. R08 changed from push notifications to email, and decisions D02 and D13 were closed.
+Platform change, 2026-11-11: the owner changed Tax Buddy from a .NET MAUI app for Android and Windows to a .NET web application ([ADR 005](adr/005-web-platform-blazor.md)). Requirement IDs are unchanged. R08 changed from push notifications to email, and decisions D02 and D13 were closed.
 
 Stack decisions, 2026-11-11 ([ADR 007](adr/007-supabase-brevo-container-host.md)): the database is Supabase, the email service is Brevo, and the supported browsers are Chrome, Edge, Firefox, Brave and Safari. Vercel was ruled out as the host, and the owner then approved Render with the rest of the technology stack ([SDD](SDD.md#technology-stack)).
 
-Product direction, 2026-11-11 ([ADR 008](adr/008-portfolio-ratings-no-approval.md)): Kuwenta is a portfolio site for accountants with client ratings, and accountants are still not approved or verified. Requirements R12–R18 and rules BR09–BR13 were added, and R08 now covers clients.
+Product direction, 2026-11-11 ([ADR 008](adr/008-portfolio-ratings-no-approval.md)): Tax Buddy is a portfolio site for accountants with client ratings, and accountants are still not approved or verified. Requirements R12–R18 and rules BR09–BR13 were added, and R08 now covers clients.
 
 Service-work expansion, 2026-11-11: the user authorized updating documentation and the prototype for client lists, added accountants, per-client service checklists, shared progress and service documents ([ADR 009](adr/009-private-service-workspaces.md), [F03](../specs/client-services/spec.md)). R19–R23 are approved feature categories; the owner subsequently confirmed private saving followed by a service request and accountant acceptance. Remaining lifecycle and file policies stay open in D24–D28. No production file-storage provider or release is approved by this task.
 
 ## Problem, users, and success
 
-People looking for an accountant have no simple way to compare accountants and contact one. Accountants have no simple channel to present their experience and services and to receive enquiries. Kuwenta is a portfolio and directory site for accountants, with messaging and client ratings. Accountants publish a profile with their services, experience and portfolio highlights, with no approval step. Clients browse, chat with the accountant they choose, and rate the accountants who have replied to them. Both sides are told by email about new messages. Clients also keep a private list of added accountants; accountants organize client services, and both participants follow shared checklists/progress and service documents. Service progress does not add email events in this change.
+People looking for an accountant have no simple way to compare accountants and contact one. Accountants have no simple channel to present their experience and services and to receive enquiries. Tax Buddy is a portfolio and directory site for accountants, with messaging and client ratings. Accountants publish a profile with their services, experience and portfolio highlights, with no approval step. Clients browse, chat with the accountant they choose, and rate the accountants who have replied to them. Both sides are told by email about new messages. Clients also keep a private list of added accountants; accountants organize client services, and both participants follow shared checklists/progress and service documents. Service progress does not add email events in this change.
 
 | User | Who | What they can do in release 1 |
 |---|---|---|
@@ -132,7 +132,7 @@ All owned by lumabanls unless reassigned. Each row names the work it blocks.
 
 | ID | Question | Affects |
 |---|---|---|
-| D01 | Partly decided 2026-11-11 under the user's delegated design brief: Kuwenta replaces AccApp, with original logo assets ([DESIGN](DESIGN.md#visual-system)). Earlier [name sketches](../prototypes/brand-options.html) remain historical alternatives. Domain selection and name/domain availability checks remain open | RELEASE identity and public launch; current planned project names use Kuwenta |
+| D01 | Partly decided. Name: Tax Buddy, by the user's instruction of 2026-11-12. It replaces Kuwenta, which the agent selected on 2026-11-11 under the user's delegated design brief to replace AccApp. The original logo symbol is kept and the wordmark redrawn ([DESIGN](DESIGN.md#visual-system)). Earlier [name sketches](../prototypes/brand-options.html) remain historical alternatives. Domain selection and name/domain availability checks remain open | RELEASE identity and public launch; current planned project names use `TaxBuddy` |
 | D02 | Closed 2026-11-11: sign-in on Windows desktop no longer applies, because there is no Windows app ([ADR 006](adr/006-web-sign-in.md)) | — |
 | D03 | May one account be both a client and an accountant? | R04, data model |
 | D04 | Required and optional profile fields; how experience is structured (for example role, firm, start/end month) | R05, R03, data model |

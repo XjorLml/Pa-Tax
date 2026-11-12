@@ -1,0 +1,970 @@
+{
+  "ink-light": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 15.722976178564826,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 14.650239971716834,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 6.355850159268654,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 5.92220766603361,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 5.3477247470685185,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 4.6734179249286925,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 8.531986054572128,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 8.531986054572128,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 11.196270859134007,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 8.684771081062031,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 6.272951788275227,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 6.296810738821536,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 3.641776947428154,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 3.3933083404416147,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 3.064140943704395,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 8.531986054572128,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 7.178695504509655,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "ink-dark": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 13.883514070973144,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 15.563556075646579,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 8.165661571288192,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 9.153787082277807,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 7.288409979241469,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 5.707519288143927,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 9.448507339662532,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 9.194301556285907,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 10.952814405401549,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.281940448807081,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 8.22239743168069,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 8.129772829863938,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 4.670717642819612,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 5.235920500813059,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 4.1689341128027255,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 9.448507339662532,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 8.433437337823538,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "lagoon-light": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 13.99757533094165,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 12.96027056734376,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 6.159364526227007,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 5.702918462338504,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 5.221053412982853,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 4.58049138201009,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 6.2955358374187265,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 6.2955358374187265,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 8.967987308528206,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 7.7267558115455905,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 6.272951788275227,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 6.296810738821536,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 3.5887421521510747,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 3.322794711845324,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 3.0420369474838305,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 6.2955358374187265,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 5.336480529858394,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "lagoon-dark": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 13.790441286892333,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 15.446687011327091,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 8.061047227680485,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 9.029187023032973,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 7.066857838658947,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 5.441602268648664,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 9.566369314672281,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 8.620495875737632,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 10.281710732794949,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.308852530187032,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 8.22239743168069,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 8.129772829863938,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 4.617947362377326,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 5.1725674369265,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 4.0484042078638165,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 9.566369314672281,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 8.386524736730877,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "plum-light": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 16.0571912845029,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 14.97920753696022,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 6.84490671017189,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 6.38538062891181,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 5.62915543118498,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 4.746299072413068,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 9.799080704293065,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 9.799080704293065,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 12.481791674189145,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.510526007215423,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 6.272951788275227,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 6.296810738821536,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 3.905644647566958,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 3.6434430346474183,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 3.2119474685401497,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 9.799080704293065,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 8.05862675750128,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "plum-dark": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 14.392150008233873,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 15.827187851535584,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 8.369478575239029,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 9.20399728698811,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 7.77917307846495,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 6.259594176548753,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 9.42171215840509,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 8.989791622388887,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 11.03348943380082,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.582507985835516,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 8.22239743168069,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 8.129772829863938,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 4.592249013159587,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 5.050141066534428,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 4.268354303273671,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 9.42171215840509,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 8.75719185094127,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "marigold-light": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 14.987967497069011,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 14.113816133937174,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 6.933221039306199,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 6.52885102558759,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 5.840965399620971,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 5.009956340531057,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 12.590320956676113,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 12.590320956676113,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 16.026901734319985,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.425484852993524,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 6.272951788275227,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 6.296810738821536,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 4.114842557468947,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 3.8748503616366707,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 3.4665926366410944,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 12.590320956676113,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 10.606849062095824,
+      "minimum": 3,
+      "pass": true
+    }
+  ],
+  "marigold-dark": [
+    {
+      "fg": "text",
+      "bg": "surface",
+      "ratio": 14.149484308107283,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "text",
+      "bg": "app-bg",
+      "ratio": 15.726893766423773,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "surface",
+      "ratio": 8.03196193748694,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "app-bg",
+      "ratio": 8.927379215823404,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero",
+      "ratio": 7.452641588614232,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "muted",
+      "bg": "hero-art",
+      "ratio": 6.0880469526987415,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "link",
+      "bg": "surface",
+      "ratio": 9.905010251139094,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary",
+      "ratio": 9.872235643470324,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-primary",
+      "bg": "primary-strong",
+      "ratio": 11.397798876150839,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "on-soft",
+      "bg": "primary-soft",
+      "ratio": 9.36406018226475,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "danger",
+      "bg": "danger-soft",
+      "ratio": 8.22239743168069,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "warn",
+      "bg": "warn-soft",
+      "ratio": 8.129772829863938,
+      "minimum": 4.5,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "surface",
+      "ratio": 4.72390279045262,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "app-bg",
+      "ratio": 5.250531802476619,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "ctl",
+      "bg": "hero",
+      "ratio": 4.383182424257506,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "surface",
+      "ratio": 9.905010251139094,
+      "minimum": 3,
+      "pass": true
+    },
+    {
+      "fg": "focus",
+      "bg": "hero",
+      "ratio": 9.19059277270256,
+      "minimum": 3,
+      "pass": true
+    }
+  ]
+}

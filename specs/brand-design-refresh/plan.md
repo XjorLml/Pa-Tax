@@ -1,6 +1,10 @@
-# Kuwenta brand and prototype refresh plan
+# Brand and prototype refresh plan (Kuwenta, renamed Tax Buddy)
 
 Status: authorized, local prototype work. Scenarios: [spec](spec.md); execution: [tasks](tasks.md).
+
+Rename, 2026-11-12 (BD07): `prototypes/kuwenta.css` is now `prototypes/taxbuddy.css`, the logo files are `prototypes/assets/taxbuddy-*.svg`, and the look id is `taxbuddy`. Affected sources: the prototype page, stylesheet, service module and checker; the two logo wordmarks; current authorities and planned project names in SDD, SETUP, RELEASE and the F01/F03 plans. The plan below is the original 2026-11-11 record and keeps the names of that day.
+
+Palette options, 2026-11-12 (BD08): `prototypes/taxbuddy.css` gains four `[data-palette]` token blocks, light and dark, that override colours only. `prototypes/index.html` gains a Palette control, a `palette` URL setting, and an inline token-coloured copy of the logo used while an option is selected. `tools/check_prototype.mjs` gains the matching checks. The default path, logo files and DESIGN's current palette are unchanged.
 
 ## Affected modules and contracts
 

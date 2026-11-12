@@ -84,7 +84,7 @@ try {
   ws.onclose = () => { for (const p of pending.values()) p.reject(new Error('Browser connection closed')); pending.clear(); };
   await cdp('Page.enable'); await cdp('Runtime.enable');
   await open('theme=light&notes=0');
-  await check('Desktop default and Kuwenta name', `document.querySelector('#device').classList.contains('desktop') && document.title.includes('Kuwenta') && document.querySelector('#device').dataset.look==='kuwenta'`);
+  await check('Desktop default and Tax Buddy name', `document.querySelector('#device').classList.contains('desktop') && document.title.includes('Tax Buddy') && document.querySelector('#device').dataset.look==='taxbuddy'`);
   await layout('Desktop directory'); await screenshot('directory-desktop-light');
   await js(`document.querySelector('.page').scrollTop=500`);
   await screenshot('directory-cards-desktop-light');
@@ -155,7 +155,7 @@ try {
     await layout(name + ' chat');
     if (width === 390 || width === 1440) await screenshot('chat-' + name);
   }
-  for (const look of ['kuwenta','modern','ledger','neighbourly','clear']) {
+  for (const look of ['taxbuddy','modern','ledger','neighbourly','clear']) {
     await open(`device=desktop&theme=light&look=${look}&notes=0`);
     await check(`${look} comparison direction`, `document.querySelectorAll('.results .card').length===6`);
   }
@@ -166,19 +166,51 @@ try {
   for (const hash of ['#/about','#/help','#/for-accountants','#/privacy','#/terms','#/no-such-page','#/error']) {
     await route(hash); await check(`${hash} renders`, `!!document.querySelector('#screen-title') && document.querySelector('#app').innerText.length>100`);
   }
-  await check('No stale working name in visible page', `!document.body.innerText.includes('AccApp')`);
-  for (const theme of ['light','dark']) {
-    await open(`device=desktop&theme=${theme}&notes=0`);
-    const contrast = await js(`(() => {
+  await check('No stale earlier names in visible page', `!/AccApp|Kuwenta/i.test(document.body.innerText)`);
+  const contrastJS = `(() => {
       const style=getComputedStyle(document.querySelector('#device'));
       const lum=h=>{const v=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(x=>x<=.04045?x/12.92:((x+.055)/1.055)**2.4);return v[0]*.2126+v[1]*.7152+v[2]*.0722;};
       const pairs=[['text','surface',4.5],['text','app-bg',4.5],['muted','surface',4.5],['muted','app-bg',4.5],['muted','hero',4.5],['muted','hero-art',4.5],['link','surface',4.5],['on-primary','primary',4.5],['on-primary','primary-strong',4.5],['on-soft','primary-soft',4.5],['danger','danger-soft',4.5],['warn','warn-soft',4.5],['ctl','surface',3],['ctl','app-bg',3],['ctl','hero',3],['focus','surface',3],['focus','hero',3]];
       return pairs.map(([fg,bg,minimum])=>{const a=lum(style.getPropertyValue('--'+fg).trim()),b=lum(style.getPropertyValue('--'+bg).trim());const ratio=(Math.max(a,b)+.05)/(Math.min(a,b)+.05);return {fg,bg,ratio,minimum,pass:ratio>=minimum};});
-    })()`);
+    })()`;
+  for (const theme of ['light','dark']) {
+    await open(`device=desktop&theme=${theme}&notes=0`);
+    const contrast = await js(contrastJS);
     await writeFile(join(out, `contrast-${theme}.json`), JSON.stringify(contrast,null,2));
     results.push({name:`${theme}: 17 semantic contrast pairs`,pass:contrast.every(r=>r.pass)});
     if (contrast.some(r=>!r.pass)) throw new Error('Contrast failure: '+theme);
   }
+
+  // BD08: palette options for the Tax Buddy look. Paper & Forest stays the default.
+  const token = name => `getComputedStyle(document.querySelector('#device')).getPropertyValue('--${name}').trim()`;
+  await open('device=desktop&theme=light&notes=0&palette=not-a-palette');
+  await check('Default palette is Paper & Forest with file logos', `document.querySelector('#device').dataset.palette==='forest' && document.querySelector('#sel-palette').value==='forest' && !!document.querySelector('.sitebar img.brand-logo') && !document.querySelector('#app .brand-inline')`);
+  const forestPrimary = await js(token('primary'));
+  const paletteContrast = {};
+  for (const palette of ['ink','lagoon','plum','marigold']) {
+    for (const theme of ['light','dark']) {
+      await open(`device=desktop&theme=${theme}&notes=0&palette=${palette}`);
+      await check(`${palette} ${theme}: palette applied with token-coloured logo`, `document.querySelector('#device').dataset.palette==='${palette}' && document.querySelector('#sel-palette').value==='${palette}' && !!document.querySelector('.sitebar svg.brand-logo.brand-inline') && !document.querySelector('.sitebar img.brand-logo') && getComputedStyle(document.querySelector('.sitebar .lg-bg')).fill!=='none' && document.querySelectorAll('.results .card').length===6`);
+      const contrast = await js(contrastJS);
+      paletteContrast[`${palette}-${theme}`] = contrast;
+      results.push({name:`${palette} ${theme}: 17 semantic contrast pairs`,pass:contrast.every(r=>r.pass)});
+      if (contrast.some(r=>!r.pass)) throw new Error(`Contrast failure: ${palette} ${theme}`);
+      await screenshot(`palette-${palette}-${theme}`);
+    }
+    await check(`${palette}: primary differs from the current palette`, `${token('primary')}!==${JSON.stringify(forestPrimary)}`);
+    await open(`device=phone&theme=light&notes=0&palette=${palette}`, '#/directory', 390, 1100);
+    await layout(`${palette} phone directory`);
+    await check(`${palette}: phone header uses the token-coloured icon`, `!!document.querySelector('.appbar .brand svg.brand-inline')`);
+    await screenshot(`palette-${palette}-phone-390-light`);
+  }
+  await writeFile(join(out, 'contrast-palettes.json'), JSON.stringify(paletteContrast,null,2));
+  await open('device=desktop&theme=light&notes=0&palette=ink');
+  await set('#sel-palette', 'plum');
+  await check('Palette control switches the palette in place', `document.querySelector('#device').dataset.palette==='plum' && !!document.querySelector('.sitebar svg.brand-inline')`);
+  await set('#sel-palette', 'forest');
+  await check('Palette control returns to the current palette', `${token('primary')}===${JSON.stringify(forestPrimary)} && !!document.querySelector('.sitebar img.brand-logo')`);
+  await open('device=desktop&theme=light&notes=0&look=modern&palette=ink');
+  await check('Palette options do not affect earlier looks', `document.querySelector('#sel-palette').disabled && !document.querySelector('#app .brand-inline') && document.querySelectorAll('.results .card').length===6`);
   await open('device=phone&theme=light&notes=0', '#/directory', 390, 1100);
   await check('Phone simulation controls start collapsed', `!document.querySelector('#prototype-controls').open`);
   await cdp('Input.dispatchKeyEvent', {type:'keyDown',key:'Tab',code:'Tab',windowsVirtualKeyCode:9});
@@ -304,8 +336,8 @@ try {
   if (ws?.readyState === WebSocket.OPEN) await screenshot('failure').catch(() => {});
 } finally {
   const sourceHashes = {};
-  for (const file of ['prototypes/index.html','prototypes/kuwenta.css','prototypes/service-workspace.js','tools/check_prototype.mjs',
-    ...['kuwenta-logo-light.svg','kuwenta-logo-dark.svg','kuwenta-icon.svg','kuwenta-icon-dark.svg','favicon.svg'].map(f=>'prototypes/assets/'+f)]) {
+  for (const file of ['prototypes/index.html','prototypes/taxbuddy.css','prototypes/service-workspace.js','tools/check_prototype.mjs',
+    ...['taxbuddy-logo-light.svg','taxbuddy-logo-dark.svg','taxbuddy-icon.svg','taxbuddy-icon-dark.svg','favicon.svg'].map(f=>'prototypes/assets/'+f)]) {
     sourceHashes[file] = createHash('sha256').update(await readFile(join(root,file))).digest('hex');
   }
   await writeFile(join(out, 'results.json'), JSON.stringify({ browser: version?.Browser, node: process.version, observedAt: new Date().toISOString(), sourceHashes, results, errors }, null, 2));

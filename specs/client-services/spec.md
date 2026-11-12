@@ -4,7 +4,7 @@ Status: scope expansion authorized for documentation and prototype, 2026-11-11. 
 
 ## Scope and baseline
 
-Extend the current Kuwenta HTML prototype; no application source exists. Preserve all pre-existing uncommitted F02 work and its attributed evidence. Baseline commit `668a9a9e122787f2c86f6f6b4a63c398cc78d282` plus that F02 working tree; the F02 report identifies its exact UI sources. No deployment or production file storage is authorized by this prototype task.
+Extend the current HTML prototype (named Kuwenta at this baseline; renamed Tax Buddy on 2026-11-12); no application source exists. Preserve all pre-existing uncommitted F02 work and its attributed evidence. Baseline commit `668a9a9e122787f2c86f6f6b4a63c398cc78d282` plus that F02 working tree; the F02 report identifies its exact UI sources. No deployment or production file storage is authorized by this prototype task.
 
 The feature categories are authorized. Unresolved policy stays in PRD D24–D28. The owner confirmed private save → service request → accountant acceptance in the async clarification on 2026-11-11 (selected “Save privately, then request a service” in the question describing acceptance before a shared relationship). The prototype follows that model. Saving is not a contract or a public follow. Accountants manage service tasks and shared notes; both participants attach generated sample documents. Client confirmation of completion, service fees, bookings, real uploads, progress emails and chat attachments are excluded from this change.
 
