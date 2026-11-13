@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/TaxBuddy.Web/TaxBuddy.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/TaxBuddy.Tests/TaxBuddy.Tests.csproj" />
+    <Project Path="tests/TaxBuddy.Web.Tests/TaxBuddy.Web.Tests.csproj" />
+  </Folder>
+</Solution>

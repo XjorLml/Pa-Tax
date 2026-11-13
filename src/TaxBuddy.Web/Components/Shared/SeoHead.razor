@@ -1,0 +1,17 @@
+@* ADR 010 / SDD search engines: each public page has its own title, description and canonical address in the first response. *@
+@inject NavigationManager Navigation
+
+<PageTitle>@Title</PageTitle>
+<HeadContent>
+    <meta name="description" content="@Description" />
+    <link rel="canonical" href="@Navigation.ToAbsoluteUri(CanonicalPath).AbsoluteUri" />
+</HeadContent>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Description { get; set; } = "";
+
+    /// <summary>The page's own address relative to the site root, normalized (no duplicate or unknown query values).</summary>
+    [Parameter, EditorRequired] public string CanonicalPath { get; set; } = "/";
+}

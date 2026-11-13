@@ -175,7 +175,12 @@ a.card[aria-current="true"]{border-color:var(--link);box-shadow:inset 4px 0 0 va
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
 .tag{padding:3px 9px;border-radius:var(--r-pill);background:var(--surface-2);font-size:12.5px}
 .tag.strong{flex:none;background:var(--primary-soft);color:var(--on-soft);font-weight:700}
-.more{display:flex;justify-content:center;margin-top:12px}
+.pager{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:12px;margin-top:12px;font-size:13px;color:var(--muted)}
+.search-row{display:flex;align-items:flex-end;gap:8px}
+.search-row .search{flex:1;min-width:0}
+.dir-submit{flex:none;min-height:46px;margin-bottom:10px}
+.hero-search>.dir-submit{width:100%;justify-content:center}
+.filter select{min-width:0}
 .avatar{display:grid;flex:none;place-items:center;width:44px;height:44px;border-radius:var(--r-avatar);background:var(--t1);color:var(--text);font:700 15px/1 var(--font-head)}
 .avatar.t2{background:var(--t2)}
 .avatar.t3{background:var(--t3)}
@@ -335,7 +340,8 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
 .hero{margin-bottom:14px;padding:18px 16px;background:var(--primary-soft);border-radius:var(--r-lg)}
 .hero h1,.hero h2{margin:0 0 6px;font-size:24px;line-height:1.15;color:var(--text)}
 .hero-sub{margin:0 0 12px;color:var(--text)}
-.hero-search .search,.hero-search .filter,.hero-search .chips{margin-bottom:8px}
+.hero-search .search,.hero-search .filter,.hero-search .chips,.hero-search .dir-submit{margin-bottom:8px}
+.hero-search .search-row .dir-submit{min-height:52px}
 .hero-search .search input{min-height:52px;font-size:16px;box-shadow:var(--elev)}
 .trustline{display:flex;align-items:center;gap:6px;margin:6px 0 0;font-size:13px;color:var(--text)}
 .hero-actions{display:flex;gap:8px;margin-top:10px}
@@ -395,8 +401,10 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
 .device.phone .rating-link{min-height:44px}
 .profile-head .rating{margin-top:2px}
 .sortctl{display:inline-flex;flex:none;align-items:center;gap:6px;font-size:13px}
-.sortctl select{min-height:36px;padding:0 8px;border:1px solid var(--ctl);border-radius:var(--r-md);background:var(--surface)}
-.device.phone .sortctl select{min-height:44px}
+.sortctl{flex-wrap:wrap}
+.sortlink{color:var(--link);font-weight:600}
+.sortlink[aria-current="true"]{color:var(--text);text-decoration:none}
+.device.phone .sortlink{display:inline-flex;align-items:center;min-height:44px;padding:0 4px}
 .meta-row .linkbtn{margin-left:4px}
 .pf{display:grid;gap:10px;margin:0;padding:0;list-style:none}
 .pf li{padding:12px 14px;border:1px solid var(--border);border-radius:var(--r-md);background:var(--app-bg)}
@@ -649,7 +657,9 @@ const S = {
   device: window.innerWidth >= 900 ? 'desktop' : 'phone', theme: 'system', look: 'taxbuddy', palette: 'forest', online: true, notes: true, howOpen: false,
   dirScenario: 'normal', sendScenario: 'ok',
   me: null,
-  dir: { status: 'idle', data: [], search: '', service: '', sort: 'name', shown: PAGE },
+  /* Applied search/service/sort/page are what the static page was requested with (its address).
+     typed and svcDraft are the form's unsubmitted values (C03: nothing applies until submitted). */
+  dir: { status: 'idle', data: [], search: '', service: '', sort: 'name', page: 1, typed: '', svcDraft: '' },
   drafts: {}, composeErr: {},
   signin: null, editor: null, del: null,
   emailOn: true, emailNote: null, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
@@ -848,6 +858,7 @@ function addressText() {
     if (S.dir.search.trim()) q.push('q=' + encodeURIComponent(S.dir.search.trim()));
     if (S.dir.service) q.push('service=' + encodeURIComponent(S.dir.service));
     if (S.dir.sort === 'rating') q.push('sort=rating');
+    if (S.dir.page > 1) q.push('page=' + S.dir.page);
     if (q.length) p += '?' + q.join('&');
   }
   return 'taxbuddy.example' + p;
@@ -874,11 +885,14 @@ const brandIconHTML = () => altPalette()
 const titlebarHTML = () => '<div class="titlebar" aria-hidden="true"><span class="tabname"><span class="appdot" aria-hidden="true">' + brandSymbolHTML() + '</span>Tax Buddy</span>' + addressPill() + '<span class="tb-ctrls"><span>&#8212;</span><span>&#9744;</span><span>&#10005;</span></span></div>';
 
 /* ---------- Directory ---------- */
-function searchHTML() {
-  return '<div class="search" role="search">' + icon('search', 18) +
+/* The directory search is a plain GET form (C03, SDD navigation): typing changes nothing until it is submitted. */
+const dirSubmitHTML = () => '<button type="submit" class="btn primary dir-submit" data-action="dir-submit" data-fkey="dir-submit">Search</button>';
+function searchHTML(desktop) {
+  return '<div class="search-row"><div class="search">' + icon('search', 18) +
     '<label for="q" class="search-label">What can we help you with?</label>' +
-    '<input id="q" type="search" data-fkey="q" data-bind="search" placeholder="Search name, city or service" value="' + esc(S.dir.search) + '" autocomplete="off">' +
-    '<button class="icon-btn clear" data-action="clear-search" data-clear aria-label="Clear search"' + (S.dir.search ? '' : ' hidden') + '>' + icon('x', 18) + '</button></div>';
+    '<input id="q" type="search" name="q" data-fkey="q" data-bind="search" placeholder="Search name, city or service" value="' + esc(S.dir.typed) + '" autocomplete="off">' +
+    '<button type="button" class="icon-btn clear" data-action="clear-search" data-clear aria-label="Clear search"' + (S.dir.typed || S.dir.search ? '' : ' hidden') + '>' + icon('x', 18) + '</button></div>' +
+    (desktop ? dirSubmitHTML() : '') + '</div>';
 }
 function skeletonHTML() {
   let h = '<div class="skel" aria-busy="true"><p class="sr-only">Loading accountants…</p>';
@@ -889,11 +903,10 @@ function skeletonHTML() {
 }
 function cardHTML(p, sel) {
   const yrs = yearsExp(p);
-  const chatting = S.me && S.me.role === 'client' && CONVS.some(c => c.clientId === S.me.clientId && c.accountantId === p.id);
+  /* No per-user marks on the public directory (C03): the card is the same for every viewer. */
   return '<li><a class="card" href="#/profile/' + p.id + '" data-fkey="card-' + p.id + '"' + (sel === p.id ? ' aria-current="true"' : '') + '>' +
     '<div class="card-top"><span class="avatar ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span>' +
-    '<div class="card-id"><h3>' + esc(p.name) + '</h3><p class="sub">' + esc(p.title) + '</p></div>' +
-    (chatting ? '<span class="tag strong">Chatting</span>' : '') + '</div>' +
+    '<div class="card-id"><h3>' + esc(p.name) + '</h3><p class="sub">' + esc(p.title) + '</p></div></div>' +
     '<p class="rating">' + ratingLine(p.id) + '</p>' +
     '<p class="facts">' + (p.city ? '<span>' + icon('pin', 14) + esc(p.city) + '</span>' : '') + (yrs ? '<span>' + yearsText(yrs) + '\' experience</span>' : '') +
     (p.portfolio.length ? '<span>' + p.portfolio.length + (p.portfolio.length === 1 ? ' highlight' : ' highlights') + '</span>' : '') + '</p>' +
@@ -919,13 +932,21 @@ function dirResultsHTML(sel) {
     return stateHTML('search', 'No matches', 'No listed accountant matches ' + crit + '. Try a shorter search or another service.',
       '<button class="btn" data-action="clear-search" data-fkey="clear-all">Clear search and filter</button>');
   }
-  const shown = list.slice(0, d.shown);
+  const pages = dirPages(list), page = dirPage(list);
+  const shown = list.slice((page - 1) * PAGE, page * PAGE);
   const what = list.length + ' accountant' + (list.length === 1 ? '' : 's') + (d.service ? ' for ' + esc(d.service) : '') + (q ? ' matching “' + esc(q) + '”' : '');
-  return '<div class="meta-row"><span>' + what + (q || d.service ? ' <button class="linkbtn" data-action="clear-search" data-fkey="clear-inline">Clear</button>' : '') + '</span>' +
-    '<label class="sortctl">Sort <select data-bind="sort-select" data-fkey="sort"><option value="name"' + (d.sort === 'rating' ? '' : ' selected') + '>Name (A–Z)</option><option value="rating"' + (d.sort === 'rating' ? ' selected' : '') + '>Highest rated</option></select></label></div>' +
+  /* Sort and page are links carrying the applied search and filter, as on a static page. */
+  const sortLink = (v, t) => '<a href="#/directory" class="sortlink" data-action="sort" data-val="' + v + '" data-fkey="sort-' + v + '"' + (d.sort === v ? ' aria-current="true"' : '') + '>' + t + '</a>';
+  const pageLink = (n, t) => '<a href="#/directory" class="btn sm" data-action="page" data-val="' + n + '" data-fkey="page-' + t.toLowerCase() + '">' + t + '</a>';
+  return '<div class="meta-row"><span>' + what + (q || d.service ? ' <button type="button" class="linkbtn" data-action="clear-search" data-fkey="clear-inline">Clear</button>' : '') + '</span>' +
+    '<span class="sortctl" role="group" aria-label="Sort">Sort: ' + sortLink('name', 'Name (A–Z)') + sortLink('rating', 'Highest rated') + '</span></div>' +
     '<ul class="cards">' + shown.map(p => cardHTML(p, sel)).join('') + '</ul>' +
-    (list.length > shown.length ? '<div class="more"><button class="btn sm" data-action="more" data-fkey="more">Show more (' + (list.length - shown.length) + ')</button></div>' : '');
+    (pages > 1 ? '<nav class="pager" aria-label="Result pages">' + (page > 1 ? pageLink(page - 1, 'Previous') : '') +
+      '<span>Page ' + page + ' of ' + pages + '</span>' + (page < pages ? pageLink(page + 1, 'Next') : '') + '</nav>' : '');
 }
+const dirPages = list => Math.max(1, Math.ceil(list.length / PAGE));
+/* An out-of-range page value is ignored, as the SDD address contract says for malformed values. */
+const dirPage = list => (S.dir.page >= 1 && S.dir.page <= dirPages(list) ? S.dir.page : 1);
 
 /* ---------- Profile ---------- */
 function profileAction(p) {
@@ -1295,20 +1316,22 @@ function heroHTML(desktop) {
   return '<section class="hero' + (desktop ? ' wide' : '') + '" aria-label="Find an accountant"><div class="hero-intro">' +
     (visitor ? '<span class="eyebrow">Independent accountants. Direct connections.</span>' : '') + head +
     (visitor ? '<p class="hero-sub">' + esc(L.heroSub) + '</p>' : '') + '</div>' + art +
-    '<div class="hero-search">' + searchHTML() + filterHTML(desktop) + '</div>' +
+    '<form class="hero-search" role="search" method="get" action="#/directory" data-dir-form>' + searchHTML(desktop) + filterHTML(desktop) + '</form>' +
     (visitor ? '<p class="trustline">' + icon('lock', 14) + '<span>Free to browse. You only sign in when you send a message.</span></p>' : '') +
     (!desktop && visitor
       ? '<div class="hero-actions"><button class="btn sm" data-action="toggle-how" data-fkey="how" aria-expanded="' + S.howOpen + '">How it works</button></div>' + (S.howOpen ? howHTML(false) : '')
       : '') + '</section>';
 }
 function filterHTML(desktop) {
+  /* Wide screens: each service button submits the form with that service (works without JavaScript).
+     Phones: the menu is applied when the form is submitted. */
   if (desktop) {
     return '<div class="chips" role="group" aria-label="Filter by service">' +
-      '<button class="chip" data-fkey="chip-x" data-action="service" data-val="" aria-pressed="' + (!S.dir.service) + '">All services</button>' +
-      SERVICES.map((s, i) => '<button class="chip" data-fkey="chip-' + i + '" data-action="service" data-val="' + esc(s) + '" aria-pressed="' + (S.dir.service === s) + '">' + esc(s) + '</button>').join('') + '</div>';
+      '<button type="submit" name="service" value="" class="chip" data-fkey="chip-x" data-action="service" data-val="" aria-pressed="' + (!S.dir.service) + '">All services</button>' +
+      SERVICES.map((s, i) => '<button type="submit" name="service" value="' + esc(s) + '" class="chip" data-fkey="chip-' + i + '" data-action="service" data-val="' + esc(s) + '" aria-pressed="' + (S.dir.service === s) + '">' + esc(s) + '</button>').join('') + '</div>';
   }
-  return '<div class="filter"><label for="svc">Service</label><select id="svc" data-fkey="svc" data-bind="service-select">' +
-    '<option value="">All services</option>' + SERVICES.map(s => '<option' + (S.dir.service === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></div>';
+  return '<div class="filter"><label for="svc">Service</label><select id="svc" name="service" data-fkey="svc" data-bind="service-select">' +
+    '<option value="">All services</option>' + SERVICES.map(s => '<option' + (S.dir.svcDraft === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></div>' + dirSubmitHTML();
 }
 function directoryBodyHTML(sel, desktop) {
   return heroHTML(desktop) + '<div class="directory-heading"><div><h2>Meet your next accountant</h2><p>Explore the experience, services and people behind each profile.</p></div></div>' +
@@ -1614,8 +1637,8 @@ function buildApp() {
 const NOTES = {
   work: { title:'Private service work', refs:[['R19–R23','Private client and added-accountant lists, service checklists, shared progress and service documents.'],['BR14–BR18','Participant access; saving alone is private; accountant updates progress; chat remains text only.']], open:[['D24','Confirmed: private saving, client service request and accountant acceptance. Other lifecycle details remain open.'],['D25','Accountants edit checklists and notes; completion is task-based without client sign-off.'],['D26–D28','Generated PDF/CSV/TXT only, demo 5 MiB limit and own-file removal. Real policy, scanning, retention and storage provider remain open.']], tries:[['As accountant','role','','accountant'],['As client','role','','client'],['As unrelated accountant','role','','newAccountant'],['Go offline','offline']] },
   directory: { title: 'Directory',
-    refs: [['R01', 'Browse listed accountants without signing in. New visitors get a short introduction and "How it works".'], ['R02', 'Search and filter live in the page address (see the browser bar), so Back and shared links keep them. "No matches" is different from an empty directory.'], ['BR02', 'Stable order with a unique tie-breaker, so "Show more" never repeats or skips anyone.'], ['R10', 'A failed load shows an error with a retry, never an empty list.'], ['FT01–FT03, FT06, FT07', 'Feature F01 scenarios.']],
-    open: [['D05', 'Proposal shown: text search on name, title, city and services; one service filter (a menu on phones, buttons on wide screens); A–Z order; pages of 6 here.'], ['D04', 'Cards show years of experience, counted from the earliest start month the accountant entered.'], ['D19', 'Whether search engines may index these public pages.']],
+    refs: [['R01', 'Browse listed accountants without signing in. New visitors get a short introduction and "How it works".'], ['R02', 'A plain form, as on the planned static page (C03): typing changes nothing until Search is pressed; on wide screens a service button submits at once. Search, service, sort and page live in the address (see the browser bar), so Back and shared links keep them. "No matches" is different from an empty directory.'], ['BR02', 'Stable order with a unique tie-breaker, so the page links never repeat or skip anyone.'], ['R10', 'A failed load shows an error with a retry, never an empty list.'], ['FT01–FT03, FT06, FT07', 'Feature F01 scenarios.']],
+    open: [['D05', 'Adopted for now (2026-11-12): text search on name, title, city and services; one service filter (a menu on phones, buttons on wide screens); A–Z order by default; "Highest rated" arrives with ratings. Page size is still open: pages of 6 here.'], ['D04', 'Adopted for now (2026-11-12): cards show years of experience, counted from the earliest start month the accountant entered.'], ['D19', 'Whether search engines may index these public pages.']],
     tries: [['Empty directory', 'scenario', 'dirScenario', 'empty'], ['Load fails', 'scenario', 'dirScenario', 'error'], ['Slow loading', 'scenario', 'dirScenario', 'slow'], ['Go offline, then reload', 'offline-reload'], ['Normal data', 'scenario', 'dirScenario', 'normal'], ['View as a client', 'role', '', 'client']] },
   profile: { title: 'Profile',
     refs: [['R03', 'Career summary, services, experience and contact details. Services come before experience because clients look for a service first. No prices.'], ['R11', 'Contact details are public because the accountant chose to publish them.'], ['BR01', 'Only listed profiles appear, including through old links.'], ['BR03', 'Only clients can start chats. Try viewing as an accountant.'], ['R12', 'Portfolio highlights written by the accountant, without client names.'], ['R13, R14', 'Rating and reviews from clients the accountant has replied to, with one public reply each.'], ['R15', 'Anyone signed in can report the profile or a review.'], ['FT04, FT05', 'Feature F01 scenarios.']],
@@ -1704,14 +1727,12 @@ function render() {
   const r = parseRoute();
   if ((r.name === 'directory' || (r.name === 'profile' && S.device === 'desktop')) && S.dir.status === 'idle') startDirLoad();
 }
-function updateDirResults() {
-  const box = app.querySelector('[data-dir-results]');
-  const r = parseRoute();
-  if (box) box.innerHTML = dirResultsHTML(r.name === 'profile' ? r.id : '');
-  const clr = app.querySelector('[data-clear]');
-  if (clr) clr.hidden = !S.dir.search;
-  const ad = app.querySelector('[data-address]');
-  if (ad) ad.textContent = addressText();
+/* Simulates requesting the static directory with a new address: applied values change, and the
+   form shows what was submitted. Unsubmitted text is not kept across this "page load", as in a browser. */
+function applyDir(changes) {
+  Object.assign(S.dir, changes);
+  S.dir.typed = S.dir.search; S.dir.svcDraft = S.dir.service;
+  render();
 }
 function updateComposer(key) {
   const t = S.drafts[key] || '';
@@ -1919,13 +1940,14 @@ const ACTIONS = {
   'add-pf': () => { const f = S.editor.f; f.portfolio.push({ title: '', sector: '', work: '', result: '' }); S.editor.dirty = true; S.focusSel = '#f-pf-' + (f.portfolio.length - 1) + '-title'; render(); },
   'del-pf': el => { S.editor.f.portfolio.splice(+el.dataset.i, 1); S.editor.errors = {}; S.editor.dirty = true; S.focusSel = '#add-pf'; render(); },
   'retry-dir': () => { if (S.dirScenario === 'error') S.dirScenario = 'normal'; resetDir(); render(); },
-  'clear-search': () => { S.dir.search = ''; S.dir.service = ''; S.dir.shown = PAGE; S.focusSel = '#q'; render(); },
-  'service': el => { S.dir.service = el.dataset.val; S.dir.shown = PAGE; render(); },
-  'more': () => {
-    const list = filtered(), next = list[S.dir.shown];
-    S.dir.shown += PAGE;
-    if (next) S.focusSel = '[data-fkey="card-' + next.id + '"]';
-    render();
+  'clear-search': () => { S.focusSel = '#q'; applyDir({ search: '', service: '', page: 1 }); },
+  'dir-submit': () => applyDir({ search: S.dir.typed.trim(), service: S.device === 'phone' ? S.dir.svcDraft : S.dir.service, page: 1 }),
+  'service': el => applyDir({ search: S.dir.typed.trim(), service: el.dataset.val, page: 1 }),
+  'sort': el => applyDir({ sort: el.dataset.val === 'rating' ? 'rating' : 'name', page: 1 }),
+  'page': el => {
+    const n = +el.dataset.val, first = filtered()[(n - 1) * PAGE];
+    if (first) S.focusSel = '[data-fkey="card-' + first.id + '"]';
+    applyDir({ page: n });
   },
   'start-signin': el => { S.signin = { step: 'choose', next: el.dataset.next || '#/directory' }; go('#/signin'); },
   'provider': el => {
@@ -2030,11 +2052,16 @@ app.addEventListener('click', e => {
   const h = ACTIONS[el.dataset.action];
   if (h) { e.preventDefault(); h(el, e); }
 });
+/* Pressing Enter in the search box submits the form; never let the prototype page navigate. */
+app.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.target.matches('[data-dir-form]')) ACTIONS['dir-submit']();
+});
 app.addEventListener('input', e => {
   const el = e.target, b = el.dataset ? el.dataset.bind : null;
   if (!b) return;
   if (W.input(el)) return;
-  if (b === 'search') { S.dir.search = el.value; S.dir.shown = PAGE; updateDirResults(); }
+  if (b === 'search') { S.dir.typed = el.value; const clr = app.querySelector('[data-clear]'); if (clr) clr.hidden = !(el.value || S.dir.search); }
   else if (b === 'draft') { S.drafts[el.dataset.key] = el.value; updateComposer(el.dataset.key); autoGrow(el); }
   else if (b === 'ed' && el.type !== 'checkbox') {
     S.editor.f[el.dataset.field] = el.value; edTouched();
@@ -2051,8 +2078,7 @@ app.addEventListener('change', e => {
   const el = e.target, b = el.dataset ? el.dataset.bind : null;
   if (!b) return;
   if (W.change(el)) return;
-  if (b === 'service-select') { S.dir.service = el.value; S.dir.shown = PAGE; render(); }
-  else if (b === 'sort-select') { S.dir.sort = el.value; S.dir.shown = PAGE; render(); }
+  if (b === 'service-select') { S.dir.svcDraft = el.value; }
   else if (b === 'agree') { if (S.signin) S.signin.agree = el.checked; render(); }
   else if (b === 'ed' && el.type === 'checkbox') { S.editor.f[el.dataset.field] = el.checked; edTouched(); render(); }
   else if (b === 'ed-exp-current') { const x = S.editor.f.experience[+el.dataset.i]; x.current = el.checked; if (el.checked) x.end = ''; edTouched(); render(); }

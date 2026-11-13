@@ -1,0 +1,19 @@
+@* Page links carry the applied search and filter (SDD navigation; C03). Plain links: no script needed. *@
+@if (Result.PageCount > 1)
+{
+    <nav class="mt-6 flex flex-wrap items-center justify-center gap-3 text-[13px] text-muted" aria-label="Result pages">
+        @if (Result.Page > 1)
+        {
+            <a class="btn min-h-11 px-4" rel="prev" href="@Display.DirectoryPath(Result.Query, Result.Page - 1)">Previous</a>
+        }
+        <span>Page @Result.Page of @Result.PageCount</span>
+        @if (Result.Page < Result.PageCount)
+        {
+            <a class="btn min-h-11 px-4" rel="next" href="@Display.DirectoryPath(Result.Query, Result.Page + 1)">Next</a>
+        }
+    </nav>
+}
+
+@code {
+    [Parameter, EditorRequired] public DirectoryResult Result { get; set; } = default!;
+}

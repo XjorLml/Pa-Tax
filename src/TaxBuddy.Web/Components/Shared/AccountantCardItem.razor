@@ -1,0 +1,39 @@
+@* A directory card (PRD R01; DESIGN card order). The heading link covers the whole card, so there is one link per card. *@
+<li>
+    <article class="relative flex h-full flex-col gap-3 rounded-xl border border-border bg-surface p-5 transition-colors focus-within:border-primary hover:border-primary">
+        <div class="flex items-center gap-3">
+            <span class="grid size-11 flex-none place-items-center rounded-[10px] bg-primary-soft font-heading text-[17px] text-on-soft" aria-hidden="true">@Display.Initials(Card.Name)</span>
+            <div class="min-w-0">
+                <h3 class="font-body text-[17px] font-semibold leading-snug">
+                    <a href="@Display.ProfilePath(Card.Id)" class="text-text no-underline after:absolute after:inset-0 after:rounded-xl after:content-['']">@Card.Name</a>
+                </h3>
+                <p class="text-[13px] text-muted">@Card.Title</p>
+            </div>
+        </div>
+        @if (Card.City is not null || Card.YearsOfExperience is not null)
+        {
+            <p class="flex flex-wrap gap-x-4 gap-y-1 border-t border-border pt-3 text-[13px] text-muted">
+                @if (Card.City is not null)
+                {
+                    <span class="inline-flex items-center gap-1"><Icon Name="pin" Size="14" />@Card.City</span>
+                }
+                @if (Card.YearsOfExperience is { } years)
+                {
+                    <span>@Display.YearsOfExperience(years)</span>
+                }
+            </p>
+        }
+        <ul class="flex flex-wrap gap-1.5" aria-label="Services">
+            @foreach (var service in Card.Services)
+            {
+                <li class="tag">@service</li>
+            }
+        </ul>
+        <p class="clamp-2 text-[14px]">@Card.Summary</p>
+        <span class="mt-auto flex items-center justify-end gap-1 text-[13.5px] font-semibold text-primary" aria-hidden="true">View profile <Icon Name="chevron" Size="16" /></span>
+    </article>
+</li>
+
+@code {
+    [Parameter, EditorRequired] public AccountantCard Card { get; set; } = default!;
+}

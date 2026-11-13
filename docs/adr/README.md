@@ -8,7 +8,8 @@ The [template](TEMPLATE.md) is not an accepted ADR.
 
 | ID / title | Status | Decision date | Supersedes / superseded by |
 |---|---|---|---|
-| [005 Blazor Web App on .NET 11, web only, email notifications](005-web-platform-blazor.md) | Accepted; render modes, layout and email jobs Proposed | 2026-11-11 | Supersedes 001, 002, 003 |
+| [010 One web project, with render modes chosen per page](010-single-project-per-page-render-modes.md) | Accepted (decisions 5 and 6 approved by the user the same day) | 2026-11-13 | Supersedes ADR 005 decision 5 |
+| [005 Blazor Web App on .NET 11, web only, email notifications](005-web-platform-blazor.md) | Accepted; email jobs Proposed; render modes and layout (decision 5) superseded by 010 | 2026-11-11 | Supersedes 001, 002, 003; decision 5 superseded by 010 |
 | [006 Google/Microsoft sign-in on the web](006-web-sign-in.md) | Accepted | 2026-11-11 | Supersedes 004 |
 | [007 Supabase database, Brevo email, and a host other than Vercel](007-supabase-brevo-container-host.md) | Accepted; Render chosen as the host | 2026-11-11 | None |
 | [008 A portfolio site with client ratings and no approval](008-portfolio-ratings-no-approval.md) | Accepted; reviewer naming, report handling and portfolio limits Proposed | 2026-11-11 | None |

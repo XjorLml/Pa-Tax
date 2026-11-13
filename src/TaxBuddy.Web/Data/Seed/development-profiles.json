@@ -1,0 +1,323 @@
+[
+  {
+    "id": "5eed0000-0000-4000-8000-000000000001",
+    "displayName": "Andrea Villanueva",
+    "title": "Certified Public Accountant",
+    "city": "Makati City",
+    "summary": "I help small businesses keep clean books and file on time. I worked in tax at a mid-size firm before going independent, and now mostly serve retail and food businesses.",
+    "email": "andrea.v@example.com",
+    "phone": "+63 900 000 0101",
+    "website": null,
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Bookkeeping",
+        "description": "Monthly books, bank reconciliation and ledgers."
+      },
+      {
+        "name": "Tax filing",
+        "description": "Monthly, quarterly and annual returns."
+      },
+      {
+        "name": "Financial statements",
+        "description": "Year-end statements for permits and loan applications."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Independent accountant",
+        "organization": "Self-employed",
+        "start": "2021-03",
+        "end": null
+      },
+      {
+        "role": "Senior tax associate",
+        "organization": "Northbay Accounting",
+        "start": "2016-06",
+        "end": "2021-02"
+      },
+      {
+        "role": "Junior auditor",
+        "organization": "Harbor Lane Audit",
+        "start": "2014-01",
+        "end": "2016-05"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000002",
+    "displayName": "Benjie Ramos",
+    "title": "Certified Public Accountant",
+    "city": "Cebu City",
+    "summary": "Payroll and compliance for growing teams of 5 to 80 people. I set up payroll processes that owners can run themselves, and handle the filings that come with hiring.",
+    "email": "benjie.ramos@example.com",
+    "phone": "+63 900 000 0102",
+    "website": "benjieramos.example.com",
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Payroll",
+        "description": "Payroll setup, monthly runs and payslips."
+      },
+      {
+        "name": "Tax filing",
+        "description": "Withholding tax returns for employers."
+      },
+      {
+        "name": "Business registration",
+        "description": "Employer registrations when you start hiring."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Payroll consultant",
+        "organization": "Self-employed",
+        "start": "2019-08",
+        "end": null
+      },
+      {
+        "role": "Payroll lead",
+        "organization": "Visayas Staffing Co.",
+        "start": "2013-05",
+        "end": "2019-07"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000003",
+    "displayName": "Carla Mendoza",
+    "title": "Bookkeeper",
+    "city": "Quezon City",
+    "summary": "Bookkeeper for freelancers and online sellers. I keep records simple, explain every number, and get your books ready for filing.",
+    "email": "carla.mendoza@example.com",
+    "phone": null,
+    "website": null,
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Bookkeeping",
+        "description": "Sales, expenses and receipts organized every month."
+      },
+      {
+        "name": "Payroll",
+        "description": "Simple payroll for one to five staff."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Bookkeeper",
+        "organization": "Self-employed",
+        "start": "2020-01",
+        "end": null
+      },
+      {
+        "role": "Accounting assistant",
+        "organization": "Kalayaan Trading",
+        "start": "2016-04",
+        "end": "2019-12"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000004",
+    "displayName": "Daniel Cruz",
+    "title": "Certified Public Accountant",
+    "city": "Pasig City",
+    "summary": "External audits and financial statements for small and medium businesses and non-profits. I have worked in assurance since 2015 and now manage audit engagements.",
+    "email": "daniel.cruz@example.com",
+    "phone": "+63 900 000 0104",
+    "website": null,
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Audit",
+        "description": "Annual external audits."
+      },
+      {
+        "name": "Financial statements",
+        "description": "Audited and unaudited statements."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Audit manager",
+        "organization": "Ridgeview Assurance",
+        "start": "2020-02",
+        "end": null
+      },
+      {
+        "role": "Senior auditor",
+        "organization": "Ridgeview Assurance",
+        "start": "2015-06",
+        "end": "2020-01"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000005",
+    "displayName": "Elaine Navarro",
+    "title": "Certified Public Accountant",
+    "city": "Davao City",
+    "summary": "Tax advisory and registration for new businesses in Mindanao. I help founders choose the right setup and stay compliant from the first month.",
+    "email": "elaine.navarro@example.com",
+    "phone": "+63 900 000 0105",
+    "website": "navarrotax.example.com",
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Tax advisory",
+        "description": "Planning for new and growing businesses."
+      },
+      {
+        "name": "Tax filing",
+        "description": "Monthly, quarterly and annual returns."
+      },
+      {
+        "name": "Business registration",
+        "description": "Registration from scratch, step by step."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Tax adviser",
+        "organization": "Navarro Tax Studio",
+        "start": "2018-09",
+        "end": null
+      },
+      {
+        "role": "Tax specialist",
+        "organization": "Southpoint Business Advisers",
+        "start": "2014-06",
+        "end": "2018-08"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000006",
+    "displayName": "Francis Lim",
+    "title": "Accounting technician",
+    "city": "Iloilo City",
+    "summary": "Bookkeeping and year-end statements for family-owned shops, with a focus on clear monthly reports owners actually read.",
+    "email": "francis.lim@example.com",
+    "phone": "+63 900 000 0106",
+    "website": null,
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Bookkeeping",
+        "description": "Monthly books and reports."
+      },
+      {
+        "name": "Financial statements",
+        "description": "Year-end statements."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Accounting technician",
+        "organization": "Self-employed",
+        "start": "2017-03",
+        "end": null
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000007",
+    "displayName": "Grace Tan",
+    "title": "Certified Public Accountant",
+    "city": "Taguig City",
+    "summary": "Internal audit and tax advisory for companies preparing to raise capital or apply for large loans.",
+    "email": "grace.tan@example.com",
+    "phone": null,
+    "website": "tanpartners.example.com",
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Audit",
+        "description": "Internal audit and controls reviews."
+      },
+      {
+        "name": "Tax advisory",
+        "description": "Tax reviews before fundraising."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Advisory partner",
+        "organization": "Tan & Partners Advisory",
+        "start": "2019-01",
+        "end": null
+      },
+      {
+        "role": "Internal audit manager",
+        "organization": "Highfield Holdings",
+        "start": "2012-07",
+        "end": "2018-12"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000008",
+    "displayName": "Hannah de Guzman",
+    "title": "Bookkeeper",
+    "city": "Baguio City",
+    "summary": "Bookkeeping, payroll and permit renewals for cafés, inns and tour operators.",
+    "email": "hannah.dg@example.com",
+    "phone": "+63 900 000 0108",
+    "website": null,
+    "consentToShowContact": true,
+    "services": [
+      {
+        "name": "Bookkeeping",
+        "description": "Weekly or monthly books."
+      },
+      {
+        "name": "Payroll",
+        "description": "Payroll for seasonal staff."
+      },
+      {
+        "name": "Business registration",
+        "description": "Permit renewals."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Bookkeeper",
+        "organization": "Self-employed",
+        "start": "2022-05",
+        "end": null
+      },
+      {
+        "role": "Front office and accounts",
+        "organization": "Pine Ridge Inn",
+        "start": "2018-02",
+        "end": "2022-04"
+      }
+    ]
+  },
+  {
+    "id": "5eed0000-0000-4000-8000-000000000099",
+    "displayName": "Sam Aquino",
+    "title": "Bookkeeper",
+    "city": "Iloilo City",
+    "summary": "New to Tax Buddy. This synthetic profile has not agreed to show contact details, so it must never appear in the directory (BR01).",
+    "email": "sam.aquino@example.com",
+    "phone": null,
+    "website": null,
+    "consentToShowContact": false,
+    "services": [
+      {
+        "name": "Bookkeeping",
+        "description": "Monthly books for small shops."
+      }
+    ],
+    "experience": [
+      {
+        "role": "Bookkeeper",
+        "organization": "Self-employed",
+        "start": "2023-05",
+        "end": null
+      }
+    ]
+  }
+]

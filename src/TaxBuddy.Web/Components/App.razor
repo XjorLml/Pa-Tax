@@ -1,0 +1,29 @@
+﻿@* Pages are static unless the SDD render-mode table says otherwise: no app-wide render mode on Routes or HeadOutlet (ADR 010). *@
+@inject IConfiguration Configuration
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <BasePath />
+    <ResourcePreloader />
+    @if (!Configuration.GetValue<bool>("Seo:AllowIndexing"))
+    {
+        @* SDD search engines: no indexing until PRD D19 is decided, and never on the test site. *@
+        <meta name="robots" content="noindex, nofollow" />
+    }
+    <link rel="icon" type="image/svg+xml" href="@Assets["images/favicon.svg"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["TaxBuddy.Web.styles.css"]" />
+    <ImportMap />
+    <HeadOutlet />
+</head>
+
+<body>
+    <Routes />
+    <ReconnectModal />
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

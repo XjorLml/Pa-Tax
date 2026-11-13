@@ -52,6 +52,10 @@ F03 extends the helper with private client/added-accountant lists, request/accep
 
 The helper also covers the palette options (F02 BD08): the default palette, each option in light and dark with its 17 contrast pairs, the phone frame, and the Palette control. It writes `contrast-palettes.json` beside the other reports. Pass `artifacts/palette-options` as the output directory to keep that run separate.
 
+Since 2026-11-12 it also checks the directory's static-page contract (conflict C03): typing alone does not filter, Search and the service buttons submit, sort and page are links, their values appear in the address, and cards carry no per-user tag. Pass `artifacts/c03-directory` to keep that run separate.
+
+From WSL, run the checker with Windows Node and a Windows browser against a copy of `prototypes/` and `tools/` in a Windows folder. Use Windows paths for every argument. The checker opens files by path and reads the browser's debugging port from its profile folder, so mixing Linux and Windows paths does not work.
+
 ## Add automation when needed
 
 Add repeatable build/test entry points only after actual projects and verified commands exist. Add browser automation helpers only when their maintenance cost is justified.

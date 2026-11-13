@@ -1,0 +1,50 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <!-- The development connection string lives in this user-secrets store (SETUP: local development). -->
+    <UserSecretsId>taxbuddy-web</UserSecretsId>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      EF Core 10 (long-term support) with Npgsql's stable 10.x provider, chosen 2026-11-13 because Npgsql's EF Core 11
+      provider was still a release candidate. Move both to 11 when Npgsql.EntityFrameworkCore.PostgreSQL 11.0.0 ships (SETUP).
+    -->
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
+    <!-- Pins EF Core above the provider's minimum so test projects resolve the same version as the design-time tools. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data/Seed/development-profiles.json" />
+    <Content Remove="Data/Seed/development-profiles.json" />
+    <Content Remove="package.json;package-lock.json" />
+    <None Include="package.json;package-lock.json;Styles/**" />
+  </ItemGroup>
+
+  <!--
+    Tailwind CSS (SDD stack): Styles/app.css plus the classes used in Components become wwwroot/app.css.
+    Needs Node 22+ and 'npm ci' in this folder once (SETUP). Without node_modules the build continues without styles.
+    Set SkipTailwind=true to skip, for example in a container stage that builds the CSS separately.
+  -->
+  <ItemGroup>
+    <TailwindInputs Include="Styles/**/*.css;Components/**/*.razor;Components/**/*.cs" />
+  </ItemGroup>
+
+  <Target Name="BuildTailwindCss" BeforeTargets="BeforeBuild" Condition="'$(SkipTailwind)' != 'true'"
+          Inputs="@(TailwindInputs);package-lock.json" Outputs="wwwroot/app.css">
+    <Message Importance="high" Text="Tailwind: node_modules is missing; run 'npm ci' in src/TaxBuddy.Web to build the styles."
+             Condition="!Exists('node_modules/.bin/tailwindcss')" />
+    <Exec Command="node_modules/.bin/tailwindcss -i Styles/app.css -o wwwroot/app.css --minify"
+          Condition="Exists('node_modules/.bin/tailwindcss') And '$(OS)' != 'Windows_NT'" />
+    <Exec Command="node_modules\.bin\tailwindcss.cmd -i Styles\app.css -o wwwroot\app.css --minify"
+          Condition="Exists('node_modules\.bin\tailwindcss.cmd') And '$(OS)' == 'Windows_NT'" />
+  </Target>
+
+</Project>

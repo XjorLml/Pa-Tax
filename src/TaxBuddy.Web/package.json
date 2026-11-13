@@ -1,0 +1,12 @@
+{
+  "name": "taxbuddy-web-styles",
+  "private": true,
+  "description": "Tailwind CSS build for TaxBuddy.Web. Run through the BuildTailwindCss MSBuild target (SETUP).",
+  "scripts": {
+    "build:css": "tailwindcss -i Styles/app.css -o wwwroot/app.css --minify"
+  },
+  "devDependencies": {
+    "@tailwindcss/cli": "4.3.3",
+    "tailwindcss": "4.3.3"
+  }
+}

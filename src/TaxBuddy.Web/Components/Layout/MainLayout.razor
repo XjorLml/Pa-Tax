@@ -1,0 +1,33 @@
+﻿@inherits LayoutComponentBase
+
+<a href="#main" class="skip-link">Skip to main content</a>
+
+<header class="border-b border-border bg-surface">
+    <div class="page-container flex flex-wrap items-center gap-x-8 gap-y-2 py-3">
+        <a href="/" class="py-1" aria-label="Tax Buddy home"><BrandLogo /></a>
+        <nav aria-label="Main">
+            <NavLink href="/" Match="NavLinkMatch.All"
+                     class="inline-flex min-h-11 items-center border-b-2 border-transparent font-semibold text-text no-underline [&.active]:border-primary">
+                Find an accountant
+            </NavLink>
+        </nav>
+    </div>
+</header>
+
+<main id="main" tabindex="-1" class="page-container flex-1 py-6 md:py-8">
+    @Body
+</main>
+
+<footer class="border-t border-border bg-surface">
+    <div class="page-container flex flex-col gap-2 py-6 text-[13px] text-muted md:flex-row md:items-center md:justify-between">
+        <BrandLogo Width="120" />
+        @* PRD D09 proposal: Tax Buddy does not verify accountants. Wording still needs review. *@
+        <p>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</p>
+    </div>
+</footer>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>

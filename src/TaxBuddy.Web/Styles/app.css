@@ -1,0 +1,258 @@
+/* Tailwind input for TaxBuddy.Web. Built to wwwroot/app.css by the BuildTailwindCss target (SETUP). */
+@import "tailwindcss";
+@source "../Components";
+
+/*
+  Semantic tokens: DESIGN "Tax Buddy palette" (Paper & Forest, chosen 2026-11-13).
+  Pages use these roles only; Tailwind's default colour palette is switched off below.
+*/
+:root {
+  color-scheme: light;
+  --app-bg: #F7F7F2;
+  --surface: #FFFFFF;
+  --surface-2: #ECEFE8;
+  --text: #1E332C;
+  --muted: #556259;
+  --primary: #245C46;
+  --on-primary: #FFFFFF;
+  --primary-soft: #E5EEE4;
+  --on-soft: #254C36;
+  --border: #D7DED4;
+  --ctl: #7C8B80;
+  --danger: #A32925;
+  --danger-soft: #FCEBE9;
+  --warn: #745010;
+  --warn-soft: #FAEED4;
+  --hero: #E9EDE1;
+  --hero-art: #D9E1CD;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --app-bg: #111C18;
+    --surface: #192720;
+    --surface-2: #24352B;
+    --text: #EEF1E7;
+    --muted: #B3C0B3;
+    --primary: #B7D8A4;
+    --on-primary: #162D20;
+    --primary-soft: #2B402C;
+    --on-soft: #D8EACD;
+    --border: #3A4D3F;
+    --ctl: #7E9383;
+    --danger: #FFB4A9;
+    --danger-soft: #40251F;
+    --warn: #ECCC8D;
+    --warn-soft: #3D321C;
+    --hero: #223328;
+    --hero-art: #304631;
+  }
+}
+
+@theme {
+  --color-*: initial;
+  /* DESIGN layout: container breakpoints 480 and 760 px. */
+  --breakpoint-*: initial;
+  --breakpoint-sm: 30rem;
+  --breakpoint-md: 47.5rem;
+  --breakpoint-lg: 65rem;
+  --font-heading: Georgia, "Times New Roman", Times, serif;
+  --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+}
+
+@theme inline {
+  --color-app-bg: var(--app-bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-primary: var(--primary);
+  --color-on-primary: var(--on-primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-soft: var(--on-soft);
+  --color-border: var(--border);
+  --color-ctl: var(--ctl);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-hero: var(--hero);
+  --color-hero-art: var(--hero-art);
+}
+
+@layer base {
+  html {
+    background: var(--app-bg);
+  }
+
+  body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--app-bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+  }
+
+  h1, h2, h3 {
+    font-family: var(--font-heading);
+    font-weight: 400;
+    line-height: 1.2;
+  }
+
+  a {
+    color: var(--primary);
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* FocusOnNavigate moves focus to the page heading; it is not an interactive control. */
+  h1:focus {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+
+@layer components {
+  .page-container {
+    width: 100%;
+    max-width: 1040px;
+    margin-inline: auto;
+    padding-inline: 16px;
+  }
+
+  @media (min-width: 47.5rem) {
+    .page-container {
+      padding-inline: 32px;
+    }
+  }
+
+  .skip-link {
+    position: absolute;
+    left: 8px;
+    top: -60px;
+    z-index: 50;
+    padding: 10px 14px;
+    border-radius: 8px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  .skip-link:focus {
+    top: 8px;
+  }
+
+  /* Buttons and button-like links. DESIGN: 44 px controls. */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 18px;
+    border: 1px solid var(--ctl);
+    border-radius: 10px;
+    background: var(--surface);
+    color: var(--text);
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .btn:hover {
+    border-color: var(--primary);
+  }
+
+  .btn-primary {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
+  }
+
+  .btn-primary:hover {
+    filter: brightness(1.08);
+  }
+
+  /*
+    The directory search form (SDD render modes, C03): a plain GET form.
+    Source order matters: the service menu comes before the service buttons, so a pressed button's value is sent last
+    and wins; the Search button comes before the service buttons, so Enter in the text box presses Search.
+  */
+  .dir-form {
+    display: grid;
+    gap: 10px;
+    grid-template-columns: 1fr;
+    grid-template-areas: "search" "filter" "submit";
+  }
+
+  /* Grid items default to their content's minimum width; at 320 px the text box's default size would push the form out. */
+  .dir-form,
+  .dir-form > * { min-width: 0; }
+
+  .dir-form .dir-search { grid-area: search; }
+  /* Layout lives here, not in utility classes: utilities sit in a later cascade layer and would undo the desktop hide. */
+  .dir-form .dir-filter { grid-area: filter; display: flex; align-items: center; gap: 12px; }
+  .dir-form .dir-submit { grid-area: submit; width: 100%; }
+  .dir-form .dir-chips { grid-area: chips; }
+
+  @media (min-width: 47.5rem) {
+    .dir-form {
+      grid-template-columns: 1fr auto;
+      grid-template-areas: "search submit" "chips chips";
+      align-items: end;
+    }
+
+    .dir-form .dir-filter { display: none; }
+    .dir-form .dir-submit { width: auto; min-height: 50px; }
+  }
+
+  .chip {
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--ctl);
+    border-radius: 999px;
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+
+  .chip:hover {
+    border-color: var(--primary);
+  }
+
+  .chip[aria-pressed="true"] {
+    border-color: var(--primary);
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 700;
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    font-size: 12.5px;
+  }
+
+  .clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}

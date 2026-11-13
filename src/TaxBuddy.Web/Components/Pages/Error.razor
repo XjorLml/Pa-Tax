@@ -1,0 +1,32 @@
+﻿@page "/Error"
+@using System.Diagnostics
+@* PRD R18: an error page with a support code and a way back. Never shows exception details. *@
+
+<SeoHead Title="Something went wrong · Tax Buddy" Description="An error occurred." CanonicalPath="/" />
+
+<StateMessage IconName="alert" HeadingLevel="1" Title="Something went wrong" Text="That's a problem on our side, not yours. Please try again.">
+    <a class="btn btn-primary" href="@retryPath">Try again</a>
+    <a class="btn" href="/">Go to the directory</a>
+</StateMessage>
+
+@if (!string.IsNullOrEmpty(RequestId))
+{
+    <p class="mt-4 text-center text-[13px] text-muted">If it keeps happening, tell us this support code: <code class="select-all">@RequestId</code></p>
+}
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    [PersistentState]
+    public string? RequestId { get; set; }
+
+    private string retryPath = "/";
+
+    protected override void OnInitialized()
+    {
+        RequestId ??= Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+        var original = HttpContext?.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>()?.Path;
+        retryPath = original is { Length: > 0 } path && path.StartsWith('/') ? path : "/";
+    }
+}

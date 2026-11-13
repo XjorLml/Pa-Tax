@@ -1,0 +1,9 @@
+@* Tax Buddy logo (DESIGN brand identity). The dark-theme file is chosen by the browser, with no script. *@
+<picture>
+    <source srcset="@Assets["images/taxbuddy-logo-dark.svg"]" media="(prefers-color-scheme: dark)" />
+    <img src="@Assets["images/taxbuddy-logo-light.svg"]" width="@Width" height="@(Width * 30 / 175)" alt="Tax Buddy" class="block" />
+</picture>
+
+@code {
+    [Parameter] public int Width { get; set; } = 175;
+}

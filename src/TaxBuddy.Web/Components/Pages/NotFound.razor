@@ -1,0 +1,34 @@
+﻿@page "/not-found"
+@layout MainLayout
+@using Microsoft.AspNetCore.Diagnostics
+@* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
+   message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
+
+@if (isProfileAddress)
+{
+    <SeoHead Title="Profile no longer available · Tax Buddy" Description="This accountant profile is no longer available." CanonicalPath="/" />
+    <StateMessage IconName="list" HeadingLevel="1" Title="This profile is no longer available"
+                  Text="It may have been removed, or the link may be wrong.">
+        <a class="btn btn-primary" href="/">Back to the directory</a>
+    </StateMessage>
+}
+else
+{
+    <SeoHead Title="Page not found · Tax Buddy" Description="This page does not exist." CanonicalPath="/" />
+    <StateMessage IconName="search" HeadingLevel="1" Title="Page not found" Text="The address may be mistyped, or the page may have moved.">
+        <a class="btn btn-primary" href="/">Go to the directory</a>
+    </StateMessage>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    private bool isProfileAddress;
+
+    protected override void OnInitialized()
+    {
+        // Re-executed for a 404: the feature holds the address the visitor asked for. Rendered in place: the request path is it.
+        var original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value;
+        isProfileAddress = original?.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) == true;
+    }
+}

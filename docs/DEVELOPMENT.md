@@ -6,9 +6,9 @@
 
 | Area | Standard and purpose | Review / verification |
 |---|---|---|
-| Scope and architecture | Link work to stable requirement/scenario IDs. Keep rules in Core, away from pages | Review changed source against PRD/SDD; record contradictions |
+| Scope and architecture | Link work to stable requirement/scenario IDs. Keep rules in the Domain and Application folders, away from pages; those folders use no Razor, HTTP or EF Core types ([SDD](SDD.md#architecture-and-dependencies)) | Review changed source against PRD/SDD; record contradictions. `LayerRulesTests` checks folder dependencies on every test run; review covers method bodies |
 | Components | Pages render state and forward user actions to Application services. No database access or business rules in `.razor` files | Tests cover invalid input, state changes and saved effects through the services |
-| Render modes | Public pages stay static. Add interactivity per page, only where the SDD lists it. Interactive pages prerender by default, so start-up code must be safe to run twice | Check each new page's mode in review; test that loading a page does not repeat a write |
+| Render modes | Public pages stay static. Add interactivity per page, only where the [SDD render-mode table](SDD.md#render-modes) lists it; never app-wide. Signed-in actions on public pages are named forms, not interactive components. Interactive pages prerender by default, so start-up code must be safe to run twice | Check each new page's mode in review; test that loading a page does not repeat a write |
 | Authorization | Enforce every rule in Application services on the server. Hiding a link or button is not a check | Integration tests call each protected operation as the wrong user and as a visitor |
 | Forms | Antiforgery on every form. Validate on the server; client checks are for convenience only | Integration tests post invalid and forged input |
 | DI and lifetimes | Constructor dependencies, registered in `Program.cs`. A scoped service on an interactive page lives as long as the connection, so it holds no per-request state | Review singleton and scoped dependencies; document lifetimes in SDD |

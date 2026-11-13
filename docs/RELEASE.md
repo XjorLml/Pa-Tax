@@ -28,7 +28,7 @@ No recipe yet. After the scaffold step, record the exact publish command and its
 dotnet publish src/TaxBuddy.Web/TaxBuddy.Web.csproj -c Release
 ```
 
-This command has not been executed. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.
+This command has not been executed. The project builds since 2026-11-13 (F01). A publish build also needs Node 22+ and `npm ci` in `src/TaxBuddy.Web` to generate the Tailwind styles ([SETUP](SETUP.md#local-development)). Alternatively, a container can build the CSS in a separate Node stage and pass `-p:SkipTailwind=true` to the .NET stage. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.
 
 ## Deployment
 

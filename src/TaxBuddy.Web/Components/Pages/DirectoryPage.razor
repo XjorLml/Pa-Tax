@@ -1,0 +1,155 @@
+@page "/"
+@* F01 directory (PRD R01, R02; FT01–FT03, FT06, FT07). Static server rendering: no server connection, works without script. *@
+@inject DirectoryService Directory
+@inject NavigationManager Navigation
+
+<SeoHead Title="Find an accountant · Tax Buddy"
+         Description="Browse accountants' experience and services, then contact the one you choose. Free to browse, no account needed."
+         CanonicalPath="@Display.DirectoryPath(query)" />
+
+@* minmax(0, …) columns: without them the column grows to the search box's default width and the form overflows at 320 px. *@
+<section class="grid grid-cols-[minmax(0,1fr)] gap-6 rounded-2xl border border-border bg-hero px-5 py-7 md:grid-cols-[minmax(0,1fr)_220px] md:px-8 md:py-9" aria-labelledby="page-title">
+    <div>
+        <p class="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Independent accountants. Direct connections.</p>
+        <h1 id="page-title" class="mt-2 text-[31px] md:text-[44px]">Good numbers start with the right person.</h1>
+        <p class="mt-3 max-w-[34rem] text-[16px] text-muted">
+            Find an accountant who understands your business. Explore their work, compare services, and start a conversation.
+        </p>
+    </div>
+    <div class="hidden flex-col items-center justify-center rounded-[18px] bg-hero-art p-5 text-center text-on-soft md:flex" aria-hidden="true">
+        <svg viewBox="0 0 100 100" width="96" height="96" fill="none">
+            <path d="M18 20h29c9 0 13 5 13 12v43c-5-4-10-6-17-6H18z" stroke="currentColor" stroke-width="2" />
+            <path d="M60 32c8-9 17-12 27-12v49c-10 0-19 2-27 6M27 33h17m-17 9h17m-17 9h17M70 37l9-4m-9 13 9-4m-9 13 9-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            <path d="M9 63h30v17H23l-8 7v-7H9z" fill="currentColor" />
+        </svg>
+        <p class="mt-2 font-heading text-[18px] leading-snug">A little clarity.<br />A good conversation.</p>
+    </div>
+
+    @* SDD render modes / C03: a plain GET form. See the .dir-form notes in Styles/app.css for why source order matters. *@
+    <form method="get" action="/" role="search" class="dir-form rounded-xl border border-border bg-surface p-4 md:col-span-2" aria-label="Find an accountant">
+        <div class="dir-search">
+            <label for="q" class="mb-2 block text-[13px] font-semibold">What can we help you with?</label>
+            <div class="relative">
+                <Icon Name="search" Size="18" Class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+                <input id="q" name="q" type="search" value="@query.SearchText" maxlength="@DirectoryQuery.MaxSearchLength"
+                       placeholder="Search name, city or service" autocomplete="off"
+                       class="min-h-[50px] w-full rounded-[10px] border border-ctl bg-surface py-2 pl-10 pr-3 text-[16px] text-text placeholder:text-muted" />
+            </div>
+        </div>
+        <div class="dir-filter">
+            <label for="service" class="text-[13.5px] font-semibold">Service</label>
+            <select id="service" name="service" class="min-h-11 min-w-0 flex-1 rounded-[10px] border border-ctl bg-surface px-3 text-text">
+                <option value="" selected="@(query.Service is null)">All services</option>
+                @foreach (var service in TaxBuddy.Web.Domain.ServiceCatalog.All)
+                {
+                    <option value="@service" selected="@(query.Service == service)">@service</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary dir-submit">Search</button>
+        <div class="dir-chips flex-wrap gap-2 max-md:hidden md:flex" role="group" aria-label="Filter by service">
+            <button type="submit" name="service" value="" class="chip" aria-pressed="@(query.Service is null ? "true" : "false")">All services</button>
+            @foreach (var service in TaxBuddy.Web.Domain.ServiceCatalog.All)
+            {
+                <button type="submit" name="service" value="@service" class="chip" aria-pressed="@(query.Service == service ? "true" : "false")">@service</button>
+            }
+        </div>
+    </form>
+    <p class="flex items-center gap-2 text-[13px] text-muted md:col-span-2"><Icon Name="lock" Size="14" />Free to browse. No account needed to look around.</p>
+</section>
+
+<section class="mt-10" aria-labelledby="results-heading">
+    <h2 id="results-heading" class="text-[26px] md:text-[30px]">Meet your next accountant</h2>
+    <p class="mt-1 text-muted">Explore the experience, services and people behind each profile.</p>
+
+    <div class="mt-5">
+        @if (failed)
+        {
+            <StateMessage IconName="alert" Title="We couldn't load the accountants" Text="That's a problem on our side, not yours. Please try again.">
+                <a class="btn btn-primary" href="@Display.DirectoryPath(query)">Try again</a>
+            </StateMessage>
+        }
+        else if (result is null)
+        {
+            @* Redirecting to the one-value address; nothing to show. *@
+        }
+        else if (result.DirectoryIsEmpty)
+        {
+            <StateMessage IconName="list" Title="No accountants listed yet" Text="When accountants publish their profiles, they appear here." />
+        }
+        else if (result.NoMatch)
+        {
+            <StateMessage IconName="search" Title="No matches" Text="@NoMatchText()">
+                <a class="btn" href="/">Clear search and filter</a>
+            </StateMessage>
+        }
+        else
+        {
+            <p class="mb-3 text-[14px] text-muted">
+                @MatchSummary()
+                @if (result.Query.IsFiltered)
+                {
+                    <a class="ml-1 font-semibold" href="/">Clear</a>
+                }
+            </p>
+            <ul class="grid gap-4 md:grid-cols-2" aria-label="Accountants">
+                @foreach (var card in result.Cards)
+                {
+                    <AccountantCardItem Card="card" />
+                }
+            </ul>
+            <Pager Result="result" />
+        }
+    </div>
+</section>
+
+@code {
+    [SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
+
+    [SupplyParameterFromQuery(Name = "service")] public string[]? Services { get; set; }
+
+    [SupplyParameterFromQuery(Name = "page")] public string? PageText { get; set; }
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    private DirectoryQuery query = DirectoryQuery.Default;
+    private DirectoryResult? result;
+    private bool failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        query = DirectoryQuery.From(SearchText, Services, PageText);
+        if (Services is { Length: > 1 })
+        {
+            // A service button was pressed on a wide screen, so the address holds two service values.
+            // Send the browser to the one-value address so Back, reload and shared links stay clean (FT07).
+            Navigation.NavigateTo(Display.DirectoryPath(query), replace: true);
+            return;
+        }
+
+        try
+        {
+            result = await Directory.SearchAsync(query);
+            query = result.Query;
+        }
+        catch (DataUnavailableException)
+        {
+            failed = true;
+            ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+
+    private string MatchSummary()
+    {
+        var text = Display.AccountantCount(result!.MatchCount);
+        if (query.Service is { } service) text += $" for {service}";
+        if (query.SearchText is { } search) text += $" matching “{search}”";
+        return text;
+    }
+
+    private string NoMatchText()
+    {
+        var criteria = string.Join(" in ", new[] { query.SearchText is { } s ? $"“{s}”" : null, query.Service }.Where(c => c is not null));
+        return $"No listed accountant matches {criteria}. Try a shorter search or another service.";
+    }
+}

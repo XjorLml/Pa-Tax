@@ -1,0 +1,51 @@
+// Throwaway F01 browser check: emulated viewports via CDP against the running app (not committed).
+import { spawn } from 'node:child_process';
+import { mkdtemp, readFile, writeFile, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+const [browser, out, base] = process.argv.slice(2);
+const profile = await mkdtemp(join(out, 'profile-'));
+const child = spawn(browser, ['--headless=new', '--disable-gpu', '--no-first-run', '--disable-extensions', '--remote-debugging-port=0', `--user-data-dir=${profile}`, 'about:blank'], { stdio: 'ignore' });
+const delay = ms => new Promise(r => setTimeout(r, ms));
+let port; for (let i = 0; i < 100 && !port; i++) { try { port = (await readFile(join(profile, 'DevToolsActivePort'), 'utf8')).split('\n')[0]; } catch { await delay(100); } }
+const target = await (await fetch(`http://127.0.0.1:${port}/json/new?about:blank`, { method: 'PUT' })).json();
+const version = (await (await fetch(`http://127.0.0.1:${port}/json/version`)).json()).Browser;
+const ws = new WebSocket(target.webSocketDebuggerUrl); await new Promise(r => ws.onopen = r);
+let id = 0; const pending = new Map();
+ws.onmessage = e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } };
+const cdp = (method, params = {}) => new Promise(r => { const n = ++id; pending.set(n, r); ws.send(JSON.stringify({ id: n, method, params })); });
+const js = async expr => (await cdp('Runtime.evaluate', { expression: expr, returnByValue: true })).result.result.value;
+await cdp('Page.enable');
+const results = [];
+const pages = [['directory', '/'], ['page2', '/?page=2'], ['profile', '/accountants/5eed0000-0000-4000-8000-000000000001'], ['unavailable', '/accountants/not-a-guid']];
+for (const [w, h, mobile] of [[320, 900, true], [390, 900, true], [760, 1000, false], [1440, 1100, false]]) {
+  for (const scheme of ['light', 'dark']) {
+    await cdp('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile });
+    await cdp('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-color-scheme', value: scheme }] });
+    for (const [name, path] of pages) {
+      await cdp('Page.navigate', { url: base + path }); await delay(900);
+      const r = await js(`(() => {
+        const doc = document.documentElement;
+        const overflow = doc.scrollWidth - doc.clientWidth;
+        const wide = [...document.querySelectorAll('body *')].filter(e => e.getBoundingClientRect().right > doc.clientWidth + 1 && getComputedStyle(e).display !== 'none').map(e => e.tagName + '.' + (e.className?.baseVal ?? e.className).toString().slice(0, 40)).slice(0, 3);
+        const small = [...document.querySelectorAll('main a.btn, main button, main select, main input, header nav a, .chip')].filter(e => { const b = e.getBoundingClientRect(); return b.width > 0 && b.height < 44 && !e.classList.contains('chip'); }).map(e => e.tagName + ':' + (e.textContent || e.name).trim().slice(0, 20) + ':' + Math.round(e.getBoundingClientRect().height));
+        const escapes = [...document.querySelectorAll('main *')].filter(e => {
+          const parent = e.parentElement, cs = getComputedStyle(e);
+          if (!parent || cs.position === 'absolute' || cs.position === 'fixed' || cs.display === 'none' || cs.display === 'inline') return false;
+          return e.getBoundingClientRect().right > parent.getBoundingClientRect().right + 1;
+        }).map(e => e.tagName + '.' + (e.className?.baseVal ?? e.className).toString().slice(0, 30)).slice(0, 4);
+        return { overflow, wide, small, escapes, bg: getComputedStyle(document.body).backgroundColor, h1: document.querySelector('h1')?.textContent.trim() };
+      })()`);
+      results.push({ viewport: `${w}x${h}`, scheme, page: name, ...r });
+      if ((w === 320 || w === 1440 || w === 390) && (name === 'directory' || name === 'profile')) {
+        const shot = await cdp('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true, clip: undefined });
+        await writeFile(join(out, `${name}-${w}-${scheme}.png`), Buffer.from(shot.result.data, 'base64'));
+      }
+    }
+  }
+}
+await writeFile(join(out, 'app-check.json'), JSON.stringify({ browser: version, base, results }, null, 2));
+ws.close(); child.kill(); await delay(500); await rm(profile, { recursive: true, force: true }).catch(() => {});
+const bad = results.filter(r => r.overflow > 1 || r.small.length || r.escapes.length);
+console.log(`browser ${version}; ${results.length} page views; overflow/small-target problems: ${bad.length}`);
+for (const r of bad) console.log(JSON.stringify(r));
+for (const r of results.filter(r => r.page === 'directory')) console.log(r.viewport, r.scheme, 'bg', r.bg, '| h1:', r.h1);

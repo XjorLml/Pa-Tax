@@ -19,7 +19,7 @@ All people, companies and contact details in it are synthetic.
 Double-click `index.html`, keeping `taxbuddy.css`, `service-workspace.js` and the `assets` folder beside it. Everything is local: no install, network or build. The initial frame follows the window width (desktop from 900 px), and can be overridden. The bar at the top is not part of the site. Its simulation controls start collapsed on small screens. It switches:
 - the frame (phone browser or desktop browser);
 - the look (Tax Buddy, or the earlier Modern, Ledger, Neighbourly and Clear directions);
-- the palette of the Tax Buddy look: Paper & Forest (current), or four proposals added on 2026-11-12 for comparison ([DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md#palette-options)). No proposal is chosen;
+- the palette of the Tax Buddy look: Paper & Forest, chosen by the user on 2026-11-13, or four proposals added on 2026-11-12 for comparison, kept as history ([DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md#palette-options));
 - who is signed in (visitor, client, accountant, or a new accountant);
 - online or offline;
 - the theme;
@@ -63,14 +63,14 @@ Example: `index.html?device=desktop&look=taxbuddy&theme=dark&role=accountant#/ch
 
 ## Proposals waiting for decisions
 
-The prototype shows one option for each of these PRD [open decisions](../docs/PRD.md#open-decisions). Dashed boxes mark text that depends on a decision.
+The prototype shows one option for each of these PRD [open decisions](../docs/PRD.md#open-decisions). Dashed boxes mark text that depends on a decision. D04 and D05 were adopted provisionally on 2026-11-12 and are recorded in the PRD; their rows stay here to describe what the prototype shows.
 
 | Decision | What the prototype proposes |
 |---|---|
 | D03 | One role per account, chosen at first sign-in |
-| D04 | Profile fields: title, city, career summary, experience (role, company, start and end month), services from a fixed list with a short description, email, phone, website. To be listed, a profile needs a name, title, summary, email, at least one service, and consent to show contact details |
-| D04 | Cards and profiles show years of experience, counted from the earliest start month the accountant enters |
-| D05 | Text search on name, title, city and service; one service filter (a menu on phones, buttons on wide screens); A–Z order by default, with a "Highest rated" option |
+| D04 | Adopted for now (2026-11-12). Profile fields: title, city, career summary, experience (role, company, start and end month), services from a fixed list with a short description, email, phone, website. To be listed, a profile needs a name, title, summary, email, at least one service, and consent to show contact details |
+| D04 | Adopted for now (2026-11-12). Cards and profiles show years of experience, counted from the earliest start month the accountant enters |
+| D05 | Adopted for now (2026-11-12). Text search on name, title, city and service; one service filter (a menu on phones, buttons on wide screens); A–Z order by default, with a "Highest rated" option. Pages of 6; page size is still open |
 | D06 | One ongoing chat per client–accountant pair; 2,000-character messages |
 | D21 | A review shows the client's first name and last initial |
 | D23 | Up to six portfolio highlights, each with a title, type of client, the work and the result |
@@ -80,7 +80,16 @@ The prototype shows one option for each of these PRD [open decisions](../docs/PR
 
 After review, record each decision in the PRD or DESIGN (not here), then update the prototype or mark it superseded.
 
-A 2026-11-12 agent read-through compared this prototype with the PRD, SDD and DESIGN ([review record](../docs/delivery/evidence/2026-11-12-prototype-scope-review.md)). It opened two conflicts, [C03 and C04](../docs/README.md#history-and-unresolved-conflicts): the directory here filters, sorts and pages in the page while the planned directory is a static page with a submitted form, and the offline messages shown inside forms here cannot be drawn by the planned server-connected pages. The prototype was not changed.
+A 2026-11-12 agent read-through compared this prototype with the PRD, SDD and DESIGN ([review record](../docs/delivery/evidence/2026-11-12-prototype-scope-review.md)). It opened two conflicts, [C03 and C04](../docs/README.md#history-and-unresolved-conflicts): the directory here filters, sorts and pages in the page while the planned directory is a static page with a submitted form, and the offline messages shown inside forms here cannot be drawn by the planned server-connected pages. The prototype was not changed by that review.
+
+C03 was resolved later the same day by the user's instruction, and the directory now behaves like the planned static page:
+- typing changes nothing until Search is pressed (or Enter);
+- on wide screens a service button submits the form at once, and on phones the service menu applies with Search;
+- sort and page are links, and "Show more" is gone;
+- search, service, sort and page all appear in the simulated address;
+- cards no longer show a per-user "Chatting" tag.
+
+The change is recorded with its [checks](../docs/delivery/evidence/2026-11-12-c03-directory.md). C04 remains open, so the directory's offline state with a retry button is unchanged.
 
 ## Checks run before this refresh
 
@@ -96,7 +105,7 @@ Not checked: other browsers, real phones, screen readers, keyboard-only use beyo
 
 ## Verify the current prototype
 
-Use the dependency-free [browser checker](../tools/check_prototype.mjs) as documented in the [tools guide](../tools/README.md#check-the-prototype). The prior [F02 execution record](../docs/delivery/evidence/2026-11-11-kuwenta-refresh.md) records its 78 passing Edge prototype checks, 34 passing contrast pairs, source fingerprints and screenshot observations; these results describe that earlier artifact, under its then name Kuwenta. The checks rerun after the rename are in the [2026-11-12 record](../docs/delivery/evidence/2026-11-12-tax-buddy-rename.md), and the palette options have their own [record](../docs/delivery/evidence/2026-11-12-palette-options.md). [STATUS](../docs/delivery/STATUS.md) tracks the remaining acceptance. These checks use only synthetic data and cannot establish Blazor, database, provider or email behavior.
+Use the dependency-free [browser checker](../tools/check_prototype.mjs) as documented in the [tools guide](../tools/README.md#check-the-prototype). The prior [F02 execution record](../docs/delivery/evidence/2026-11-11-kuwenta-refresh.md) records its 78 passing Edge prototype checks, 34 passing contrast pairs, source fingerprints and screenshot observations; these results describe that earlier artifact, under its then name Kuwenta. The checks rerun after the rename are in the [2026-11-12 record](../docs/delivery/evidence/2026-11-12-tax-buddy-rename.md), and the palette options have their own [record](../docs/delivery/evidence/2026-11-12-palette-options.md), as does the [directory change for C03](../docs/delivery/evidence/2026-11-12-c03-directory.md). [STATUS](../docs/delivery/STATUS.md) tracks the remaining acceptance. These checks use only synthetic data and cannot establish Blazor, database, provider or email behavior.
 
 ## Client services and progress prototype
 

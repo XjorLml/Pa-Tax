@@ -90,14 +90,27 @@ try {
   await screenshot('directory-cards-desktop-light');
   await js(`document.querySelector('.page').scrollTop=0`);
   await check('Six initial cards', `document.querySelectorAll('.results .card').length===6`);
-  await click('[data-action="more"]');
-  await check('Paging adds remaining cards', `document.querySelectorAll('.results .card').length===8`);
+  // C03 (resolved 2026-11-12): the directory behaves like the planned static page with a plain GET form.
+  const address = `document.querySelector('[data-address]').textContent`;
+  await check('C03 directory is a submitted search form', `!!document.querySelector('form[data-dir-form][role="search"] button[type="submit"][data-action="dir-submit"]') && !document.querySelector('[data-action="more"], .sortctl select')`);
+  const firstPage = await js(`[...document.querySelectorAll('.results .card')].map(c=>c.dataset.fkey)`);
+  await click('[data-action="page"][data-val="2"]');
+  await check('Page link shows the remaining cards', `document.querySelectorAll('.results .card').length===2 && ${address}.endsWith('/?page=2')`);
+  await check('Pages never repeat or skip an accountant', `(() => { const all=${JSON.stringify(firstPage)}.concat([...document.querySelectorAll('.results .card')].map(c=>c.dataset.fkey)); return all.length===8 && new Set(all).size===8; })()`);
+  await js(`document.querySelector('.page').scrollTop=1e5`); await screenshot('directory-page2-desktop-light'); await js(`document.querySelector('.page').scrollTop=0`);
+  await click('[data-action="page"][data-val="1"]');
   await set('#q', 'zzzz-no-match', 'input');
+  await check('C03 typing alone does not filter', `document.querySelectorAll('.results .card').length===6 && !${textHas('No matches')}`);
+  await click('[data-action="dir-submit"]');
   await until(() => js(textHas('No matches')));
+  await check('Submitted search is in the address', `${address}.includes('?q=zzzz-no-match')`);
   await check('No match has recovery', `!!document.querySelector('[data-fkey="clear-all"]')`);
   await click('[data-fkey="clear-all"]');
   await click('[data-action="service"][data-val="Payroll"]');
   await check('Service filter is selected', `document.querySelector('[data-val="Payroll"]').getAttribute('aria-pressed')==='true' && [...document.querySelectorAll('.results .card')].every(c=>c.innerText.includes('Payroll'))`);
+  await click('[data-action="sort"][data-val="rating"]');
+  await check('Sort link keeps the filter and is in the address', `document.querySelector('[data-action="sort"][data-val="rating"]').getAttribute('aria-current')==='true' && ${address}.endsWith('/?service=Payroll&sort=rating')`);
+  await click('[data-action="sort"][data-val="name"]');
   await set('#sel-dir', 'empty'); await delay(800);
   await check('Empty directory distinct from no-match', textHas('No accountants listed yet'));
   await set('#sel-dir', 'error'); await delay(800);
@@ -126,6 +139,8 @@ try {
   await route('#/me'); await click('[data-action="toggle-email"]');
   await check('Email preference toggles', textHas('Email notifications: Off'));
 
+  await open('device=desktop&role=client&theme=light&notes=0');
+  await check('C03 directory cards carry no per-user tag', `document.querySelectorAll('.results .card').length===6 && !document.querySelector('.results .tag.strong') && !document.querySelector('.results').textContent.includes('Chatting')`);
   await open('device=desktop&role=client&theme=light&notes=0', '#/review/a1');
   await click('[data-action="save-review"]');
   await check('Review requires stars', textHas('Choose a rating'));
@@ -218,7 +233,11 @@ try {
   await check('Keyboard reaches visible skip link', `document.activeElement.classList.contains('skip-link') && getComputedStyle(document.activeElement).top==='8px'`);
   await click('.skip-link');
   await check('Skip link preserves route and focuses prototype', `document.activeElement.id==='device' && location.hash==='#/directory'`);
-  await check('Phone controls meet 44px target', `[...document.querySelectorAll('#app .btn,#app .chip,#app .tabbar a,#app .tabbar button,#app .sortctl select,#app .infolinks a')].every(e=>e.getBoundingClientRect().height>=44)`);
+  await check('Phone controls meet 44px target', `[...document.querySelectorAll('#app .btn,#app .chip,#app .tabbar a,#app .tabbar button,#app .sortlink,#app .pager a,#app .infolinks a')].every(e=>e.getBoundingClientRect().height>=44)`);
+  await set('#svc', 'Payroll');
+  await check('C03 phone service menu waits for Search', `document.querySelectorAll('.results .card').length===6 && !document.querySelector('[data-address]').textContent.includes('service=')`);
+  await click('.hero-search>[data-action="dir-submit"]');
+  await check('Phone Search applies the service menu', `document.querySelector('[data-address]').textContent.endsWith('/?service=Payroll') && [...document.querySelectorAll('.results .card')].every(c=>c.innerText.includes('Payroll'))`);
 
   // F03: private lists, request lifecycle, progress and generated service files.
   await open('device=desktop&notes=0&theme=light', '#/workspace');

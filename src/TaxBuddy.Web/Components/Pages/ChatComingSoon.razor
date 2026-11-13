@@ -1,0 +1,17 @@
+@page "/chats/new/{AccountantId}"
+@* F01 exclusion: the Message action is shown but leads here until sign-in (R04) and chat (R06) are built. *@
+
+<SeoHead Title="Messaging is coming soon · Tax Buddy" Description="Messaging accountants is not available yet." CanonicalPath="/" />
+
+<StateMessage IconName="chat" HeadingLevel="1" Title="Messaging is coming soon"
+              Text="You'll be able to message accountants here once sign-in is ready. Their contact details are on their profile.">
+    @if (TaxBuddy.Web.Domain.AccountantId.TryParse(AccountantId, out var id))
+    {
+        <a class="btn btn-primary" href="@Display.ProfilePath(id)">Back to the profile</a>
+    }
+    <a class="btn" href="/">Back to the directory</a>
+</StateMessage>
+
+@code {
+    [Parameter] public string? AccountantId { get; set; }
+}

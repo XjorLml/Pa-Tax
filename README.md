@@ -6,9 +6,9 @@ Start with the [documentation index](docs/README.md). Follow [SETUP](docs/SETUP.
 
 ## Current state
 
-Documentation and a design prototype only, as of 2026-11-11. Scope and open decisions are in the [PRD](docs/PRD.md). The first application feature is [browse-accountants](specs/browse-accountants/spec.md); the [client-services expansion](specs/client-services/spec.md) adds private lists, checklists, progress and service documents to the prototype, and the clickable [prototype](prototypes/README.md) shows the proposed pages. The Tax Buddy branding (renamed 2026-11-12) and original [logo assets](prototypes/assets/README.md) follow the [UI standards](docs/DESIGN.md). No projects exist yet: scaffolding waits for the .NET 11 SDK to be installed ([SETUP](docs/SETUP.md#first-checkout)) and for the prototype review.
+As of 2026-11-13 the first feature, [browse-accountants](specs/browse-accountants/spec.md) (F01), is implemented. It has a public directory with search, a service filter and pages, and public accountant profiles, served by `src/TaxBuddy.Web` with tests in `tests/`. Build, run and test commands are in [SETUP](docs/SETUP.md#first-checkout). Scope and open decisions are in the [PRD](docs/PRD.md). The clickable [prototype](prototypes/README.md) shows the proposed pages for the rest of release 1, including the [client-services expansion](specs/client-services/spec.md). The Tax Buddy branding, original [logo assets](prototypes/assets/README.md) and the Paper & Forest palette follow the [UI standards](docs/DESIGN.md).
 
-See [delivery status](docs/delivery/STATUS.md) for implementation, verification, and acceptance. No application has been built or accepted. Prototype checks are recorded separately in the delivery evidence.
+See [delivery status](docs/delivery/STATUS.md) for implementation, verification, and acceptance. Nothing has been accepted or deployed yet. Prototype checks are recorded separately in the delivery evidence.
 
 ## Check the documentation
 

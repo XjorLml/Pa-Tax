@@ -488,3 +488,6 @@ $RECYCLE.BIN/
 *.p12
 *.mobileprovision
 local.signing.props
+
+# Tax Buddy: Tailwind output is generated at build (SETUP)
+src/TaxBuddy.Web/wwwroot/app.css

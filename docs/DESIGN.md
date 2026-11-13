@@ -1,6 +1,6 @@
 # Tax Buddy UI and UX standards
 
-**Authority:** visual and interaction standards. [PRD](PRD.md) owns feature scope. [SDD](SDD.md) owns technical implementation. Status: visual direction applied to the prototype under the user's delegated design brief, 2026-11-11 (then named Kuwenta); renamed Tax Buddy by the user's instruction, 2026-11-12. Product and release acceptance remain pending.
+**Authority:** visual and interaction standards. [PRD](PRD.md) owns feature scope. [SDD](SDD.md) owns technical implementation. Status: visual direction applied to the prototype under the user's delegated design brief, 2026-11-11 (then named Kuwenta); renamed Tax Buddy by the user's instruction, 2026-11-12. Palette chosen by the user, 2026-11-13: Paper & Forest. Applied to the application's directory and profile pages in F01, 2026-11-13. Product and release acceptance remain pending.
 
 ## Scope notice
 
@@ -47,11 +47,18 @@ Centralize the variables in one stylesheet. Decided on 2026-11-11: Tailwind CSS 
 | `warn` / `warn-soft` | `#745010` / `#FAEED4` | `#ECCC8D` / `#3D321C` |
 | `hero` / `hero-art` | `#E9EDE1` / `#D9E1CD` | `#223328` / `#304631` |
 
-Palette proposals, 2026-11-12: the prototype's Palette control also offers Ink & Ledger Blue, Lagoon Teal, Plum & Blush and Marigold & Charcoal for comparison ([F02 BD08](../specs/brand-design-refresh/spec.md#palette-options-2026-11-12), [DESIGN-DIRECTIONS](../prototypes/DESIGN-DIRECTIONS.md#palette-options)). None is chosen. The table above remains the current palette until the owner decides; the proposals' values live only in the prototype stylesheet.
+Palette proposals, 2026-11-12: the prototype's Palette control also offers Ink & Ledger Blue, Lagoon Teal, Plum & Blush and Marigold & Charcoal for comparison ([F02 BD08](../specs/brand-design-refresh/spec.md#palette-options-2026-11-12), [DESIGN-DIRECTIONS](../prototypes/DESIGN-DIRECTIONS.md#palette-options)). On 2026-11-13 the user chose Paper & Forest ("for pallete go for paper and forest"), so the table above is the palette. The four proposals stay in the prototype stylesheet as history and are not used by the application.
 
 ### Stack and component mapping
 
 The prototype uses plain CSS as a buildless design artifact. At scaffold, map the semantic roles above to Tailwind theme values and reusable Razor components: SiteHeader, BrandMark, DirectorySearch, AccountantCard, ProfileSummary, ContactPanel, MessageComposer, StatusBanner and SiteFooter. Component names are planning labels, not existing source. Keep public directory/profile HTML suitable for static rendering and the chat/editor boundary as defined in SDD; adding JavaScript interactivity here does not change those application contracts. Reuse SVG assets from `wwwroot` without an image service or component library.
+
+As built in F01, 2026-11-13 ([evidence](delivery/evidence/2026-11-13-f01-browse-accountants.md)):
+- **Tokens:** the palette table above is the only colour source, in `src/TaxBuddy.Web/Styles/app.css`. Tailwind 4's own colour palette is switched off, so a class such as `bg-surface` or `text-muted` must name a semantic role. Dark mode follows the browser's `prefers-color-scheme` setting.
+- **Breakpoints:** 480 px (`sm`) and 760 px (`md`), as in the layout row above, plus 1040 px for the content width.
+- **Razor components:** `BrandLogo` (picks the light or dark logo file without script), `Icon` (the prototype's line icons, hidden from screen readers), `SeoHead` (title, description, canonical address), `StateMessage` (empty, no match, unavailable and error states), `AccountantCardItem` (one link per card, covering the whole card) and `Pager`. The layout supplies the header, skip link and footer.
+- **The directory form's source order matters:** text box, service menu, Search, then service buttons. Comments in `Styles/app.css` and the SDD explain why.
+- **Grid columns on the hero use `minmax(0, 1fr)`,** so the search form fits at 320 px.
 
 Directory pages lead with a short introduction and labelled search, followed by comparable cards. The desktop introduction uses an original decorative ledger illustration rather than fabricated statistics or portraits. Cards show initials, career title, rating/count, location/experience, services, summary and profile action in a consistent order. Profiles keep a clearly separated contact panel; mobile keeps its contact action below the scrolling content. Serif display type is limited to brand/headings; controls, forms, messages and dense facts stay in the body face.
 
@@ -59,7 +66,7 @@ Directory pages lead with a short introduction and labelled search, followed by 
 
 | Component / workflow | States to design | Observable behavior |
 |---|---|---|
-| Directory list and search (R01, R02) | Loading, ready, empty directory, no match, load error | Empty and "no match" use different messages. Search text and filter live in the address, so Back and shared links keep them. A failed load is an error with a retry, never an empty list |
+| Directory list and search (R01, R02) | Ready, empty directory, no match, load error | A static page with a plain search form ([SDD](SDD.md#navigation-and-screen-state), C03 resolved 2026-11-12): search and the service menu apply when the form is submitted, and on wide screens each service button submits it at once. Sort and page are links. Search, service, sort and page live in the address, so Back and shared links keep them. No in-page loading state, and the prototype's brief placeholder stands in for the page load. A full page load (first visit, reload, Search) shows the browser's own indicator. Links inside the site use Blazor's enhanced navigation and currently show no indicator; see [F01 polish P1](../specs/browse-accountants/tasks.md#polish-follow-ups). Cards look the same to every viewer. Empty and "no match" use different messages. A failed load is an error with a retry, never an empty list |
 | Profile (R03) | Ready, not available (removed or malformed link), error | Contact details and services are readable without sign-in. A "Message" action is shown to everyone; visitors are taken to sign-in first and returned afterwards |
 | Sign-in (R04) | Choose provider, redirecting, cancelled, failed, choose role | Cancelling at the provider returns to the previous page |
 | Profile editor (R05) | Pristine, draft, validation error, saving, failed, saved, changed elsewhere | Edits are never cleared by a failure. Leaving with unsaved changes asks for confirmation |

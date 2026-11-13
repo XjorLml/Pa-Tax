@@ -45,3 +45,5 @@ Facts checked on 2026-11-11 ([REFERENCES](../REFERENCES.md#revalidation-log)):
 ## Provenance and supersession
 
 Original decision, recorded the day it was made. Supersedes [ADR 001](001-platform-scope-android-windows.md), [ADR 002](002-own-api-online-only.md) and [ADR 003](003-dotnet-11-toolchain.md).
+
+2026-11-13: decision 5 (the proposed render-mode split and two-project layout) is superseded by [ADR 010](010-single-project-per-page-render-modes.md). The other decisions stand. The text above is kept as it was recorded.

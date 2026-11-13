@@ -1,0 +1,32 @@
+@* Empty, no-match, unavailable and error states (DESIGN: screen and component states). *@
+<div class="mx-auto flex max-w-xl flex-col items-center gap-3 rounded-xl border border-border bg-surface px-6 py-10 text-center">
+    <Icon Name="@IconName" Size="36" Class="text-muted" />
+    @if (HeadingLevel == 1)
+    {
+        <h1 class="text-[26px]" tabindex="-1">@Title</h1>
+    }
+    else
+    {
+        <h2 class="text-[24px]">@Title</h2>
+    }
+    @if (Text is not null)
+    {
+        <p class="text-muted">@Text</p>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="mt-2 flex flex-wrap justify-center gap-3">@ChildContent</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string IconName { get; set; } = "alert";
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter] public string? Text { get; set; }
+
+    [Parameter] public int HeadingLevel { get; set; } = 2;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

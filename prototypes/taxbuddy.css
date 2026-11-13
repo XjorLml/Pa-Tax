@@ -147,6 +147,7 @@
 .device[data-look="taxbuddy"] .hero.wide .hero-search { grid-column:1/-1; width:100%; max-width:none; margin-top:16px; padding:16px; border:1px solid var(--border); border-radius:12px; background:var(--surface); }
 .device[data-look="taxbuddy"] .hero.wide .hero-sub { margin-bottom:0; }
 .device[data-look="taxbuddy"] .hero-search .search input { min-height:50px; }
+.device[data-look="taxbuddy"] .hero-search .search-row .dir-submit { min-height:50px; }
 .device[data-look="taxbuddy"] .hero-search .search>.ic { bottom:17px; }
 .device[data-look="taxbuddy"] .hero-search .search .clear { bottom:3px; }
 .device[data-look="taxbuddy"] .hero.wide .chips { justify-content:start; gap:6px; margin:12px 0 0; }
