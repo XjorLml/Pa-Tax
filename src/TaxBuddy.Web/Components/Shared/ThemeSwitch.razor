@@ -1,0 +1,31 @@
+@* Light, dark or system colours (DESIGN theme switch, F02 BD09). A plain form, so it works on static pages without script. *@
+<form method="post" action="@ThemePreference.EndpointPath" class="theme-switch">
+    <AntiforgeryToken />
+    <input type="hidden" name="returnUrl" value="@LocalAddress.CurrentFor(HttpContext)" />
+    <span id="theme-switch-label" class="theme-switch-label">Theme</span>
+    <div role="group" aria-labelledby="theme-switch-label" class="theme-switch-options">
+        @foreach (var (theme, label, icon) in Options)
+        {
+            <button type="submit" name="theme" value="@ThemePreference.ValueOf(theme)" class="theme-option"
+                    aria-pressed="@(theme == current ? "true" : "false")" title="@label">
+                <Icon Name="@icon" Size="16" />
+                <span class="theme-option-text">@label</span>
+            </button>
+        }
+    </div>
+</form>
+
+@code {
+    private static readonly (Theme Theme, string Label, string Icon)[] Options =
+    [
+        (Theme.Light, "Light", "sun"),
+        (Theme.Dark, "Dark", "moon"),
+        (Theme.System, "System", "monitor"),
+    ];
+
+    private Theme current;
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    protected override void OnInitialized() => current = ThemePreference.Read(HttpContext);
+}

@@ -11,6 +11,8 @@
                 Find an accountant
             </NavLink>
         </nav>
+        <ThemeSwitch />
+        <AccountMenu />
     </div>
 </header>
 
@@ -23,6 +25,11 @@
         <BrandLogo Width="120" />
         @* PRD D09 proposal: Tax Buddy does not verify accountants. Wording still needs review. *@
         <p>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</p>
+        @* PRD R16: the terms and privacy policy are reachable from every page. *@
+        <nav aria-label="Legal" class="flex gap-4">
+            <a href="/terms">Terms of use</a>
+            <a href="/privacy">Privacy</a>
+        </nav>
     </div>
 </footer>
 

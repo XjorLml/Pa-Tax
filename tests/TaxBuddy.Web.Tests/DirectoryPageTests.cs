@@ -28,7 +28,10 @@ public sealed class DirectoryPageTests(SeededAppFixture app) : IClassFixture<See
         Assert.DoesNotContain("Grace Tan", html); // page 2 (6 per page)
         Assert.DoesNotContain("Sam Aquino", html); // no consent: never listed (BR01)
         Assert.Contains("8 accountants", html);
-        Assert.DoesNotContain("Sign in", html, StringComparison.OrdinalIgnoreCase); // FT01: no sign-in prompt
+        // FT01: no sign-in prompt. Since F04 the header has a "Sign in" link, which is navigation, not a prompt
+        // (F04 spec, recorded clarification); no text asks the visitor to sign in to browse.
+        Assert.DoesNotContain("Sign in to", html, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(">Sign in</a>", html);
     }
 
     [DatabaseFact]

@@ -1,7 +1,8 @@
 ﻿@* Pages are static unless the SDD render-mode table says otherwise: no app-wide render mode on Routes or HeadOutlet (ADR 010). *@
 @inject IConfiguration Configuration
 <!DOCTYPE html>
-<html lang="en">
+@* data-theme is absent for System, so the stylesheet follows the browser setting (F02 BD09). *@
+<html lang="en" data-theme="@ThemeAttribute">
 
 <head>
     <meta charset="utf-8" />
@@ -27,3 +28,14 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    // Blazor leaves out an attribute whose value is null.
+    private string? ThemeAttribute => ThemePreference.Read(HttpContext) switch
+    {
+        Theme.System => null,
+        var theme => ThemePreference.ValueOf(theme),
+    };
+}

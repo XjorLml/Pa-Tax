@@ -1,0 +1,919 @@
+{
+  "base": "http://localhost:5299",
+  "date": "2026-11-16T00:21:43.060Z",
+  "edge": "Edg/157.0.4341.60",
+  "failures": 0,
+  "results": [
+    {
+      "name": "stored=none browser=light 320px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=light 320px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=none browser=light 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=none browser=light 320px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=light 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=light 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=light 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=none browser=light 390px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=light 390px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=none browser=light 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=none browser=light 390px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=light 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=light 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=light 390px: labels icons only",
+      "ok": true,
+      "detail": false,
+      "headerHeight": 127
+    },
+    {
+      "name": "stored=none browser=light 760px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=light 760px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=none browser=light 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=none browser=light 760px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=light 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=light 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=light 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=none browser=light 1440px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=light 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=none browser=light 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=none browser=light 1440px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=light 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=light 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=light 1440px: labels shown",
+      "ok": true,
+      "detail": true,
+      "headerHeight": 75
+    },
+    {
+      "name": "stored=none browser=dark 320px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=dark 320px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=none browser=dark 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=none browser=dark 320px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=dark 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=dark 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=dark 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=none browser=dark 390px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=dark 390px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=none browser=dark 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=none browser=dark 390px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=dark 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=dark 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=dark 390px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=none browser=dark 760px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=dark 760px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=none browser=dark 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=none browser=dark 760px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=dark 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=dark 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=dark 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=none browser=dark 1440px: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "stored=none browser=dark 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=none browser=dark 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=none browser=dark 1440px: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "stored=none browser=dark 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=none browser=dark 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=none browser=dark 1440px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=light browser=light 320px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 320px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=light 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=light 320px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=light 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=light 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=light browser=light 390px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 390px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=light 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=light 390px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=light 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=light 390px: labels icons only",
+      "ok": true,
+      "detail": false,
+      "headerHeight": 127
+    },
+    {
+      "name": "stored=light browser=light 760px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 760px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=light 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=light 760px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=light 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=light 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=light browser=light 1440px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=light 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=light 1440px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=light 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=light 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=light 1440px: labels shown",
+      "ok": true,
+      "detail": true,
+      "headerHeight": 75
+    },
+    {
+      "name": "stored=light browser=dark 320px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 320px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=dark 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=dark 320px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=dark 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=dark 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=light browser=dark 390px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 390px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=dark 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=dark 390px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=dark 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=dark 390px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=light browser=dark 760px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 760px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=dark 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=dark 760px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=dark 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=dark 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=light browser=dark 1440px: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(247, 247, 242)"
+    },
+    {
+      "name": "stored=light browser=dark 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-light"
+    },
+    {
+      "name": "stored=light browser=dark 1440px: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "stored=light browser=dark 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=light browser=dark 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=light browser=dark 1440px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=dark browser=light 320px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 320px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=light 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=light 320px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=light 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=light 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=dark browser=light 390px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 390px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=light 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=light 390px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=light 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=light 390px: labels icons only",
+      "ok": true,
+      "detail": false,
+      "headerHeight": 127
+    },
+    {
+      "name": "stored=dark browser=light 760px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 760px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=light 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=light 760px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=light 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=light 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=dark browser=light 1440px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=light 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=light 1440px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=light 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=light 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=light 1440px: labels shown",
+      "ok": true,
+      "detail": true,
+      "headerHeight": 75
+    },
+    {
+      "name": "stored=dark browser=dark 320px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 320px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=dark 320px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=dark 320px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 320px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=dark 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=dark 320px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=dark browser=dark 390px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 390px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=dark 390px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=dark 390px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 390px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=dark 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=dark 390px: labels icons only",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "stored=dark browser=dark 760px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 760px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=dark 760px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=dark 760px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 760px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=dark 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=dark 760px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: page colours",
+      "ok": true,
+      "detail": "rgb(17, 28, 24)"
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: one logo, matching theme",
+      "ok": true,
+      "detail": "logo-dark"
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: no horizontal overflow, switch inside",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"inside\":true}"
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "stored=dark browser=dark 1440px: labels shown",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "click dark: back on the same address",
+      "ok": true,
+      "detail": "/no-such-page?x=1"
+    },
+    {
+      "name": "click dark: html data-theme",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "click dark: cookie",
+      "ok": true,
+      "detail": "[{\"v\":\"dark\",\"httpOnly\":true,\"sameSite\":\"Lax\",\"expires\":1826324499.832123}]"
+    },
+    {
+      "name": "click dark: pressed option",
+      "ok": true,
+      "detail": "dark"
+    },
+    {
+      "name": "click light: back on the same address",
+      "ok": true,
+      "detail": "/no-such-page?x=1"
+    },
+    {
+      "name": "click light: html data-theme",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "click light: cookie",
+      "ok": true,
+      "detail": "[{\"v\":\"light\",\"httpOnly\":true,\"sameSite\":\"Lax\",\"expires\":1826324499.89574}]"
+    },
+    {
+      "name": "click light: pressed option",
+      "ok": true,
+      "detail": "light"
+    },
+    {
+      "name": "click system: back on the same address",
+      "ok": true,
+      "detail": "/no-such-page?x=1"
+    },
+    {
+      "name": "click system: html data-theme",
+      "ok": true,
+      "detail": null
+    },
+    {
+      "name": "click system: cookie",
+      "ok": true,
+      "detail": "[]"
+    },
+    {
+      "name": "click system: pressed option",
+      "ok": true,
+      "detail": "system"
+    },
+    {
+      "name": "keyboard: Tab reaches the switch with a visible outline",
+      "ok": true,
+      "detail": "{\"value\":\"light\",\"outline\":\"solid 3px\"}"
+    }
+  ]
+}

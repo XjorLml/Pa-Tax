@@ -1,9 +1,10 @@
-@* Tax Buddy logo (DESIGN brand identity). The dark-theme file is chosen by the browser, with no script. *@
-<picture>
-    <source srcset="@Assets["images/taxbuddy-logo-dark.svg"]" media="(prefers-color-scheme: dark)" />
-    <img src="@Assets["images/taxbuddy-logo-light.svg"]" width="@Width" height="@(Width * 30 / 175)" alt="Tax Buddy" class="block" />
-</picture>
+@* Tax Buddy logo (DESIGN brand identity). Both files are in the page; the stylesheet shows the one for the current theme,
+   including a theme chosen with the switch, with no script. A hidden image is not read by screen readers. *@
+<img src="@Assets["images/taxbuddy-logo-light.svg"]" width="@Width" height="@Height" alt="Tax Buddy" class="logo-light" />
+<img src="@Assets["images/taxbuddy-logo-dark.svg"]" width="@Width" height="@Height" alt="Tax Buddy" class="logo-dark" />
 
 @code {
     [Parameter] public int Width { get; set; } = 175;
+
+    private int Height => Width * 30 / 175;
 }

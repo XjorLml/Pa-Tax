@@ -5,6 +5,10 @@
 /*
   Semantic tokens: DESIGN "Tax Buddy palette" (Paper & Forest, chosen 2026-11-13).
   Pages use these roles only; Tailwind's default colour palette is switched off below.
+
+  Theme (F02 BD09): <html data-theme="light|dark"> is written by the server from the theme switch's cookie. Without it
+  (System) the browser setting decides. The dark values appear twice, once per way of choosing dark; keep the two blocks
+  identical (a test in TaxBuddy.Web.Tests compares them).
 */
 :root {
   color-scheme: light;
@@ -27,8 +31,9 @@
   --hero-art: #D9E1CD;
 }
 
+/* dark-tokens: system */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     color-scheme: dark;
     --app-bg: #111C18;
     --surface: #192720;
@@ -47,6 +52,41 @@
     --warn-soft: #3D321C;
     --hero: #223328;
     --hero-art: #304631;
+  }
+}
+
+/* dark-tokens: chosen */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --app-bg: #111C18;
+  --surface: #192720;
+  --surface-2: #24352B;
+  --text: #EEF1E7;
+  --muted: #B3C0B3;
+  --primary: #B7D8A4;
+  --on-primary: #162D20;
+  --primary-soft: #2B402C;
+  --on-soft: #D8EACD;
+  --border: #3A4D3F;
+  --ctl: #7E9383;
+  --danger: #FFB4A9;
+  --danger-soft: #40251F;
+  --warn: #ECCC8D;
+  --warn-soft: #3D321C;
+  --hero: #223328;
+  --hero-art: #304631;
+}
+
+/* Tailwind's dark: variant follows the same choice, so a future dark: class can't disagree with the tokens. */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:root:not([data-theme="light"]) *) {
+      @slot;
+    }
+  }
+
+  &:where([data-theme="dark"] *) {
+    @slot;
   }
 }
 
@@ -184,6 +224,203 @@
 
   .btn-primary:hover {
     filter: brightness(1.08);
+  }
+
+  .btn-small {
+    min-height: 44px;
+    padding: 0 14px;
+    font-size: 13.5px;
+  }
+
+  /* F04 header account area: "Sign in", or the name with "Sign out". */
+  .account-menu {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .account-name {
+    max-width: 16rem;
+    overflow: hidden;
+    font-size: 13.5px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Notices: an icon and text; the colour is never the only signal (DESIGN). */
+  .notice {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--surface-2);
+    color: var(--text);
+  }
+
+  .notice > svg {
+    flex-shrink: 0;
+    margin-top: 3px;
+  }
+
+  .notice-danger {
+    border-color: var(--danger);
+    background: var(--danger-soft);
+  }
+
+  .notice-danger > svg {
+    color: var(--danger);
+  }
+
+  .notice-warn {
+    border-color: var(--warn);
+    background: var(--warn-soft);
+  }
+
+  .notice-warn > svg {
+    color: var(--warn);
+  }
+
+  .field-error {
+    color: var(--danger);
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  /* F04 registration: one card per role, the whole card is the label. */
+  .choice {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    border: 1px solid var(--ctl);
+    border-radius: 12px;
+    background: var(--surface);
+    cursor: pointer;
+  }
+
+  .choice:hover {
+    border-color: var(--primary);
+  }
+
+  .choice:has(input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--on-soft);
+  }
+
+  .choice input {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    accent-color: var(--primary);
+  }
+
+  input[type="checkbox"] {
+    accent-color: var(--primary);
+  }
+
+  /* Terms and privacy pages. */
+  .legal {
+    display: flex;
+    max-width: 44rem;
+    flex-direction: column;
+    gap: 12px;
+    margin-inline: auto;
+  }
+
+  .legal h1 {
+    font-size: 30px;
+  }
+
+  .legal h2 {
+    margin-top: 12px;
+    font-size: 21px;
+  }
+
+  /* Logo: BrandLogo writes both files; show the one for the current theme. */
+  .logo-light {
+    display: block;
+  }
+
+  .logo-dark {
+    display: none;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .logo-light { display: none; }
+    :root:not([data-theme="light"]) .logo-dark { display: block; }
+  }
+
+  :root[data-theme="dark"] .logo-light { display: none; }
+  :root[data-theme="dark"] .logo-dark { display: block; }
+
+  /*
+    Theme switch (F02 BD09): three toggle buttons posted as a form. Below 760 px only the icons show; the names stay
+    available to screen readers and as tooltips.
+  */
+  .theme-switch {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-inline-start: auto;
+  }
+
+  .theme-switch-label {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .theme-switch-options {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid var(--ctl);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .theme-option {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text);
+    font-size: 13.5px;
+    cursor: pointer;
+  }
+
+  .theme-option:hover {
+    background: var(--surface-2);
+  }
+
+  .theme-option[aria-pressed="true"] {
+    background: var(--primary);
+    color: var(--on-primary);
+    font-weight: 700;
+  }
+
+  @media (max-width: 47.4375rem) {
+    .theme-switch-label,
+    .theme-option-text {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
   }
 
   /*

@@ -6,6 +6,20 @@ Rename, 2026-11-12 (BD07): `prototypes/kuwenta.css` is now `prototypes/taxbuddy.
 
 Palette options, 2026-11-12 (BD08): `prototypes/taxbuddy.css` gains four `[data-palette]` token blocks, light and dark, that override colours only. `prototypes/index.html` gains a Palette control, a `palette` URL setting, and an inline token-coloured copy of the logo used while an option is selected. `tools/check_prototype.mjs` gains the matching checks. The default path, logo files and DESIGN's current palette are unchanged.
 
+Theme switch in the application, 2026-11-16 (BD09):
+
+| Source | Change |
+|---|---|
+| `Services/ThemePreference.cs` (new) | The cookie `taxbuddy-theme` (`light` or `dark`; absent means System; one year; HttpOnly, SameSite=Lax, Secure on HTTPS). Also the `POST /preferences/theme` endpoint, which requires an antiforgery token through `[FromForm]` and returns only to local addresses, and the return-address rule |
+| `Program.cs` | `UseAntiforgery()` (SDD forms rule) and the endpoint |
+| `Components/App.razor` | Writes `data-theme` on `<html>` from the cookie; leaves it out for System |
+| `Components/Shared/ThemeSwitch.razor` (new), `Layout/MainLayout.razor`, `Icon.razor` | The header form: three submit buttons with `aria-pressed` in a labelled group, sun, moon and monitor icons, and the current address as the return address (the original address on not-found and error pages) |
+| `Components/Shared/BrandLogo.razor` | Writes both logo files; CSS shows the one for the theme. The `<picture>` media query could only follow the browser |
+| `Styles/app.css` | Dark tokens for the browser setting (when not overridden) and for a chosen dark; logo and switch rules; a matching Tailwind `dark:` variant |
+| `tests/TaxBuddy.Web.Tests/ThemeSwitchTests.cs` (new) | Integration tests that need no database, plus a check that the two dark token blocks are identical |
+
+No database, migration, package or new client is involved. The endpoint belongs to the one web app, like the planned account endpoints, so it is not an API ([AGENTS](../../AGENTS.md)).
+
 ## Affected modules and contracts
 
 | Source | Change | Scenario |

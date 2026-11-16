@@ -1,0 +1,70 @@
+@page "/signin"
+@using TaxBuddy.Web.Account
+@inject AccountService Accounts
+@* F04: Google sign-in (PRD R04; DESIGN sign-in states). Static: a plain form posted to the account endpoint. *@
+
+<SeoHead Title="Sign in · Tax Buddy" Description="Sign in to Tax Buddy with your Google account." CanonicalPath="/signin" />
+
+@if (signedInAs is not null)
+{
+    <StateMessage IconName="lock" HeadingLevel="1" Title="@($"You're signed in as {signedInAs}")">
+        <a class="btn btn-primary" href="@returnUrl">Continue</a>
+    </StateMessage>
+}
+else
+{
+    <section class="mx-auto flex max-w-md flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-8" aria-labelledby="page-title">
+        <h1 id="page-title" class="text-[28px]" tabindex="-1">Welcome to Tax Buddy</h1>
+        <p class="text-muted">Sign in to message accountants, or to publish your profile as an accountant. Browsing never needs an account.</p>
+
+        @if (Error == "failed")
+        {
+            <div class="notice notice-danger" role="alert">
+                <Icon Name="alert" Size="18" />
+                <p>We couldn't sign you in with Google. Please try again.</p>
+            </div>
+        }
+
+        @if (googleAvailable)
+        {
+            <form method="post" action="@AccountEndpoints.ExternalSignInPath">
+                <AntiforgeryToken />
+                <input type="hidden" name="provider" value="@AccountSetup.GoogleScheme" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="btn w-full">Continue with Google</button>
+            </form>
+            <p class="text-[13px] text-muted">Tax Buddy never sees your Google password. The first time, you'll choose how you'll use Tax Buddy.</p>
+        }
+        else
+        {
+            <div class="notice" role="status">
+                <Icon Name="lock" Size="18" />
+                <p>Google sign-in isn't set up on this site yet.</p>
+            </div>
+        }
+    </section>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromQuery] public string? Error { get; set; }
+
+    private string returnUrl = "/";
+    private string? signedInAs;
+    private bool googleAvailable;
+
+    protected override async Task OnInitializedAsync()
+    {
+        returnUrl = LocalAddress.OrHome(ReturnUrl);
+        if (HttpContext?.User.Identity?.IsAuthenticated == true)
+        {
+            signedInAs = HttpContext.User.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "a Tax Buddy user";
+            return;
+        }
+
+        googleAvailable = await Accounts.IsGoogleAvailableAsync();
+    }
+}

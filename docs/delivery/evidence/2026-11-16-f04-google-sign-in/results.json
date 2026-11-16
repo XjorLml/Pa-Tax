@@ -1,0 +1,776 @@
+{
+  "base": "http://localhost:5299",
+  "date": "2026-11-16T02:34:25.728Z",
+  "edge": "Edg/157.0.4341.60",
+  "failures": 0,
+  "results": [
+    {
+      "name": "directory light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory light 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory light 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 173
+    },
+    {
+      "name": "signin light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin light 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin light 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin light 320px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error light 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error light 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error light 320px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms light 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms light 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms light 320px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy light 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy light 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy light 320px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory light 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory light 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 127
+    },
+    {
+      "name": "signin light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin light 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin light 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin light 390px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error light 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error light 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error light 390px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms light 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms light 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms light 390px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy light 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy light 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy light 390px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory light 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory light 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 127
+    },
+    {
+      "name": "signin light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin light 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin light 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin light 760px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error light 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error light 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error light 760px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms light 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms light 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms light 760px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy light 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy light 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy light 760px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory light 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory light 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 75
+    },
+    {
+      "name": "signin light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin light 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin light 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin light 1440px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error light 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error light 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error light 1440px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms light 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms light 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms light 1440px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy light 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy light 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy light 1440px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory dark 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory dark 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 173
+    },
+    {
+      "name": "signin dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin dark 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin dark 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin dark 320px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error dark 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error dark 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error dark 320px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms dark 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms dark 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms dark 320px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy dark 320px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy dark 320px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy dark 320px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory dark 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory dark 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 127
+    },
+    {
+      "name": "signin dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin dark 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin dark 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin dark 390px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error dark 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error dark 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error dark 390px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms dark 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms dark 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms dark 390px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy dark 390px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy dark 390px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy dark 390px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory dark 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory dark 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 127
+    },
+    {
+      "name": "signin dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin dark 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin dark 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin dark 760px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error dark 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error dark 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error dark 760px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms dark 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms dark 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms dark 760px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy dark 760px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy dark 760px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy dark 760px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "directory dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "directory dark 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "directory dark 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy",
+      "header": 75
+    },
+    {
+      "name": "signin dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin dark 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin dark 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin dark 1440px: sign-in page states Google is not set up",
+      "ok": true,
+      "detail": "[\"Welcome to Tax Buddy\",\"Google sign-in isn't set up on this site yet.\"]"
+    },
+    {
+      "name": "signin-error dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "signin-error dark 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "signin-error dark 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "signin-error dark 1440px: failure alert",
+      "ok": true,
+      "detail": "We couldn't sign you in with Google. Please try again."
+    },
+    {
+      "name": "terms dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "terms dark 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "terms dark 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "terms dark 1440px: draft notice",
+      "ok": true,
+      "detail": true
+    },
+    {
+      "name": "privacy dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "privacy dark 1440px: header Sign in link visible, 44 px",
+      "ok": true,
+      "detail": "{\"s\":true,\"i\":true,\"h\":44}"
+    },
+    {
+      "name": "privacy dark 1440px: footer legal links",
+      "ok": true,
+      "detail": "Terms of use,Privacy"
+    },
+    {
+      "name": "privacy dark 1440px: draft notice",
+      "ok": true,
+      "detail": true
+    }
+  ]
+}

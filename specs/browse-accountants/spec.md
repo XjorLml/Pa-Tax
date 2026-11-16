@@ -27,7 +27,7 @@ Product rules are not copied here; the PRD IDs above govern.
 
 | ID / requirement | Given / when | Observable result | Verification boundary |
 |---|---|---|---|
-| FT01 / R01 | Given listed accountants exist, when a visitor opens the site | The directory shows each listed accountant's name, career summary and services, in a stable order, without a sign-in prompt | Web.Tests (page content), browser |
+| FT01 / R01 | Given listed accountants exist, when a visitor opens the site | The directory shows each listed accountant's name, career summary and services, in a stable order, without a sign-in prompt. Since F04 (2026-11-16) the header has a "Sign in" link, as in the prototype; that is navigation, not a prompt ([F04 recorded clarification](../google-sign-in/spec.md#state-dependencies-and-unresolved-decisions)) | Web.Tests (page content), browser |
 | FT02 / R01, R02 | Given no listed accountants, versus given accountants exist but none match the search | "No accountants yet" and "No matches" are different messages; clearing the search restores the list | Web.Tests + browser |
 | FT03 / R01, BR02 | Given more accountants than one page, including equal sort keys, when the user pages to the end | Every listed accountant appears exactly once, in order | TaxBuddy.Tests (paging query on the real database) |
 | FT04 / R03, R11 | When the user opens a profile | Career summary, experience, contact details and services are shown; nothing about clients appears on any public page | Web.Tests (page content), browser |

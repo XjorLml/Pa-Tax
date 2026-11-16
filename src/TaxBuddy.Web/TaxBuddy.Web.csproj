@@ -15,6 +15,9 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Pins EF Core above the provider's minimum so test projects resolve the same version as the design-time tools. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
+    <!-- F04: Identity's EF store follows EF Core 10.0.15, since 11.0.0 needs EF Core 11 (see the note above). -->
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="11.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

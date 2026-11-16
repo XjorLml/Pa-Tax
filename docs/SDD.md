@@ -50,6 +50,7 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | Directory `/`: browse and search | Static server rendering (the Blazor default) | Search engines and first-time visitors get the complete page in the first response. Search is a plain GET form; sort and page are links ([C03](README.md#history-and-unresolved-conflicts)) |
 | Profile `/accountants/{id}`, including portfolio highlights, reviews, review replies and the average rating | Static server rendering | Public and meant to be found; reviews are part of the page itself |
 | Sign-in, registration (role choice and agreement), information, not-found and error pages | Static server rendering | Plain links and forms that work before any script loads |
+| Theme switch in the site header, on every page | Static server rendering: a plain form posted to the endpoint `POST /preferences/theme`, which redirects back to the page | Added 2026-11-16 (F02 BD09). A choice shared by all pages, so it is posted to an endpoint rather than to each page as a named form. Antiforgery applies as for any form; no script and no server connection |
 | Signed-in actions on static pages: add to or remove from my accountants, report a profile or a review, the accountant's reply to a review | Static server rendering, as named forms posted to the same page | Visitors never open a server connection. Shown only to signed-in users who may take the action; see the form rules below |
 | Review submission `/accountants/{id}/review` | Interactive Server | An action by a signed-in client |
 | Conversation list and chat thread `/chats`, `/chats/{id}` | Interactive Server | Private, with live updates over SignalR |
@@ -113,7 +114,7 @@ The server database is the only store of record.
 | Identity and mutation | Users, profiles and conversations get server-generated GUIDs. A message gets its GUID when the composer is shown, so a repeated submit stores one message (BR04). Profile updates carry a row version; a stale save gets a conflict state, not a silent overwrite |
 | Dates, instants, money | Instants are stored as UTC and converted to Asia/Manila in one display helper (BR07). Experience months, if D04 adds them, are `YYYY-MM` values without a zone. No money fields in release 1 |
 | Queries | The directory pages through a stable order with a unique ID tie-breaker (BR02): name A–Z, then ID, by default; "highest rated" orders by the computed average, review count, name, then ID, with unreviewed accountants last (D05, provisional). Messages are ordered by server receive time, then message ID |
-| Storage and ownership | Supabase's managed PostgreSQL ([ADR 007](adr/007-supabase-brevo-container-host.md)), through EF Core with the Npgsql provider. Interactive pages take a new context from a factory for each operation, because a context is not thread safe and a circuit lives much longer than a request. In the browser: the session cookie, and unsent chat text in the tab's session storage (Proposed) |
+| Storage and ownership | Supabase's managed PostgreSQL ([ADR 007](adr/007-supabase-brevo-container-host.md)), through EF Core with the Npgsql provider. Interactive pages take a new context from a factory for each operation, because a context is not thread safe and a circuit lives much longer than a request. In the browser: the session cookie, the theme cookie `taxbuddy-theme` (`light` or `dark`, absent for System; one year, HttpOnly, SameSite=Lax; no personal data; F02 BD09, 2026-11-16), and unsent chat text in the tab's session storage (Proposed) |
 | Schema evolution | EF Core migrations kept with the source. Production changes go through a migration bundle or a reviewed SQL script ([RELEASE](RELEASE.md#deployment)), not automatic migration at startup |
 | Failure/downgrade | Each migration step is atomic where the provider allows. A rollback plan is recorded with each release that changes the schema |
 | Ratings | One review per client and accountant, enforced by a unique constraint. The average and count are computed from the reviews, never stored by hand. The reviewer's short name is produced when the page is rendered |
@@ -132,13 +133,13 @@ Supabase is used as a PostgreSQL database only (Proposed in ADR 007). Sign-in st
 | Decision | Selected approach |
 |---|---|
 | Sign-in method | Google or Microsoft account through ASP.NET Core external authentication ([ADR 006](adr/006-web-sign-in.md)). The browser is redirected to the provider and back to the site's callback address. No Tax Buddy passwords |
-| User store | ASP.NET Core Identity with external sign-ins only (Proposed in ADR 006) |
-| Session | A cookie that is HTTPS-only and unreadable by scripts. Lifetime is set at implementation |
+| User store | ASP.NET Core Identity with external sign-ins only (ADR 006). Built in F04, 2026-11-16: `TaxBuddyUser` (Guid key, display name, one role, agreement time and version) in `IdentityUserContext` tables `users`, `user_logins`, `user_claims`, `user_tokens`. No passwords and no Identity role tables |
+| Session | A cookie that is HTTPS-only and unreadable by scripts (`SameAsRequest` only in Development, for the HTTP launch profile). Persistent for 14 days, renewed on use: Proposed in F04, 2026-11-16. Identity's external cookie holds a first sign-in for a few minutes until registration completes |
 | Expired session | The next action sends the user to sign-in and then back to the same address. Unsent chat text is kept |
 | Sign-out | Ends the session in that browser |
 | Return address after sign-in | Local addresses only, so a crafted link can't send users to another site |
 
-Roles: `client` and `accountant`, chosen at first sign-in (D03 decides whether one account can hold both).
+Roles: `client` or `accountant`, one per account, chosen at first sign-in (D03, decided 2026-11-16). The role is a column on the account and a claim in the session cookie.
 
 Authorization rules, enforced in Application services on the server:
 - Directory and profile reads are public, and return only listed profiles (BR01).
@@ -152,6 +153,16 @@ Authorization rules, enforced in Application services on the server:
 - Service tasks, updates and files inherit both participant IDs from their engagement. Every read/write/download/removal resolves the parent relationship and current actor, including asynchronous completion. Proposed editor/removal permissions follow the private-workspace table below; UI guards do not enforce security.
 
 A record ID in an address or a form is never proof of access. Hiding a button is not authorization: the service behind it checks again.
+
+**As built in F04 (2026-11-16):**
+- `POST /account/external-signin` starts the provider sign-in. It needs an antiforgery token and a registered provider, and gives 400 otherwise.
+- The provider returns to `/signin-google`, then to `GET /account/signin/callback`. A known login signs in; a first sign-in goes to `/register`.
+- Cancel at the provider returns to the starting page (`OnAccessDenied`). Other provider failures go to `/signin?error=failed` and log only an error category (`OnRemoteFailure`).
+- `POST /account/signout` ends the session and goes to `/`.
+- Return addresses go through `LocalAddress` (local only), both when posted and before each redirect.
+- Google is registered only when its client ID and secret are both configured. Otherwise the sign-in page says it isn't set up.
+- Pages use `AccountService`, never Identity's managers, so components don't depend on the data layer.
+- Data-protection keys are not persisted outside the app yet. That is needed before the first deployment (keys and secrets, below).
 
 Provider client secrets stay on the server: user-secrets in development, the host's secret store in production ([SETUP](SETUP.md#local-development)).
 
@@ -214,7 +225,9 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `/privacy`, `/terms`, `/about`, `/help`, `/for-accountants` | None | None | Static pages, public (R16, R17) |
 | `/email/off` | The signed-in user, or a signed link from an email | None | Turns notification emails off and offers to turn them back on (R08) |
 | Any other address | — | — | "Page not found" with HTTP 404; failures show an error page with a support code (R18) |
-| `/signin` | Local return address | None | Cancel at the provider returns to the previous page; success continues to the return address |
+| `POST /preferences/theme` | Form: `theme` (`light`, `dark` or `system`), `returnUrl`, antiforgery token | A cookie for light or dark; System deletes it | Redirects to `returnUrl` when it is an address on this site, otherwise to `/`. Missing token or unknown theme: 400, nothing stored (F02 BD09) |
+| `/signin` | Local return address; `error=failed` shows the failure alert | None | Cancel at the provider returns to the previous page; success continues to the return address. Built in F04 |
+| `/register` | Local return address; a first sign-in in progress (Identity's external cookie), otherwise redirect to `/signin` | The role chosen and the agreement box are kept through a failed submit | Named form posted to the same page. Built in F04 |
 | `/chats` | Signed-in user | Conversation list | Email links fall back here when the conversation can't be opened |
 | `/chats/{id}` | GUID; the user must be a participant | Unsent text kept across a lost connection and a reload of the tab | Not a participant, or unknown ID: "not available", never another user's content |
 | `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Becomes the existing conversation if the pair already has one (per D06) |
@@ -243,6 +256,8 @@ A submit button is disabled while its operation runs, so a double click can't ru
 **Tables:** `accountant_profiles`, `accountant_services` and `accountant_experience`, with snake_case names. Services are unique per profile, and both child tables are deleted with their profile. Experience months are stored as the first day of the month in `date` columns.
 
 **Development command:** `dotnet run --project src/TaxBuddy.Web -- seed-development` resets the profiles to the synthetic seed. It runs only in the Development environment.
+
+**Theme (F02 BD09, 2026-11-16):** `App.razor` writes `data-theme` on `<html>` from the theme cookie, so the first response already has the chosen colours. `Program.cs` calls `UseAntiforgery()`; the theme endpoint is the first form that needs it. The switch's return address is the current path and query, or on a not-found or error page the original address.
 
 **Public pages:** every response carries `X-Robots-Tag: noindex, nofollow` and a matching meta tag, unless `Seo:AllowIndexing` is true (D19).
 

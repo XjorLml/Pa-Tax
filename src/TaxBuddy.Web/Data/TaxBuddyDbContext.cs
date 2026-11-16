@@ -1,4 +1,6 @@
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using TaxBuddy.Web.Domain;
@@ -7,9 +9,12 @@ namespace TaxBuddy.Web.Data;
 
 /// <summary>
 /// The application's database (SDD: data and persistence contracts). Interactive pages and services take a new
-/// context from <see cref="IDbContextFactory{TContext}"/> for each operation.
+/// context from <see cref="IDbContextFactory{TContext}"/> for each operation. It is also Identity's user store (ADR 006):
+/// users, their external sign-in links, claims and tokens. There are no Identity role tables, because an account's one
+/// role is a column (PRD D03).
 /// </summary>
-public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext> options) : DbContext(options)
+public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext> options)
+    : IdentityUserContext<TaxBuddyUser, Guid>(options)
 {
     public const int ServiceNameLength = 40;
 
@@ -19,10 +24,14 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
     {
         configurationBuilder.Properties<AccountantId>().HaveConversion<AccountantIdConverter>();
         configurationBuilder.Properties<YearMonth>().HaveConversion<YearMonthConverter>();
+        configurationBuilder.Properties<AccountRole>().HaveConversion<string>().HaveMaxLength(20);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+        ConfigureAccounts(modelBuilder);
+
         modelBuilder.Entity<AccountantProfile>(profile =>
         {
             profile.ToTable("accountant_profiles");
@@ -59,6 +68,23 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
         });
 
         ApplySnakeCaseNames(modelBuilder);
+    }
+
+    /// <summary>F04: Identity's tables under plain names, and the account fields.</summary>
+    private static void ConfigureAccounts(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<TaxBuddyUser>(user =>
+        {
+            user.ToTable("users");
+            user.Property(u => u.DisplayName).HasMaxLength(AccountLimits.DisplayName);
+            user.Property(u => u.Email).HasMaxLength(AccountLimits.Email);
+            user.Property(u => u.NormalizedEmail).HasMaxLength(AccountLimits.Email);
+            user.Property(u => u.AgreedTermsVersion).HasMaxLength(AccountLimits.TermsVersion);
+        });
+
+        modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins");
+        modelBuilder.Entity<IdentityUserClaim<Guid>>().ToTable("user_claims");
+        modelBuilder.Entity<IdentityUserToken<Guid>>().ToTable("user_tokens");
     }
 
     /// <summary>PostgreSQL convention: snake_case names, so plain SQL needs no quoting.</summary>

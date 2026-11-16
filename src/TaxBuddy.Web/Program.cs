@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using TaxBuddy.Web.Account;
 using TaxBuddy.Web.Application.Directory;
 using TaxBuddy.Web.Components;
 using TaxBuddy.Web.Data;
@@ -21,6 +22,9 @@ builder.Services.AddDbContextFactory<TaxBuddyDbContext>((services, options) =>
 builder.Services.AddSingleton<IClock, SystemClock>();
 builder.Services.AddScoped<IDirectoryStore, DirectoryStore>();
 builder.Services.AddScoped<DirectoryService>();
+
+// F04: Google sign-in and accounts (ADR 006).
+builder.AddTaxBuddyAccounts();
 
 var app = builder.Build();
 
@@ -73,7 +77,16 @@ if (!app.Configuration.GetValue<bool>("Seo:AllowIndexing"))
     });
 }
 
+app.UseAuthentication();
+app.UseAuthorization();
+
+// SDD: antiforgery protection on every form (theme switch, sign-in, registration, sign-out). After authentication,
+// because a token belongs to the signed-in user.
+app.UseAntiforgery();
+
 app.MapStaticAssets();
+app.MapThemePreference();
+app.MapAccountEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

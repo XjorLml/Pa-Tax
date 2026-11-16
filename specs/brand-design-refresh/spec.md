@@ -1,6 +1,6 @@
 # F02: Brand and prototype refresh (Kuwenta, renamed Tax Buddy)
 
-Amended 2026-11-12: the user instructed renaming the app to Tax Buddy; see [the rename section](#rename-to-tax-buddy-2026-11-12). The text before that section records the original 2026-11-11 scope under the name Kuwenta.
+Amended 2026-11-12: the user instructed renaming the app to Tax Buddy; see [the rename section](#rename-to-tax-buddy-2026-11-12). Amended 2026-11-16: an application theme switch ([BD09](#theme-switch-in-the-application-2026-11-16)) and a name survey ([record](#name-availability-2026-11-16)), at the user's instruction. The text before that section records the original 2026-11-11 scope under the name Kuwenta.
 
 Status: authorized prototype work, 2026-11-11. The user asked to execute the preceding design brief: review documentation and prototype, improve the design within the existing stack, choose a replacement name, create reusable logo assets, and verify the result. This delegates the design choice; it does not approve product release or unresolved behavior.
 
@@ -42,6 +42,28 @@ Scope: four colour proposals for the Tax Buddy look (Ink & Ledger Blue, Lagoon T
 | ID / requirement | Given / when | Observable result | Verification boundary |
 |---|---|---|---|
 | BD08 / DESIGN | Open the prototype and use the Palette control or the `palette` URL setting | Paper & Forest is the default; each option recolours the site and its logo in light and dark, keeps layout and type, and meets the measured text and control-edge contrast targets; the control is disabled for earlier looks; the notes panel marks an option as a proposal | Browser checker with per-option contrast, screenshot review |
+
+## Theme switch in the application, 2026-11-16
+
+The user's instruction was "implement f02". Asked which remaining F02 work to do, the user chose: add a theme switch, check name availability, and close the F02 records. Baseline: commit `af9d3ea60af1cda9ad022322904b76a74e3900cb`, clean apart from an untracked `.vscode/`.
+
+Before this, F01 had already brought F02's brand into the application: Paper & Forest tokens, light and dark following the browser, the logo, favicon, type, focus outline and reduced motion ([DESIGN as built](../../docs/DESIGN.md#stack-and-component-mapping)). The application had no way to choose a theme. The prototype's Theme menu is a review control, so this is new application behaviour.
+
+Scope:
+- The header gets a Light / Dark / System switch, and the choice applies on every page.
+- System is the default and follows the browser setting.
+- The switch is a plain form. It works on static pages without script, and the server writes the chosen theme into the first response, so the page never flashes the wrong colours.
+- The choice is stored in a cookie with no personal data ([SDD](../../docs/SDD.md#data-and-persistence-contracts)).
+
+Exclusions: no account-level setting, no change to the palette or the logo files, no other new behaviour.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD09 / DESIGN; SDD forms and no-script rule | A visitor on any page presses Light, Dark or System in the header | The page reloads at the same address with that theme; the logo, colours and the pressed option agree; the choice is kept across pages and visits until changed; System removes it and follows the browser again; without script it still works; a forged post (no antiforgery token, unknown value or an off-site return address) changes nothing or returns home; the switch is keyboard reachable with visible focus, its buttons are at least 44 px, and phones show icons with the names kept for screen readers | Web integration tests; Edge at 320–1440 px in both browser settings; screenshot review |
+
+## Name availability, 2026-11-16
+
+This was a preliminary web survey for D01 and the open rename task ([record](../../docs/delivery/evidence/2026-11-16-name-availability.md)), not clearance. It found active "TaxBuddy" tax products in the Philippines (taxbuddyph.com) and India (taxbuddy.com), and a live US TAXBUDDIES mark for tax services. IPOPHL, WIPO and domain registrars were not searched directly. Nothing was decided; D01 stays with the owner.
 
 ## Evidence limits
 
