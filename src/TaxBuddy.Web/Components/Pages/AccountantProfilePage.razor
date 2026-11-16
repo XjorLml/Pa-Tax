@@ -26,7 +26,7 @@ else if (profile is not null)
     <div class="profile-grid">
         <article class="profile-main" aria-labelledby="page-title">
             <div class="profile-head">
-                <span class="avatar lg @Display.Tone(profile.Name)" aria-hidden="true">@Display.Initials(profile.Name)</span>
+                <Avatar Name="@profile.Name" Picture="@profile.PictureAddress" Size="lg" />
                 <div class="min-w-0">
                     <h1 id="page-title" tabindex="-1">@profile.Name</h1>
                     <p class="sub">@profile.Title</p>

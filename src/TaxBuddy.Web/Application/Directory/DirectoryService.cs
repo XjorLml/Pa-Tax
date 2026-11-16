@@ -19,7 +19,7 @@ public sealed class DirectoryService(IDirectoryStore store, IClock clock)
         var today = ManilaTime.Today(clock);
         var cards = rows.Rows
             .Select(r => new AccountantCard(
-                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary))
+                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary, r.PictureAddress))
             .ToList();
         var pageCount = Math.Max(1, (rows.MatchCount + PageSize - 1) / PageSize);
 
@@ -41,6 +41,11 @@ public sealed class DirectoryService(IDirectoryStore store, IClock clock)
         }
 
         var profile = await store.FindListedAsync(accountantId, cancellationToken);
-        return profile is null ? null : AccountantProfileView.From(profile, ManilaTime.Today(clock));
+        return profile is null
+            ? null
+            : AccountantProfileView.From(profile, ManilaTime.Today(clock)) with
+            {
+                PictureAddress = await store.PictureAddressAsync(profile, cancellationToken),
+            };
     }
 }

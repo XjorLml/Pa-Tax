@@ -1,0 +1,31 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-16T07:16:19.228Z",
+  "results": [
+    {
+      "n": "upload to Supabase saved and shown on Account and in the header",
+      "ok": true,
+      "d": "{\"url\":\"/account?picture=saved\",\"banner\":\"Picture updated.\",\"src\":\"/pictures/01a1e336-9e98-7969-be3f-2e202e5f9b65?v=90bb9d78d3084a8bbc9d27dee72f6160\",\"header\":\"/pictures/01a1e336-9e98-7969-be3f-2e202e5f9b65?v=90bb9d78d3084a8bbc9d27dee72f6160\"}"
+    },
+    {
+      "n": "the browser loads the picture: 400 x 400",
+      "ok": true,
+      "d": "[400,400]"
+    },
+    {
+      "n": "owner can fetch their client picture (private cache)",
+      "ok": true,
+      "d": "[200,\"image/jpeg\",\"private, max-age=3600\"]"
+    },
+    {
+      "n": "a visitor gets 404 for a client picture",
+      "ok": true,
+      "d": 404
+    },
+    {
+      "n": "remove brings back the initials",
+      "ok": true,
+      "d": "{\"url\":\"/account?picture=removed\",\"img\":false,\"initials\":\"AV\"}"
+    }
+  ]
+}

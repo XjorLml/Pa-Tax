@@ -6,7 +6,7 @@
         <Authorized>
             @{ var name = context.User.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "Account"; }
             <NavLink class="userlink" href="/account">
-                <span class="avatar sm @Display.Tone(name)" aria-hidden="true">@Display.Initials(name)</span>
+                <Avatar Name="@name" Picture="@(context.User.FindFirst(TaxBuddyClaimsFactory.PictureClaim)?.Value)" Size="sm" />
                 <span>@name</span>
             </NavLink>
         </Authorized>

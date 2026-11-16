@@ -86,6 +86,7 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             user.Property(u => u.Email).HasMaxLength(AccountLimits.Email);
             user.Property(u => u.NormalizedEmail).HasMaxLength(AccountLimits.Email);
             user.Property(u => u.AgreedTermsVersion).HasMaxLength(AccountLimits.TermsVersion);
+            user.Property(u => u.PictureObject).HasMaxLength(200);
         });
 
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins");

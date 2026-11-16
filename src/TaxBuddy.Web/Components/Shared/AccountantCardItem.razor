@@ -3,7 +3,7 @@
 <li>
     <article class="card">
         <div class="card-top">
-            <span class="avatar @Display.Tone(Card.Name)" aria-hidden="true">@Display.Initials(Card.Name)</span>
+            <Avatar Name="@Card.Name" Picture="@Card.PictureAddress" />
             <div class="min-w-0 flex-1">
                 <h3>
                     <a href="@Display.ProfilePath(Card.Id)" class="text-text no-underline after:absolute after:inset-0 after:rounded-xl after:content-['']">@Card.Name</a>

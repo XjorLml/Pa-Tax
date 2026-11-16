@@ -18,6 +18,9 @@
     <!-- F04: Identity's EF store follows EF Core 10.0.15, since 11.0.0 needs EF Core 11 (see the note above). -->
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.15" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="11.0.0" />
+    <!-- F06 (ADR 011): profile pictures are re-encoded with SkiaSharp; the Linux native library has no system dependencies. -->
+    <PackageReference Include="SkiaSharp" Version="4.155.1" />
+    <PackageReference Include="SkiaSharp.NativeAssets.Linux.NoDependencies" Version="4.155.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.15">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

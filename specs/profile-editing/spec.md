@@ -23,7 +23,7 @@ An accountant who has registered (F04) creates and edits their own profile. Once
 - Protection against a stale save from another tab.
 - "My profile" in the header for accountants. An accountant registering from the home page lands on the editor.
 
-**Exclusions:** portfolio highlights (R12), account deletion (R09), profile photos, the order of services (they follow the catalog order), an "edit" link on the public profile page, and a preview before saving.
+**Exclusions:** portfolio highlights (R12), account deletion (R09), profile photos (since 2026-11-16 a separate feature, [F06](../profile-pictures/spec.md), managed from Account and linked from the editor), the order of services (they follow the catalog order), an "edit" link on the public profile page, and a preview before saving.
 
 ## Acceptance scenarios
 

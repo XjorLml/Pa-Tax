@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
+using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Data;
 using TaxBuddy.Web.Domain;
 using TaxBuddy.Web.Services;
@@ -124,11 +125,18 @@ public sealed class TaxBuddyClaimsFactory(UserManager<TaxBuddyUser> users, IOpti
 {
     public const string DisplayNameClaim = "taxbuddy:name";
 
+    /// <summary>The address of the account's picture (F06), when it has one.</summary>
+    public const string PictureClaim = "taxbuddy:picture";
+
     protected override async Task<ClaimsIdentity> GenerateClaimsAsync(TaxBuddyUser user)
     {
         var identity = await base.GenerateClaimsAsync(user);
         identity.AddClaim(new Claim(DisplayNameClaim, user.DisplayName));
         identity.AddClaim(new Claim(ClaimTypes.Role, AccountRoles.ValueOf(user.Role)));
+        if (ProfilePictureService.AddressFor(user.Id, user.PictureObject) is { } picture)
+        {
+            identity.AddClaim(new Claim(PictureClaim, picture));
+        }
         return identity;
     }
 }

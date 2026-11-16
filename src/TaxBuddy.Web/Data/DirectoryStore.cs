@@ -2,6 +2,7 @@ using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using TaxBuddy.Web.Application.Directory;
+using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Domain;
 
 namespace TaxBuddy.Web.Data;
@@ -55,15 +56,27 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                     p.Title,
                     p.City,
                     p.Summary,
+                    p.OwnerAccountId,
                     Services = p.Services.OrderBy(s => s.Position).Select(s => s.Name).ToList(),
                     Starts = p.Experience.Select(e => e.Start).ToList(),
                 })
                 .ToListAsync(cancellationToken);
 
+            // F06: the owners' pictures, in one more query for the page's owners.
+            var owners = rows.Where(r => r.OwnerAccountId is not null).Select(r => r.OwnerAccountId!.Value).ToList();
+            var pictures = owners.Count == 0
+                ? new Dictionary<Guid, string?>()
+                : await db.Users.AsNoTracking()
+                    .Where(u => owners.Contains(u.Id) && u.PictureObject != null)
+                    .ToDictionaryAsync(u => u.Id, u => u.PictureObject, cancellationToken);
+
             var anyListed = matchCount > 0 || (query.IsFiltered && await listed.AnyAsync(cancellationToken));
 
             return new DirectoryRows(
-                rows.Select(r => new CardRow(r.Id, r.DisplayName, r.Title, r.City, r.Summary, r.Services, r.Starts)).ToList(),
+                rows.Select(r => new CardRow(r.Id, r.DisplayName, r.Title, r.City, r.Summary, r.Services, r.Starts,
+                    r.OwnerAccountId is { } owner && pictures.TryGetValue(owner, out var picture)
+                        ? ProfilePictureService.AddressFor(owner, picture)
+                        : null)).ToList(),
                 matchCount,
                 page,
                 anyListed);
@@ -83,6 +96,25 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                 .AsNoTracking()
                 .Where(ListingRules.IsListed)
                 .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        }
+        catch (Exception ex) when (IsDataFailure(ex))
+        {
+            throw Unavailable(ex);
+        }
+    }
+
+    public async Task<string?> PictureAddressAsync(AccountantProfile profile, CancellationToken cancellationToken)
+    {
+        if (profile.OwnerAccountId is not { } owner)
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var picture = await db.Users.AsNoTracking().Where(u => u.Id == owner).Select(u => u.PictureObject).FirstOrDefaultAsync(cancellationToken);
+            return ProfilePictureService.AddressFor(owner, picture);
         }
         catch (Exception ex) when (IsDataFailure(ex))
         {

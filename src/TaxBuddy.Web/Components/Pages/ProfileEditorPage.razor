@@ -98,6 +98,15 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
 
                 <fieldset>
                     <legend>About you</legend>
+                    @* F06: the picture is managed on Account, for every kind of account. *@
+                    <div class="picture-row">
+                        <Avatar Name="@(Form.DisplayName ?? "")" Picture="@picture" Size="lg" />
+                        <div>
+                            <p class="font-semibold">Profile picture</p>
+                            <a href="/account#picture">@(picture is null ? "Add a picture" : "Change picture")</a>
+                            <span class="hint block">Optional. Without one, your initials are shown.</span>
+                        </div>
+                    </div>
                     @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
                     @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant")
                     @Field("City", "City", Form.City, ProfileLimits.City, placeholder: "e.g. Makati City")
@@ -212,6 +221,7 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
     [SupplyParameterFromQuery(Name = "saved")] public string? SavedFlag { get; set; }
 
     private Guid owner;
+    private string? picture;
     private bool isAccountant;
     private bool loadFailed;
     private bool justSaved;
@@ -244,6 +254,7 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
             return;
         }
 
+        picture = user!.FindFirst(TaxBuddyClaimsFactory.PictureClaim)?.Value;
         try
         {
             var (saved, savedStatus) = await Editor.LoadAsync(owner, user!.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value);

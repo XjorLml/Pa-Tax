@@ -4,6 +4,7 @@
 @using TaxBuddy.Web.Application.Profiles
 @using TaxBuddy.Web.Domain
 @inject ProfileEditorService Editor
+@inject TaxBuddy.Web.Application.Pictures.ProfilePictureService Pictures
 @* Account (prototype meHTML; F02 BD10). Static. Rows for features not built yet are left out until they exist:
    service work (F03), reviews (R13), email settings (R08) and account deletion (R09). *@
 
@@ -28,12 +29,45 @@
     else
     {
         <div class="me-card">
-            <span class="avatar lg @Display.Tone(name)" aria-hidden="true">@Display.Initials(name)</span>
+            <Avatar Name="@name" Picture="@picture" Size="lg" />
             <div>
                 <h2>@name</h2>
                 <p class="sub">@(isAccountant ? "Accountant" : "Client") · Signed in with @provider</p>
             </div>
         </div>
+        @* F06: profile picture, in the prototype's Account card style. *@
+        <section class="picture-card" id="picture" aria-labelledby="picture-heading">
+            <h2 id="picture-heading">Profile picture</h2>
+            @if (ResultMessage is { } message)
+            {
+                <div class="banner @(PictureResult is "saved" or "removed" ? "ok" : "danger")" role="@(PictureResult is "saved" or "removed" ? "status" : "alert")">
+                    <Icon Name="@(PictureResult is "saved" or "removed" ? "check" : "alert")" Size="18" />
+                    <div>@message</div>
+                </div>
+            }
+            @if (Pictures.IsAvailable)
+            {
+                <form method="post" action="@PictureEndpoints.UploadPath" enctype="multipart/form-data" class="picture-form">
+                    <AntiforgeryToken />
+                    <label for="picture-file" class="font-semibold">@(picture is null ? "Add a picture" : "Choose a new picture")</label>
+                    <input id="picture-file" name="picture" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="picture-hint" />
+                    <button type="submit" class="btn btn-primary btn-sm">Upload picture</button>
+                </form>
+                <p id="picture-hint" class="hint">JPEG, PNG or WebP, up to 5 MB. It's cropped to a square, and location and camera details are removed. @(isAccountant ? "Shown on your public profile and in the directory." : "For now only you see it.")</p>
+                @if (picture is not null)
+                {
+                    <form method="post" action="@PictureEndpoints.RemovePath">
+                        <AntiforgeryToken />
+                        <button type="submit" class="btn btn-ghost btn-sm"><Icon Name="trash" Size="16" /> Remove picture</button>
+                    </form>
+                }
+            }
+            else
+            {
+                <p class="hint">Picture upload isn't set up on this site yet. Your initials are shown instead.</p>
+            }
+        </section>
+
         <ul class="menu">
             @if (isAccountant)
             {
@@ -63,6 +97,24 @@
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
+    /// <summary>The outcome of a picture upload or removal (F06), from the redirect after the post.</summary>
+    [SupplyParameterFromQuery(Name = "picture")] public string? PictureResult { get; set; }
+
+    private string? picture;
+
+    private string? ResultMessage => PictureResult switch
+    {
+        "saved" => "Picture updated.",
+        "removed" => "Picture removed. Your initials are shown instead.",
+        "no-file" => "Choose a photo first.",
+        "too-large" => "That file is over 5 MB. Choose a smaller photo.",
+        "too-many-pixels" => "That photo has too many pixels to process. Choose a smaller one.",
+        "not-an-image" => "That file isn't a JPEG, PNG or WebP photo.",
+        "unavailable" => "Picture upload isn't set up on this site yet.",
+        "failed" => "We couldn't save your picture. Your current picture is unchanged; please try again.",
+        _ => null,
+    };
+
     private ClaimsPrincipal? user;
     private string name = "";
     private string provider = "";
@@ -83,6 +135,7 @@
         user = HttpContext.User;
         name = user.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "Tax Buddy user";
         provider = user.FindFirst(ClaimTypes.AuthenticationMethod)?.Value ?? "Google";
+        picture = user.FindFirst(TaxBuddyClaimsFactory.PictureClaim)?.Value;
         isAccountant = user.FindFirst(ClaimTypes.Role)?.Value == AccountRoles.ValueOf(AccountRole.Accountant);
         if (isAccountant && Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var owner))
         {

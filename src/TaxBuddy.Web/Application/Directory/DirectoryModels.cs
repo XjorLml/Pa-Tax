@@ -23,7 +23,8 @@ public sealed record AccountantCard(
     string? City,
     int? YearsOfExperience,
     IReadOnlyList<string> Services,
-    string Summary);
+    string Summary,
+    string? PictureAddress = null);
 
 /// <summary>Everything the public profile shows (PRD R03). Contact details are public by the accountant's consent (R11).</summary>
 public sealed record AccountantProfileView(
@@ -40,6 +41,9 @@ public sealed record AccountantProfileView(
     string? Website,
     string? WebsiteHref)
 {
+    /// <summary>The owner's profile picture (F06), or null for the initials avatar.</summary>
+    public string? PictureAddress { get; init; }
+
     public static AccountantProfileView From(AccountantProfile profile, DateOnly today) => new(
         profile.Id,
         profile.DisplayName,
@@ -90,7 +94,8 @@ public sealed record CardRow(
     string? City,
     string Summary,
     IReadOnlyList<string> Services,
-    IReadOnlyList<YearMonth> ExperienceStarts);
+    IReadOnlyList<YearMonth> ExperienceStarts,
+    string? PictureAddress = null);
 
 /// <summary>Reads listed profiles. Implemented in Data; the Application layer never sees EF Core types.</summary>
 public interface IDirectoryStore
@@ -103,6 +108,9 @@ public interface IDirectoryStore
 
     /// <summary>The profile when it exists and is listed (PRD BR01); otherwise null.</summary>
     Task<AccountantProfile?> FindListedAsync(AccountantId id, CancellationToken cancellationToken);
+
+    /// <summary>The address of the profile owner's picture (F06), or null for none and for seed profiles.</summary>
+    Task<string?> PictureAddressAsync(AccountantProfile profile, CancellationToken cancellationToken) => Task.FromResult<string?>(null);
 }
 
 /// <summary>The database could not be reached or failed. Pages show an error with a retry, never an empty list (R01, R10).</summary>

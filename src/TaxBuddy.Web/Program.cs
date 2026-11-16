@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TaxBuddy.Web.Account;
 using TaxBuddy.Web.Application.Directory;
+using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Application.Profiles;
 using TaxBuddy.Web.Components;
 using TaxBuddy.Web.Data;
@@ -25,6 +26,19 @@ builder.Services.AddScoped<IDirectoryStore, DirectoryStore>();
 builder.Services.AddScoped<DirectoryService>();
 builder.Services.AddScoped<IProfileStore, ProfileStore>();
 builder.Services.AddScoped<ProfileEditorService>();
+
+// F06 (ADR 011): profile pictures in a private Supabase Storage bucket; switched off when it isn't configured.
+builder.Services.AddSingleton<PictureCache>();
+builder.Services.AddScoped<IAccountPictureStore, AccountPictureStore>();
+builder.Services.AddScoped<ProfilePictureService>();
+if (SupabasePictureStorage.IsConfigured(builder.Configuration))
+{
+    builder.Services.AddHttpClient<IPictureStorage, SupabasePictureStorage>(client => client.Timeout = TimeSpan.FromSeconds(15));
+}
+else
+{
+    builder.Services.AddSingleton<IPictureStorage, NoPictureStorage>();
+}
 
 // F04: Google sign-in and accounts (ADR 006).
 builder.AddTaxBuddyAccounts();
@@ -90,6 +104,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapThemePreference();
 app.MapAccountEndpoints();
+app.MapPictureEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 

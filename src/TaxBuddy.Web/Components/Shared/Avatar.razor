@@ -1,0 +1,22 @@
+@* A person's avatar (F06): their picture, or by default their initials on one of the prototype's three tones. Always
+   decorative: the name is shown beside it. *@
+<span class="avatar @Size @Display.Tone(Name) @(Picture is null ? "" : "has-picture")" aria-hidden="true">
+    @if (Picture is not null)
+    {
+        <img src="@Picture" alt="" loading="lazy" decoding="async" />
+    }
+    else
+    {
+        @Display.Initials(Name)
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    /// <summary>The picture's address, or null for the initials avatar.</summary>
+    [Parameter] public string? Picture { get; set; }
+
+    /// <summary>"sm" or "lg"; empty for the regular size.</summary>
+    [Parameter] public string? Size { get; set; }
+}

@@ -1,0 +1,26 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-16T07:00:31.412Z",
+  "results": [
+    {
+      "n": "account 390 light: form, label, no overflow, 44 px controls",
+      "ok": true,
+      "d": "{\"overflow\":false,\"form\":true,\"labelled\":true,\"button\":44,\"picker\":\"44px\"}"
+    },
+    {
+      "n": "account 1440 light: form, label, no overflow, 44 px controls",
+      "ok": true,
+      "d": "{\"overflow\":false,\"form\":true,\"labelled\":true,\"button\":36,\"picker\":\"44px\"}"
+    },
+    {
+      "n": "account 390 dark: form, label, no overflow, 44 px controls",
+      "ok": true,
+      "d": "{\"overflow\":false,\"form\":true,\"labelled\":true,\"button\":44,\"picker\":\"44px\"}"
+    },
+    {
+      "n": "real upload with unreachable storage keeps the picture and says so",
+      "ok": true,
+      "d": "{\"url\":\"/account?picture=failed\",\"banner\":\"We couldn't save your picture. Your current picture is unchanged; please try again.\"}"
+    }
+  ]
+}

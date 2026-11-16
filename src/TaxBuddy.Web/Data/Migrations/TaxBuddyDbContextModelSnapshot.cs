@@ -178,6 +178,11 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("phone_number_confirmed");
 
+                    b.Property<string>("PictureObject")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("picture_object");
+
                     b.Property<string>("Role")
                         .IsRequired()
                         .HasMaxLength(20)

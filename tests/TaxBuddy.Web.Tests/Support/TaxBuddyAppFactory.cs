@@ -12,11 +12,15 @@ namespace TaxBuddy.Web.Tests.Support;
 /// Hosts the app in memory against a given database (TEST-PLAN: web integration tests). Google sign-in is configured
 /// with dummy values unless <paramref name="withGoogle"/> is false; the test sign-in stands in for Google's round trip.
 /// </summary>
-public sealed class TaxBuddyAppFactory(string connectionString, bool withGoogle = true) : WebApplicationFactory<Program>
+public sealed class TaxBuddyAppFactory(string connectionString, bool withGoogle = true, bool withPictureStorage = true)
+    : WebApplicationFactory<Program>
 {
     public const string GoogleClientId = "test-client-id.apps.googleusercontent.com";
 
     public CapturedLogs Logs { get; } = new();
+
+    /// <summary>Replaces Supabase Storage (F06) unless the factory was created without picture storage.</summary>
+    public InMemoryPictureStorage Pictures { get; } = new();
 
     /// <summary>An address where nothing listens, so every database call fails at once (FT06, TP08).</summary>
     public const string UnreachableDatabase = "Host=127.0.0.1;Port=1;Database=none;Username=none;Password=none;Timeout=3";
@@ -34,6 +38,10 @@ public sealed class TaxBuddyAppFactory(string connectionString, bool withGoogle 
         {
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, TestExternalSignIn>();
             services.AddSingleton<ILoggerProvider>(Logs);
+            if (withPictureStorage)
+            {
+                services.AddSingleton<TaxBuddy.Web.Application.Pictures.IPictureStorage>(Pictures);
+            }
         });
         builder.ConfigureAppConfiguration((_, configuration) =>
             configuration.AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:TaxBuddy"] = connectionString }));

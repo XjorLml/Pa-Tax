@@ -59,6 +59,7 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | Service request, checklist, progress and documents `/accountants/{id}/request-service`, `/work/{id}` | Interactive Server | State shared by the two participants. File bytes go through endpoints, not the page connection ([private service workspaces](#private-service-workspaces)) |
 | Profile editor `/account/profile` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-16 by the owner's choice (C04 for this page, [F05](../specs/profile-editing/spec.md)). A failed or invalid save shows the form again with everything typed. There's no connection to lose, and it works without script. Adding or removing an experience row redraws the form. A stale save is refused through the profile's version |
 | Account `/account` | Static server rendering | Built 2026-11-16 (F02 BD10, prototype `meHTML`): menu links and the sign-out form only. Visitors see the visitor card, not a sign-in redirect |
+| Picture forms on Account: `POST /account/picture` (multipart) and `POST /account/picture/remove` | Static: plain forms posted to endpoints, which redirect back to `/account?picture=…#picture` | F06, 2026-11-16. The antiforgery token is checked after a 5 MB request limit is set, so an oversized upload is refused before it is read |
 | Account deletion `/account/delete` | Interactive Server | Rich forms (not built yet) |
 
 Apart from new chat, every interactive page requires sign-in, so only signed-in users hold a server connection (the "circuit"). Cost of this choice: each open interactive page holds one, and it drops when the server restarts. Drafts on interactive forms other than chat depend on open conflict [C04](README.md#history-and-unresolved-conflicts).
@@ -94,7 +95,7 @@ One table for the whole stack. The owner approved every choice in this table on 
 | Editor | VS Code with C# Dev Kit | Owner asked to use it, 2026-11-11 ([SETUP](SETUP.md#reproducibility-record)) |
 | CI | GitHub Actions, once the repository has a remote | Decided 2026-11-11 |
 
-Not used: Supabase's sign-in, live-update, storage and web API features; a JavaScript framework; a separate API project.
+Not used: Supabase's sign-in, live-update and web API features; a JavaScript framework; a separate API project. Supabase Storage is used for profile pictures only, in a private bucket reached from the server ([ADR 011](adr/011-profile-pictures-supabase-storage.md), 2026-11-16).
 
 ## Platform capability matrix
 
@@ -116,7 +117,7 @@ The server database is the only store of record.
 | Identity and mutation | Users, profiles and conversations get server-generated GUIDs. A message gets its GUID when the composer is shown, so a repeated submit stores one message (BR04). Profile updates carry a row version; a stale save gets a conflict state, not a silent overwrite |
 | Dates, instants, money | Instants are stored as UTC and converted to Asia/Manila in one display helper (BR07). Experience months, if D04 adds them, are `YYYY-MM` values without a zone. No money fields in release 1 |
 | Queries | The directory pages through a stable order with a unique ID tie-breaker (BR02): name A–Z, then ID, by default; "highest rated" orders by the computed average, review count, name, then ID, with unreviewed accountants last (D05, provisional). Messages are ordered by server receive time, then message ID |
-| Storage and ownership | Supabase's managed PostgreSQL ([ADR 007](adr/007-supabase-brevo-container-host.md)), through EF Core with the Npgsql provider. Interactive pages take a new context from a factory for each operation, because a context is not thread safe and a circuit lives much longer than a request. In the browser: the session cookie, the theme cookie `taxbuddy-theme` (`light` or `dark`, absent for System; one year, HttpOnly, SameSite=Lax; no personal data; F02 BD09, 2026-11-16), and unsent chat text in the tab's session storage (Proposed) |
+| Storage and ownership | Supabase's managed PostgreSQL ([ADR 007](adr/007-supabase-brevo-container-host.md)), through EF Core with the Npgsql provider. Interactive pages take a new context from a factory for each operation, because a context is not thread safe and a circuit lives much longer than a request. Profile pictures (F06): a private Supabase Storage bucket `profile-pictures`, one object per upload (`users/{account}/{random}.jpg`), with the current object's name in `users.picture_object`. In the browser: the session cookie, the theme cookie `taxbuddy-theme` (`light` or `dark`, absent for System; one year, HttpOnly, SameSite=Lax; no personal data; F02 BD09, 2026-11-16), and unsent chat text in the tab's session storage (Proposed) |
 | Schema evolution | EF Core migrations kept with the source. Production changes go through a migration bundle or a reviewed SQL script ([RELEASE](RELEASE.md#deployment)), not automatic migration at startup |
 | Failure/downgrade | Each migration step is atomic where the provider allows. A rollback plan is recorded with each release that changes the schema |
 | Ratings | One review per client and accountant, enforced by a unique constraint. The average and count are computed from the reviews, never stored by hand. The reviewer's short name is produced when the page is rendered |
@@ -235,6 +236,7 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Becomes the existing conversation if the pair already has one (per D06) |
 | `/account/profile` | Signed-in accountant, owner from the session only; `saved=1` after a save | Unsaved edits are kept through a failed, invalid or stale save. Deviation (F05): no confirmation when leaving with unsaved changes, and Save is not disabled while it runs, since both need script. A second submit is refused by the version check. Services are rows with a dropdown, as in the prototype (BD10) | A successful save redirects to `?saved=1`, so a reload doesn't save again. A visitor goes to sign-in and back; a client gets 403 "Only accountant accounts have a profile" |
 | `/account` | Anyone; content depends on who is signed in | None | Visitor card, or the account menu with sign-out (BD10) |
+| `/pictures/{accountId}` | GUID; `v` = the picture version | None | An accountant's picture for anyone (`public, immutable` when `v` matches); a client's picture for that client only (`private`); otherwise 404. JPEG with `nosniff` (F06) |
 | `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/`; service/file handling still requires D27 |
 | `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service`, `/work/{id}` | Authenticated participant and valid parent IDs; [private-workspace contract](#private-service-workspaces) | Draft request/task/note state retained on failed write; real file reselect/retry strategy decided at implementation | Missing/unauthorized is generic unavailable; proposed routes; durable metadata reloaded from server in the application |
 
@@ -291,7 +293,7 @@ Interactive components read the signed-in user from the authentication state the
 | Server failure | An error page with a support code (correlation ID) and a retry; never an empty list |
 | Connection lost on an interactive page | A reconnecting notice; typed text kept (R10) |
 
-- **Diagnostics:** event IDs, error category, duration and correlation ID only. Message text, email addresses, contact details and tokens are never logged. No telemetry service in release 1.
+- **Diagnostics:** `System.Net.Http.HttpClient` logs at Warning, so picture storage addresses (with account IDs) are not logged (F06). Event IDs, error category, duration and correlation ID only. Message text, email addresses, contact details and tokens are never logged. No telemetry service in release 1.
 - **Transport and forms:** HTTPS everywhere, with HSTS in production. Antiforgery protection on every form. All input is validated on the server.
 - **Abuse limits:** rate limits on sign-in, message sending and directory search, counted per server instance. Message length and profile field lengths are capped so a connection can't make the server hold unbounded data.
 - **Keys and secrets:** data-protection keys are persisted outside the app's files, so sessions survive restarts and redeployments. No secrets in the repository or in `appsettings*.json`.

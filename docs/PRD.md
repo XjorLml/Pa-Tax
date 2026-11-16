@@ -72,6 +72,7 @@ IDs stay stable when wording changes. R19–R23 come from the current user reque
 | R21 | Services engaged for a client have a checklist, organized under the relevant accountant and client | Each service has its own named tasks and statuses; a request is distinct from accepted work; who creates/accepts services and edits tasks follows D24–D25 | Required / Approved feature scope; save/request/accept model confirmed; other D24/D25 policies open |
 | R22 | Client and accountant track shared service progress and updates | Saved task progress, shared notes, author and time are visible to both participants; unsaved/failed changes are not presented as saved; client sign-off remains D25 | Required / Approved feature scope; status/progress policy proposed |
 | R23 | Both participants attach and download private documents associated with a service and optionally a checklist task | Correct service/task association, uploading/available/failed/retry states, validation errors and participant-only access. Production intake requires D26–D28 policies/storage | Required / Approved feature scope; file-policy details open |
+| R24 | Every signed-in user can add, change and remove their own profile picture. Without one, their avatar is their initials | An accountant's picture is public: header, directory card, profile. A client's is visible only to that client until chat (R06) shows it to their accountants. Uploads are JPEG, PNG or WebP up to 5 MB, saved as a 400 × 400 square with location and camera data removed ([ADR 011](adr/011-profile-pictures-supabase-storage.md), [F06](../specs/profile-pictures/spec.md)) | Required / Added 2026-11-16 at the owner's instruction |
 
 
 ## Business rules
@@ -161,7 +162,7 @@ All owned by lumabanls unless reassigned. Each row names the work it blocks.
 | D25 | Task/status/progress rules, task limits, who posts updates, client confirmation of completion and reopen policy. Prototype uses BR16 and accountant-only shared notes | R21–R22 |
 | D26 | Allowed document types, byte/count limits and per-user/service quotas. Prototype uses generated PDF/CSV/TXT and a 5 MiB demo limit; not a production decision | R23, upload validation |
 | D27 | Uploader/counterpart removal rights, retained history, file retention and account/relationship deletion. Prototype allows uploader-only confirmed removal in memory | R09, R23, privacy, RELEASE |
-| D28 | Private byte-storage provider, quarantine/scanning implementation, cleanup/recovery and operational costs. No provider selected; Supabase remains database-only until decided | R23, SDD storage, RELEASE |
+| D28 | Private byte-storage provider, quarantine/scanning implementation, cleanup/recovery and operational costs. No provider selected for service documents. Since 2026-11-16, profile pictures (R24) use a private Supabase Storage bucket ([ADR 011](adr/011-profile-pictures-supabase-storage.md)), which is a candidate for documents too | R23, SDD storage, RELEASE |
 
 
 The R19–R23 scope expansion is authorized for documentation and prototype by the current user request. Detailed policy proposals remain open. Earlier scope answers come from the setup sessions; formal approval of the full PRD and release remains pending.
