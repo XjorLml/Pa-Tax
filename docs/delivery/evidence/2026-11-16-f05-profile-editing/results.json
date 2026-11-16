@@ -1,0 +1,218 @@
+{
+  "base": "http://localhost:5240",
+  "date": "2026-11-16T05:02:07.183Z",
+  "edge": "Edg/157.0.4341.60",
+  "failures": 0,
+  "results": [
+    {
+      "name": "first sign-in reaches registration",
+      "ok": true,
+      "detail": "/register?returnUrl=%2F"
+    },
+    {
+      "name": "accountant from home lands on the editor",
+      "ok": true,
+      "detail": "/account/profile"
+    },
+    {
+      "name": "editor light 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor light 320px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor light 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor light 320px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor light 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor light 390px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor light 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor light 390px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor light 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor light 760px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor light 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor light 760px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor light 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor light 1440px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor light 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor light 1440px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor dark 320px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor dark 320px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor dark 320px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor dark 320px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor dark 390px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor dark 390px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor dark 390px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor dark 390px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor dark 760px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor dark 760px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor dark 760px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor dark 760px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "editor dark 1440px: no horizontal overflow",
+      "ok": true,
+      "detail": false
+    },
+    {
+      "name": "editor dark 1440px: every field labelled",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "editor dark 1440px: buttons at least 44 px",
+      "ok": true,
+      "detail": 44
+    },
+    {
+      "name": "editor dark 1440px: heading, nav and status",
+      "ok": true,
+      "detail": "{\"overflow\":false,\"unlabelled\":[],\"minButton\":44,\"h1\":\"My profile\",\"nav\":[\"Find an accountant\",\"My profile\"],\"status\":\"Not saved yet. Fill in your profile and save it. It appears in the directory once it's complete.\"}"
+    },
+    {
+      "name": "add experience redraws at #experience with one row",
+      "ok": true,
+      "detail": "/account/profile#experience"
+    },
+    {
+      "name": "invalid save: summary of 5 problems",
+      "ok": true,
+      "detail": "Nothing was saved. Please fix these 5 problems: Professional title can be at most 100 characters (now 101).Enter an email address like name@example.com.Enter the company.Enter the start month.Enter the end month, or tick \"I still work here\"."
+    },
+    {
+      "name": "invalid save: fields marked and input kept",
+      "ok": true,
+      "detail": "[\"Form.Title\",\"Form.Experience[0].Organization\",\"Form.Experience[0].Start\",\"Form.Experience[0].End\",\"Form.Email\"]"
+    },
+    {
+      "name": "invalid save: summary links point to fields",
+      "ok": true,
+      "detail": "#f-Title,#f-Email,#f-Experience-0-Organization,#f-Experience-0-Start,#f-Experience-0-End"
+    },
+    {
+      "name": "Enter in a field saves, not removes a row",
+      "ok": true,
+      "detail": "{\"url\":\"/account/profile?saved=1\",\"saved\":true,\"status\":\"Listed in the directory. View your public profile\",\"rows\":1,\"link\":\"/accountants/275b0199-c05a-49ab-b023-dd74c2555e36\"}"
+    },
+    {
+      "name": "complete profile is listed with a public link",
+      "ok": true,
+      "detail": "Listed in the directory. View your public profile"
+    },
+    {
+      "name": "public profile shows the saved details",
+      "ok": true,
+      "detail": ""
+    },
+    {
+      "name": "directory lists the new accountant",
+      "ok": true,
+      "detail": ""
+    }
+  ]
+}

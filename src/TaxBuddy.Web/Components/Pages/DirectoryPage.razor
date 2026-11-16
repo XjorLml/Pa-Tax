@@ -3,30 +3,34 @@
 @inject DirectoryService Directory
 @inject NavigationManager Navigation
 
+@* Phone app bar and tab bar (prototype phoneShell, F02 BD10). *@
+<PhoneBar Brand="true" />
+<PhoneTabs Current="directory" />
 <SeoHead Title="Find an accountant · Tax Buddy"
          Description="Browse accountants' experience and services, then contact the one you choose. Free to browse, no account needed."
          CanonicalPath="@Display.DirectoryPath(query)" />
 
-@* minmax(0, …) columns: without them the column grows to the search box's default width and the form overflows at 320 px. *@
-<section class="grid grid-cols-[minmax(0,1fr)] gap-6 rounded-2xl border border-border bg-hero px-5 py-7 md:grid-cols-[minmax(0,1fr)_220px] md:px-8 md:py-9" aria-labelledby="page-title">
-    <div>
-        <p class="text-[12px] font-semibold uppercase tracking-[0.12em] text-muted">Independent accountants. Direct connections.</p>
-        <h1 id="page-title" class="mt-2 text-[31px] md:text-[44px]">Good numbers start with the right person.</h1>
-        <p class="mt-3 max-w-[34rem] text-[16px] text-muted">
-            Find an accountant who understands your business. Explore their work, compare services, and start a conversation.
-        </p>
+@* The prototype's hero (heroHTML, Tax Buddy look; F02 BD10). minmax(0, …) columns: without them the column grows to the
+   search box's default width and the form overflows at 320 px. *@
+<section class="hero" aria-labelledby="page-title">
+    <div class="min-w-0">
+        <span class="eyebrow">Independent accountants. Direct connections.</span>
+        <h1 id="page-title">Good numbers start with the right person.</h1>
+        <p class="hero-sub">Find an accountant who understands your business. Explore their work, compare services, and start a conversation.</p>
     </div>
-    <div class="hidden flex-col items-center justify-center rounded-[18px] bg-hero-art p-5 text-center text-on-soft md:flex" aria-hidden="true">
-        <svg viewBox="0 0 100 100" width="96" height="96" fill="none">
+    <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 100 100" fill="none">
             <path d="M18 20h29c9 0 13 5 13 12v43c-5-4-10-6-17-6H18z" stroke="currentColor" stroke-width="2" />
             <path d="M60 32c8-9 17-12 27-12v49c-10 0-19 2-27 6M27 33h17m-17 9h17m-17 9h17M70 37l9-4m-9 13 9-4m-9 13 9-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             <path d="M9 63h30v17H23l-8 7v-7H9z" fill="currentColor" />
+            <path d="M17 71h14" stroke="var(--hero)" stroke-width="2" stroke-linecap="round" />
         </svg>
-        <p class="mt-2 font-heading text-[18px] leading-snug">A little clarity.<br />A good conversation.</p>
+        <p>A little clarity.<br />A good conversation.</p>
+        <span>People behind the numbers</span>
     </div>
 
     @* SDD render modes / C03: a plain GET form. See the .dir-form notes in Styles/app.css for why source order matters. *@
-    <form method="get" action="/" role="search" class="dir-form rounded-xl border border-border bg-surface p-4 md:col-span-2" aria-label="Find an accountant">
+    <form method="get" action="/" role="search" class="dir-form rounded-xl border border-border bg-surface p-4" aria-label="Find an accountant">
         <div class="dir-search">
             <label for="q" class="mb-2 block text-[13px] font-semibold">What can we help you with?</label>
             <div class="relative">
@@ -47,7 +51,7 @@
             </select>
         </div>
         <button type="submit" class="btn btn-primary dir-submit">Search</button>
-        <div class="dir-chips flex-wrap gap-2 max-md:hidden md:flex" role="group" aria-label="Filter by service">
+        <div class="dir-chips mt-1 flex-wrap gap-1.5 max-md:hidden md:flex" role="group" aria-label="Filter by service">
             <button type="submit" name="service" value="" class="chip" aria-pressed="@(query.Service is null ? "true" : "false")">All services</button>
             @foreach (var service in TaxBuddy.Web.Domain.ServiceCatalog.All)
             {
@@ -55,7 +59,7 @@
             }
         </div>
     </form>
-    <p class="flex items-center gap-2 text-[13px] text-muted md:col-span-2"><Icon Name="lock" Size="14" />Free to browse. No account needed to look around.</p>
+    <p class="trustline"><Icon Name="lock" Size="14" /><span>Free to browse. You only sign in when you send a message.</span></p>
 </section>
 
 <section class="mt-10" aria-labelledby="results-heading">

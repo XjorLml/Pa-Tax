@@ -1,0 +1,9 @@
+@* The Tax Buddy symbol without the wordmark (prototype brandSymbolHTML), light or dark like BrandLogo. Decorative. *@
+<img src="@Assets["images/taxbuddy-icon.svg"]" width="@Size" height="@Size" alt="" class="logo-light @Class" />
+<img src="@Assets["images/taxbuddy-icon-dark.svg"]" width="@Size" height="@Size" alt="" class="logo-dark @Class" />
+
+@code {
+    [Parameter] public int Size { get; set; } = 64;
+
+    [Parameter] public string? Class { get; set; }
+}

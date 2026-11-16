@@ -37,4 +37,14 @@ Theme switch in the application, 2026-11-16 (BD09):
 - [x] Add integration tests; build in Release; run all tests; run the browser check at four widths in both browser settings; review screenshots ([evidence](../../docs/delivery/evidence/2026-11-16-f02-theme-switch.md)).
 - [x] Update DESIGN, SDD, PRD D10, SETUP, STATUS and the documentation index.
 - [x] Run the database tests in an environment with the development database: 82 passed, 0 skipped, 2026-11-16 ([evidence](../../docs/delivery/evidence/2026-11-16-f02-theme-switch.md)).
-- [ ] Owner walkthrough of the switch, including whether its own row on phones is acceptable (gate G9).
+- [ ] Owner walkthrough of the switch, including whether its own row on phones is acceptable (gate G9). Since BD10 the switch is in the footer.
+
+Application aligned to the prototype, 2026-11-16 (BD10):
+
+- [x] Record the owner's instruction in CLAUDE.md, AGENTS.md, the prototype README and DESIGN; save it to the agent's memory.
+- [x] Read the prototype's render functions and styles for every built page.
+- [x] Rebuild the shell (site bar, phone app bar and tab bar, footer), sign-in and role, the new Account page, the profile editor and the legal pages; port the styles and tokens.
+- [x] Update the tests to the prototype's wording and fields: 149 passed, 0 skipped. Compare screenshots with the prototype at 390 and 1440 px; fix the gaps found ([evidence](../../docs/delivery/evidence/2026-11-16-f02-prototype-alignment.md)).
+- [x] Record the deviations in DESIGN, the SDD, and the F04 and F05 specs.
+- [x] Side-by-side check of F01's directory and profile pages against the prototype, and alignment, on 2026-11-16 ([evidence](../../docs/delivery/evidence/2026-11-16-f02-prototype-alignment.md#f01-pages-compared-and-aligned-later-the-same-day)).
+- [ ] Owner walkthrough of the aligned pages (G9).

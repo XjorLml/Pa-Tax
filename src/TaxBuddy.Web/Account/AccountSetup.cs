@@ -34,6 +34,7 @@ public static class AccountSetup
         var development = builder.Environment.IsDevelopment();
 
         services.AddCascadingAuthenticationState();
+        services.AddAuthorization();
         services.AddScoped<AccountService>();
 
         var authentication = services.AddAuthentication(options =>

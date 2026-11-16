@@ -1,11 +1,14 @@
 namespace TaxBuddy.Web.Domain;
 
 /// <summary>
-/// Provisional field length limits. PRD D04 leaves limits open; these are working values chosen at
-/// implementation so the database never holds unbounded text (SDD: abuse limits). Revisit with R05.
+/// Field length limits (PRD D04). Working values from F01, adopted by the owner on 2026-11-16 with R05 profile editing,
+/// so the database never holds unbounded text (SDD: abuse limits).
 /// </summary>
 public static class ProfileLimits
 {
+    /// <summary>At most this many experience entries (F05, 2026-11-16). Services are limited by the catalog.</summary>
+    public const int ExperienceEntries = 10;
+
     public const int DisplayName = 100;
     public const int Title = 100;
     public const int City = 80;
@@ -50,7 +53,31 @@ public sealed class AccountantProfile
         ConsentToShowContact = consentToShowContact;
     }
 
+    /// <summary>
+    /// Creates the profile of an accountant account (R05, F05). It starts unlisted: title, summary, services and the
+    /// contact consent are still missing (BR01).
+    /// </summary>
+    public static AccountantProfile CreateFor(Guid ownerAccountId, string displayName, string email)
+    {
+        if (ownerAccountId == Guid.Empty)
+        {
+            throw new ArgumentException("A profile needs its owner account.", nameof(ownerAccountId));
+        }
+
+        return new AccountantProfile(AccountantId.New(), Fit(displayName, ProfileLimits.DisplayName), "", null, "",
+            Fit(email, ProfileLimits.Email), null, null, consentToShowContact: false)
+        {
+            OwnerAccountId = ownerAccountId,
+        };
+    }
+
     public AccountantId Id { get; private set; }
+
+    /// <summary>The account that owns and alone may change this profile (R05). Null for synthetic seed profiles.</summary>
+    public Guid? OwnerAccountId { get; private set; }
+
+    /// <summary>Counts saves, so a save based on an older version is refused (SDD errors: changed by someone else).</summary>
+    public int Version { get; private set; }
 
     public string DisplayName { get; private set; } = "";
 
@@ -76,6 +103,45 @@ public sealed class AccountantProfile
     /// <summary>Whether the profile appears in the directory (PRD BR01).</summary>
     public bool IsListed => ListingRules.IsListedProfile(this);
 
+    /// <summary>Changes the profile's own fields. Text may be empty: an unfinished profile is saved but not listed (BR01).</summary>
+    public void Edit(string displayName, string title, string? city, string summary, string email, string? phone, string? website,
+        bool consentToShowContact)
+    {
+        DisplayName = Text(displayName, ProfileLimits.DisplayName, nameof(displayName));
+        Title = Text(title, ProfileLimits.Title, nameof(title));
+        City = Optional(city, ProfileLimits.City, nameof(city));
+        Summary = Text(summary, ProfileLimits.Summary, nameof(summary));
+        Email = Text(email, ProfileLimits.Email, nameof(email));
+        Phone = Optional(phone, ProfileLimits.Phone, nameof(phone));
+        Website = Optional(website, ProfileLimits.Website, nameof(website));
+        ConsentToShowContact = consentToShowContact;
+    }
+
+    /// <summary>Replaces the offered services, in the given order.</summary>
+    public void ReplaceServices(IEnumerable<(string Name, string Description)> services)
+    {
+        _services.Clear();
+        foreach (var (name, description) in services)
+        {
+            AddService(name, description);
+        }
+    }
+
+    /// <summary>Replaces the experience entries; at most <see cref="ProfileLimits.ExperienceEntries"/>.</summary>
+    public void ReplaceExperience(IEnumerable<(string Role, string Organization, YearMonth Start, YearMonth? End)> entries)
+    {
+        var list = entries.ToList();
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(list.Count, ProfileLimits.ExperienceEntries, nameof(entries));
+        _experience.Clear();
+        foreach (var (role, organization, start, end) in list)
+        {
+            AddExperience(role, organization, start, end);
+        }
+    }
+
+    /// <summary>Called once per successful save.</summary>
+    public void MarkSaved() => Version++;
+
     public void AddService(string name, string description)
     {
         var catalogName = ServiceCatalog.Find(name)
@@ -90,6 +156,11 @@ public sealed class AccountantProfile
 
     public void AddExperience(string role, string organization, YearMonth start, YearMonth? end)
     {
+        if (_experience.Count >= ProfileLimits.ExperienceEntries)
+        {
+            throw new InvalidOperationException($"A profile has at most {ProfileLimits.ExperienceEntries} experience entries.");
+        }
+
         if (end is { } e && e.CompareTo(start) < 0)
         {
             throw new ArgumentException("An experience entry cannot end before it starts.", nameof(end));
@@ -100,6 +171,13 @@ public sealed class AccountantProfile
             Text(organization, ProfileLimits.ExperienceText, nameof(organization)),
             start,
             end));
+    }
+
+    /// <summary>Provider-supplied text (the account's name and email) cut to fit, rather than refused.</summary>
+    private static string Fit(string? value, int max)
+    {
+        var trimmed = (value ?? "").Trim();
+        return trimmed.Length <= max ? trimmed : trimmed[..max];
     }
 
     // Text may be empty: an unfinished profile is saved but not listed (BR01).

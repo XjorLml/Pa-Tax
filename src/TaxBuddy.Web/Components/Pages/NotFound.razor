@@ -4,6 +4,8 @@
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
    message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
 
+<PhoneBar Title="@(isProfileAddress ? "Profile" : "Page not found")" Back="/" />
+
 @if (isProfileAddress)
 {
     <SeoHead Title="Profile no longer available · Tax Buddy" Description="This accountant profile is no longer available." CanonicalPath="/" />

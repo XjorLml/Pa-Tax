@@ -8,7 +8,7 @@ Start with [docs/README.md](docs/README.md), then read only the documents releva
 
 - [PRD](docs/PRD.md): approved behavior, stable requirement IDs, exclusions, acceptance outcomes.
 - [SDD](docs/SDD.md): technical contracts, sign-in and authorization rules, and dependency boundaries.
-- [DESIGN](docs/DESIGN.md): UI standards and explicitly scoped concepts, including the [prototype](prototypes/README.md).
+- [DESIGN](docs/DESIGN.md): UI standards and explicitly scoped concepts, including the [prototype](prototypes/README.md). Since 2026-11-16 the prototype is the origin of every page's design; record any deviation in DESIGN ([CLAUDE.md](CLAUDE.md)).
 - [SETUP](docs/SETUP.md): chosen toolchain and reproducible commands.
 - [DEVELOPMENT](docs/DEVELOPMENT.md): implementation and review practices.
 - [STATUS](docs/delivery/STATUS.md): delivery state and attributed evidence.

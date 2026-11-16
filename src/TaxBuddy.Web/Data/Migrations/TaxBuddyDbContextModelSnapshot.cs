@@ -237,6 +237,10 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("character varying(254)")
                         .HasColumnName("email");
 
+                    b.Property<Guid?>("OwnerAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("owner_account_id");
+
                     b.Property<string>("Phone")
                         .HasMaxLength(30)
                         .HasColumnType("character varying(30)")
@@ -254,6 +258,11 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("character varying(100)")
                         .HasColumnName("title");
 
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
                     b.Property<string>("Website")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)")
@@ -261,6 +270,10 @@ namespace TaxBuddy.Web.Data.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_accountant_profiles");
+
+                    b.HasIndex("OwnerAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_accountant_profiles_owner_account_id");
 
                     b.ToTable("accountant_profiles", (string)null);
                 });
@@ -297,6 +310,12 @@ namespace TaxBuddy.Web.Data.Migrations
 
             modelBuilder.Entity("TaxBuddy.Web.Domain.AccountantProfile", b =>
                 {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithOne()
+                        .HasForeignKey("TaxBuddy.Web.Domain.AccountantProfile", "OwnerAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_accountant_profiles_owner_account_id");
+
                     b.OwnsMany("TaxBuddy.Web.Domain.ExperienceEntry", "Experience", b1 =>
                         {
                             b1.Property<Guid>("AccountantProfileId")

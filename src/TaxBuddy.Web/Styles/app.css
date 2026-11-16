@@ -29,6 +29,19 @@
   --warn-soft: #FAEED4;
   --hero: #E9EDE1;
   --hero-art: #D9E1CD;
+  /* F02 BD10: from the prototype's Tax Buddy look. */
+  --primary-strong: #194735;
+  --ok: #245C46;
+  --ok-soft: #E5EEE4;
+  --t1: #E5EEE4;
+  --t2: #F3EBDC;
+  --t3: #E9EAF3;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 18px;
+  --r-pill: 999px;
+  --r-avatar: 14px;
+  --elev: 0 2px 4px rgba(25, 48, 41, .025);
 }
 
 /* dark-tokens: system */
@@ -52,6 +65,12 @@
     --warn-soft: #3D321C;
     --hero: #223328;
     --hero-art: #304631;
+    --primary-strong: #CBE8BA;
+    --ok: #B7D8A4;
+    --ok-soft: #2B402C;
+    --t1: #2B402C;
+    --t2: #3D3424;
+    --t3: #303344;
   }
 }
 
@@ -75,6 +94,12 @@
   --warn-soft: #3D321C;
   --hero: #223328;
   --hero-art: #304631;
+  --primary-strong: #CBE8BA;
+  --ok: #B7D8A4;
+  --ok-soft: #2B402C;
+  --t1: #2B402C;
+  --t2: #3D3424;
+  --t3: #303344;
 }
 
 /* Tailwind's dark: variant follows the same choice, so a future dark: class can't disagree with the tokens. */
@@ -119,6 +144,9 @@
   --color-warn-soft: var(--warn-soft);
   --color-hero: var(--hero);
   --color-hero-art: var(--hero-art);
+  --color-primary-strong: var(--primary-strong);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
 }
 
 @layer base {
@@ -204,9 +232,10 @@
     min-height: 44px;
     padding: 0 18px;
     border: 1px solid var(--ctl);
-    border-radius: 10px;
+    border-radius: 8px;
     background: var(--surface);
     color: var(--text);
+    font-size: 13px;
     font-weight: 600;
     text-decoration: none;
     cursor: pointer;
@@ -214,6 +243,7 @@
 
   .btn:hover {
     border-color: var(--primary);
+    background: var(--surface-2);
   }
 
   .btn-primary {
@@ -223,122 +253,1210 @@
   }
 
   .btn-primary:hover {
-    filter: brightness(1.08);
+    border-color: var(--primary-strong);
+    background: var(--primary-strong);
   }
 
-  .btn-small {
-    min-height: 44px;
-    padding: 0 14px;
+  /*
+    Prototype components (F02 BD10, 2026-11-16): ported from prototypes/index.html and taxbuddy.css (Tax Buddy look),
+    the design origin (CLAUDE.md). Names follow the prototype; buttons keep the app's btn-* modifiers.
+  */
+  .btn-ghost {
+    border-color: transparent;
+    background: transparent;
+    color: var(--primary);
+  }
+
+  .btn-ghost:hover {
+    background: var(--surface-2);
+  }
+
+  .btn-sm {
+    min-height: 36px;
+    padding: 0 12px;
     font-size: 13.5px;
   }
 
-  /* F04 header account area: "Sign in", or the name with "Sign out". */
-  .account-menu {
+  /* Prototype: phone controls are at least 44 px. */
+  @media (max-width: 47.4375rem) {
+    .btn-sm {
+      min-height: 44px;
+    }
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+
+  /* Site bar (desktopShell). Hidden on phones, where the app bar and tab bar take over (phoneShell). */
+  .sitebar {
+    display: none;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .sitebar-inner {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 32px;
+    min-height: 76px;
   }
 
-  .account-name {
-    max-width: 16rem;
-    overflow: hidden;
-    font-size: 13.5px;
-    font-weight: 600;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* Notices: an icon and text; the colour is never the only signal (DESIGN). */
-  .notice {
+  .sitenav {
     display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--surface-2);
+    flex: 1;
+    gap: 4px;
+    align-self: stretch;
+  }
+
+  .sitenav a {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 14px;
+    border-top: 2px solid transparent;
+    border-bottom: 2px solid transparent;
     color: var(--text);
+    font-size: 13px;
+    text-decoration: none;
   }
 
-  .notice > svg {
-    flex-shrink: 0;
-    margin-top: 3px;
+  .sitenav a:hover {
+    background: var(--surface-2);
   }
 
-  .notice-danger {
-    border-color: var(--danger);
-    background: var(--danger-soft);
+  .sitenav a.active {
+    border-bottom-color: var(--primary);
+    color: var(--primary);
+    font-weight: 700;
   }
 
-  .notice-danger > svg {
-    color: var(--danger);
-  }
-
-  .notice-warn {
-    border-color: var(--warn);
-    background: var(--warn-soft);
-  }
-
-  .notice-warn > svg {
-    color: var(--warn);
-  }
-
-  .field-error {
-    color: var(--danger);
-    font-size: 13.5px;
-    font-weight: 600;
-  }
-
-  /* F04 registration: one card per role, the whole card is the label. */
-  .choice {
+  .siteuser {
     display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 16px;
-    border: 1px solid var(--ctl);
-    border-radius: 12px;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .userlink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 0 8px;
+    border-radius: var(--r-md);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .userlink:hover,
+  .userlink.active {
+    background: var(--surface-2);
+  }
+
+  @media (min-width: 47.5rem) {
+    .sitebar {
+      display: block;
+    }
+  }
+
+  /* Phone app bar and tab bar (phoneShell). */
+  .appbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 56px;
+    padding: 6px 6px 6px 16px;
     background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .appbar.has-back {
+    padding-left: 4px;
+  }
+
+  .appbar-title {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-family: var(--font-heading);
+    font-size: 20px;
+    line-height: 1.25;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-pill);
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .icon-btn:hover {
+    background: var(--surface-2);
+  }
+
+  .tabbar {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    display: flex;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  .tabbar a {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 60px;
+    color: var(--muted);
+    font-size: 11px;
+    text-decoration: none;
+  }
+
+  .tabbar a[aria-current="page"] {
+    box-shadow: inset 0 3px 0 var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+  }
+
+  /* Leave room for the fixed tab bar. */
+  body:has(.tabbar) {
+    padding-bottom: 61px;
+  }
+
+  @media (min-width: 47.5rem) {
+    .appbar,
+    .tabbar {
+      display: none;
+    }
+
+    body:has(.tabbar) {
+      padding-bottom: 0;
+    }
+  }
+
+  /* A page's own heading row: shown on desktop, replaced by the app bar on phones. */
+  .desk-only {
+    display: none;
+  }
+
+  @media (min-width: 47.5rem) {
+    .desk-only {
+      display: revert;
+    }
+  }
+
+  /* Footer (footerHTML). */
+  .sitefoot {
+    margin-top: 40px;
+    padding-block: 28px;
+    background: var(--surface-2);
+    border-top: 1px solid var(--border);
+  }
+
+  .sitefoot-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px 24px;
+    color: var(--muted);
+  }
+
+  .sitefoot-note {
+    max-width: 350px;
+    font-size: 12px;
+  }
+
+  .infolinks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 16px;
+    font-size: 13.5px;
+  }
+
+  .infolinks a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+  }
+
+  /* Avatars with the prototype's three tones. */
+  .avatar {
+    display: grid;
+    flex: none;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--r-avatar);
+    background: var(--t1);
+    color: var(--text);
+    font: 700 15px/1 var(--font-heading);
+  }
+
+  .avatar.t2 { background: var(--t2); }
+  .avatar.t3 { background: var(--t3); }
+  .avatar.sm { width: 30px; height: 30px; font-size: 12px; border-radius: 9px; }
+  .avatar.lg { width: 72px; height: 72px; font-size: 24px; }
+
+  .sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  /* Centred card: sign-in and role choice (signinHTML). */
+  .center-col {
+    max-width: 420px;
+    margin: 16px auto;
+    text-align: center;
+  }
+
+  @media (min-width: 47.5rem) {
+    .center-col {
+      margin-top: 32px;
+      padding: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--elev);
+    }
+  }
+
+  .center-col h2 {
+    margin: 0 0 8px;
+    font-size: 21px;
+  }
+
+  .appdot-xl {
+    display: inline-block;
+    width: 64px;
+    height: 64px;
+    margin: 0 0 8px;
+  }
+
+  .stack {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0 10px;
+  }
+
+  .choices {
+    display: grid;
+    gap: 10px;
+    margin-top: 14px;
+    text-align: left;
+  }
+
+  .choice {
+    display: grid;
+    gap: 4px;
+    min-height: 44px;
+    padding: 16px;
+    text-align: left;
+    background: var(--surface);
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-lg);
+    color: var(--text);
+    font: inherit;
     cursor: pointer;
   }
 
   .choice:hover {
     border-color: var(--primary);
+    background: var(--surface-2);
   }
 
-  .choice:has(input:checked) {
-    border-color: var(--primary);
-    background: var(--primary-soft);
-    color: var(--on-soft);
+  .choice span {
+    color: var(--muted);
+    font-size: 13.5px;
   }
 
-  .choice input {
+  .check {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+    text-align: left;
+  }
+
+  .check input {
+    flex: none;
     width: 20px;
     height: 20px;
     margin-top: 2px;
-    flex-shrink: 0;
     accent-color: var(--primary);
   }
 
-  input[type="checkbox"] {
-    accent-color: var(--primary);
+  .check .hint {
+    display: block;
   }
 
-  /* Terms and privacy pages. */
-  .legal {
+  /* Feedback: banners, notes, states (prototype "Feedback"). */
+  .banner {
     display: flex;
-    max-width: 44rem;
-    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: 13.5px;
+    text-align: left;
+  }
+
+  .banner > svg {
+    flex: none;
+    margin-top: 1px;
+  }
+
+  .banner.warn { background: var(--warn-soft); color: var(--warn); }
+  .banner.danger { background: var(--danger-soft); color: var(--text); }
+  .banner.danger > svg { color: var(--danger); }
+
+  .note {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0 0;
+    padding: 10px 12px;
+    border-radius: var(--r-md);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  .note > svg {
+    flex: none;
+    margin-top: 2px;
+  }
+
+  .note.placeholder {
+    background: transparent;
+    border: 1px dashed var(--ctl);
+  }
+
+  .muted { color: var(--muted); }
+  .small { font-size: 12.5px; }
+
+  /* Account (meHTML). */
+  .me-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 14px;
+    padding: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev);
+  }
+
+  .me-card h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .menu {
+    margin: 0 0 14px;
+    padding: 0;
+    overflow: hidden;
+    list-style: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev);
+  }
+
+  .menu li + li {
+    border-top: 1px solid var(--border);
+  }
+
+  .mi {
+    display: flex;
+    align-items: center;
     gap: 12px;
-    margin-inline: auto;
+    width: 100%;
+    min-height: 56px;
+    padding: 12px 16px;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    text-decoration: none;
+    cursor: pointer;
   }
 
-  .legal h1 {
-    font-size: 30px;
+  a.mi:hover,
+  button.mi:hover {
+    background: var(--surface-2);
   }
 
-  .legal h2 {
+  .mi-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .mi-main small {
+    display: block;
+    color: var(--muted);
+    font-size: 12.5px;
+  }
+
+  /* Body links are underlined, as in the prototype; buttons, navigation and cards are not. */
+  .checklist a,
+  .err-summary a,
+  .status-line a,
+  .note a,
+  .banner a,
+  .prose a,
+  .check a,
+  .center-col p a {
+    text-decoration: underline;
+  }
+
+  /* Heading band of single-column pages (prototype .single-wrap .pane-head). Screen-reader only on phones. */
+  .pane-head {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .pane-head h1 {
+    margin: 0;
+    font-size: 20px;
+    line-height: 1.25;
+  }
+
+  @media (min-width: 47.5rem) {
+    .pane-head {
+      position: static;
+      display: flex;
+      justify-content: center;
+      width: auto;
+      height: auto;
+      min-height: 64px;
+      padding: 8px 32px;
+      overflow: visible;
+      clip-path: none;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pane-head h1 {
+      flex: 0 1 680px;
+      align-self: center;
+    }
+  }
+
+  /* Single-column pages (desktopMain "single"). */
+  .single-inner {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .single-inner > .infolinks {
+    justify-content: center;
+    margin-top: 22px;
+  }
+
+  .page-title {
+    margin: 0 0 16px;
+    font-size: 28px;
+  }
+
+  /* Forms (prototype "Forms"; the profile editor). */
+  .form fieldset {
+    min-width: 0;
+    margin: 0 0 22px;
+    padding: 0;
+    border: 0;
+  }
+
+  .form legend {
+    margin: 0 0 8px;
+    padding: 0;
+    color: var(--muted);
+    font: 600 12.5px/1.4 var(--font-body);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .field {
+    display: grid;
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+
+  .field label {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .req {
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .field input,
+  .field textarea,
+  .field select {
+    width: 100%;
+    min-height: 44px;
+    padding: 9px 12px;
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+  }
+
+  .field textarea {
+    min-height: 110px;
+    resize: vertical;
+  }
+
+  .field [aria-invalid="true"] {
+    border-width: 2px;
+    border-color: var(--danger);
+  }
+
+  .hint {
+    color: var(--muted);
+    font-size: 12.5px;
+    font-weight: 400;
+  }
+
+  .ferr {
+    color: var(--danger);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .row {
+    margin-bottom: 10px;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--app-bg);
+  }
+
+  .row-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .grid2 {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: start; /* an error under one month must not push the other down */
+    gap: 10px;
+  }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: var(--r-pill);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .pill.ok { background: var(--ok-soft); color: var(--ok); }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+
+  .status-line {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    margin: 0 0 10px;
+  }
+
+  .checklist {
+    margin: 0 0 18px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+
+  .checklist p {
+    margin: 0 0 8px;
+  }
+
+  .meter {
+    height: 8px;
+    margin: 0 0 10px;
+    overflow: hidden;
+    background: var(--surface-2);
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-pill);
+  }
+
+  .meter span {
+    display: block;
+    height: 100%;
+    background: var(--ok);
+  }
+
+  .checklist ul {
+    display: grid;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .checklist li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    font-size: 14px;
+  }
+
+  .checklist li.done {
+    color: var(--muted);
+  }
+
+  .checklist li.done svg {
+    color: var(--ok);
+  }
+
+  .err-summary {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: var(--danger-soft);
+    border: 1px solid var(--danger);
+    border-radius: var(--r-md);
+  }
+
+  .err-summary h2 {
+    margin: 0 0 6px;
+    color: var(--danger);
+    font: 700 15.5px/1.4 var(--font-body);
+  }
+
+  .err-summary ul {
+    margin: 0;
+    padding-left: 18px;
+    list-style: disc;
+  }
+
+  .err-summary.warn {
+    background: var(--warn-soft);
+    border-color: var(--warn);
+  }
+
+  .err-summary.warn h2 {
+    color: var(--warn);
+  }
+
+  .save-status {
+    min-height: 1.4em;
+    margin: 6px 0 0;
+    font-size: 13.5px;
+  }
+
+  .save-status.ok { color: var(--ok); }
+  .save-status.fail { color: var(--danger); }
+
+  .desk-footer {
+    max-width: 320px;
+    margin-top: 8px;
+  }
+
+  /* Information pages (infoPage in a narrow panel). */
+  .narrow {
+    max-width: 760px;
+    margin: 0 auto;
+  }
+
+  .panel {
+    margin: 24px 0;
+    padding: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev);
+  }
+
+  @media (min-width: 47.5rem) {
+    .panel {
+      padding: 32px;
+    }
+  }
+
+  .panel h1 {
+    margin: 0 0 12px;
+    font-size: 28px;
+  }
+
+  .prose .section {
+    margin-top: 18px;
+  }
+
+  .prose .section h3 {
+    margin: 0 0 8px;
+    color: var(--muted);
+    font: 600 12.5px/1.4 var(--font-body);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .prose .section p {
+    margin: 0;
+  }
+
+  /* F02 BD10: directory hero (prototype heroHTML, Tax Buddy look). */
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0 32px;
+    padding: 22px 16px;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    background: var(--hero);
+  }
+
+  .hero h1 {
+    max-width: 610px;
+    margin: 0 0 14px;
+    font-size: 31px;
+    line-height: 1.08;
+  }
+
+  .hero-sub {
+    max-width: 460px;
+    margin: 0;
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.65;
+  }
+
+  .eyebrow {
+    display: block;
+    margin-bottom: 10px;
+    color: var(--muted);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+
+  .hero-art {
+    display: none;
+  }
+
+  .hero .dir-form {
+    grid-column: 1 / -1;
+    margin-top: 16px;
+  }
+
+  .trustline {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: center;
+    gap: 8px;
+    margin: 14px 0 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  @media (min-width: 47.5rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) 210px;
+      padding: 28px;
+    }
+
+    .hero h1 {
+      font-size: clamp(34px, 4vw, 46px);
+      line-height: 1.06;
+    }
+
+    .hero-art {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-self: center;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 60px 60px 12px 12px;
+      background: var(--hero-art);
+      color: var(--text);
+      text-align: center;
+    }
+
+    .hero-art svg {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 10px;
+      color: var(--primary);
+    }
+
+    .hero-art p {
+      margin: 0;
+      font: 400 20px/1.2 var(--font-heading);
+      letter-spacing: -.02em;
+    }
+
+    .hero-art span {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font: 600 9px/1.5 var(--font-body);
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+  }
+
+  /* Directory cards (prototype cardHTML, Tax Buddy look). */
+  .card {
+    position: relative;
+    display: flex;
+    height: 100%;
+    flex-direction: column;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+    transition: border-color .15s;
+  }
+
+  .card:hover,
+  .card:focus-within {
+    border-color: var(--primary);
+  }
+
+  @media (min-width: 47.5rem) {
+    .card {
+      padding: 20px;
+    }
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card .avatar {
+    width: 48px;
+    height: 52px;
+    font: 400 21px/1 var(--font-heading);
+  }
+
+  .card h3 {
+    margin: 0;
+    font: 600 17px/1.25 var(--font-body);
+    letter-spacing: -.025em;
+  }
+
+  .card .sub {
+    margin-top: 4px;
+    font-size: 12px;
+  }
+
+  .card .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+    margin: 12px 0 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .card .facts span {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .card .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .card .tag {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+  }
+
+  .card .clamp-2 {
     margin-top: 12px;
-    font-size: 21px;
+    font-size: 13px;
+    line-height: 1.65;
+  }
+
+  .card-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 16px;
+  }
+
+  .card-foot::before {
+    content: "Read their story";
+    color: var(--muted);
+    font: 400 12px/1.5 var(--font-heading);
+  }
+
+  .card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  /* Profile (prototype profileBodyHTML, Tax Buddy look). */
+  .crumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 4px 0 16px;
+    color: var(--muted);
+    font-size: 13.5px;
+  }
+
+  .crumbs a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    text-decoration: underline;
+  }
+
+  .profile-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+    align-items: start;
+  }
+
+  .profile-main {
+    padding: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--surface);
+  }
+
+  .profile-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin: 0 0 14px;
+  }
+
+  .profile-head h1 {
+    margin: 0;
+    font-size: 28px;
+    line-height: 1.2;
+  }
+
+  .profile-head .sub {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .facts-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .facts-row li {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--app-bg);
+    font-size: 13.5px;
+  }
+
+  .facts-row strong {
+    font: 700 16px/1 var(--font-heading);
+  }
+
+  .profile-main .section {
+    margin: 22px 0;
+  }
+
+  .profile-main .section:last-child {
+    margin-bottom: 0;
+  }
+
+  .section-title {
+    margin: 0 0 8px;
+    font-size: 24px;
+    letter-spacing: -.02em;
+  }
+
+  .svc,
+  .contact,
+  .timeline {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .svc li {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+  }
+
+  .svc strong,
+  .timeline strong {
+    display: block;
+  }
+
+  .timeline {
+    gap: 12px;
+  }
+
+  .timeline li {
+    padding-left: 14px;
+    border-left: 2px solid var(--border);
+  }
+
+  .profile-aside {
+    display: grid;
+    gap: 14px;
+  }
+
+  .aside-card {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--primary);
+    border-radius: 10px;
+    background: var(--surface);
+    box-shadow: var(--elev);
+  }
+
+  .aside-card h2 {
+    margin: 18px 0 8px;
+    color: var(--muted);
+    font: 600 12px/1.4 var(--font-body);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+  }
+
+  .cta-hint {
+    margin: 8px 0 0;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .contact li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow-wrap: anywhere;
+  }
+
+  .profile-aside .note {
+    margin: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  /* Phones: the prototype keeps the Message action in a bar under the content (phoneShell footer). */
+  .phone-cta {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 20;
+    padding: 10px 16px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  body:has(.phone-cta) {
+    padding-bottom: 72px;
+  }
+
+  .aside-cta {
+    display: none;
+  }
+
+  /* Phones: the app bar's back arrow replaces the breadcrumb, and the contact card starts with its heading. */
+  @media (max-width: 47.4375rem) {
+    .crumbs {
+      display: none;
+    }
+
+    .aside-card h2 {
+      margin-top: 0;
+    }
+  }
+
+  @media (min-width: 47.5rem) {
+    .profile-grid {
+      grid-template-columns: minmax(0, 1fr) 340px;
+      gap: 32px;
+    }
+
+    .profile-main {
+      padding: 28px;
+    }
+
+    .profile-head h1 {
+      font-size: 34px;
+    }
+
+    .profile-aside {
+      position: sticky;
+      top: 20px;
+    }
+
+    .phone-cta {
+      display: none;
+    }
+
+    body:has(.phone-cta) {
+      padding-bottom: 0;
+    }
+
+    .aside-cta {
+      display: block;
+    }
+
+    .aside-card h2:first-child {
+      margin-top: 0;
+    }
   }
 
   /* Logo: BrandLogo writes both files; show the one for the current theme. */
@@ -456,14 +1574,15 @@
     .dir-form .dir-submit { width: auto; min-height: 50px; }
   }
 
+  /* Service buttons (prototype Tax Buddy look: 12 px, 6 px corners). */
   .chip {
     min-height: 36px;
-    padding: 0 14px;
+    padding: 0 10px;
     border: 1px solid var(--ctl);
-    border-radius: 999px;
+    border-radius: 6px;
     background: var(--surface);
     color: var(--text);
-    font-size: 13.5px;
+    font-size: 12px;
     cursor: pointer;
   }
 

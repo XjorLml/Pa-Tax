@@ -1,0 +1,392 @@
+@page "/account/profile"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using System.Globalization
+@using System.Security.Claims
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Profiles
+@using TaxBuddy.Web.Domain
+@inject ProfileEditorService Editor
+@inject NavigationManager Navigation
+@* F05 (PRD R05), laid out as the prototype's editorParts (F02 BD10). A static form posted to this page (C04 for this
+   page): a failed or invalid save shows the form again with everything typed. The owner is always the signed-in
+   account. Prototype parts not built yet: the portfolio fieldset (R12). *@
+
+<SeoHead Title="@($"{PageTitle} · Tax Buddy")" Description="Edit your accountant profile." CanonicalPath="/account/profile" />
+<PhoneBar Title="@PageTitle" Back="/account" />
+
+@if (!isAccountant)
+{
+    <StateMessage IconName="user" HeadingLevel="1" Title="Only accountants have a public profile" Text="You're signed in as a client.">
+        <a class="btn" href="/account">Back to account</a>
+    </StateMessage>
+}
+else if (loadFailed)
+{
+    <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't load your profile" Text="Please try again in a moment.">
+        <a class="btn btn-primary" href="/account/profile">Try again</a>
+    </StateMessage>
+}
+else if (Form is not null) @* Null only during the render Blazor makes while the profile is still loading. *@
+{
+    var steps = Form.ListingSteps();
+    var done = steps.Count(s => s.Done);
+    <DeskTitle Title="@PageTitle" />
+    <div class="single-inner">
+        <div class="form">
+            <p class="status-line">
+                <span class="pill @(IsListed ? "ok" : "warn")"><Icon Name="@(IsListed ? "check" : "alert")" Size="14" /> @(IsListed ? "Listed in the directory" : "Not listed yet")</span>
+                @if (IsListed)
+                {
+                    <a href="@Display.ProfilePath(status!.Id)">View public profile</a>
+                }
+            </p>
+
+            <div class="checklist">
+                <p>
+                    @if (done == steps.Count)
+                    {
+                        @(IsListed ? "Everything needed to be listed is filled in." : "Everything is filled in. Save to be listed.")
+                    }
+                    else
+                    {
+                        <strong>@done of @steps.Count</strong> @(" details needed to be listed")
+                    }
+                </p>
+                <div class="meter" aria-hidden="true"><span style="width: @(done * 100 / steps.Count)%"></span></div>
+                <ul>
+                    @foreach (var step in steps)
+                    {
+                        if (step.Done)
+                        {
+                            <li class="done"><Icon Name="check" Size="16" /><span>@step.Label<span class="sr-only"> (done)</span></span></li>
+                        }
+                        else
+                        {
+                            <li><Icon Name="plus" Size="16" /><a href="#@step.TargetId">Add: @(char.ToLowerInvariant(step.Label[0]) + step.Label[1..])</a></li>
+                        }
+                    }
+                </ul>
+            </div>
+
+            @if (errors.Count > 0)
+            {
+                <div class="err-summary" id="err-summary" tabindex="-1" role="alert">
+                    <h2>Fix @(errors.Count == 1 ? "this" : "these") before saving</h2>
+                    <ul>
+                        @foreach (var (key, message) in errors)
+                        {
+                            <li><a href="#@IdFor(key)">@message</a></li>
+                        }
+                    </ul>
+                </div>
+            }
+
+            @if (conflict)
+            {
+                @* No prototype counterpart (BD10 deviation): a save from an older tab, in the error-summary style. *@
+                <div class="err-summary warn" role="alert">
+                    <h2>This profile was changed in another tab or window</h2>
+                    <p>Nothing was saved. Your changes are still here: save again to replace the other changes, or <a href="/account/profile">reload</a> to see them instead.</p>
+                </div>
+            }
+
+            <form method="post" @formname="profile" @onsubmit="HandleAsync" novalidate>
+                <AntiforgeryToken />
+                @* Enter in a text field presses the first submit button: make that Save, not "Remove". *@
+                <button type="submit" name="command" value="save" class="sr-only" tabindex="-1" aria-hidden="true">Save</button>
+                <input type="hidden" name="Form.Version" value="@Form.Version" />
+
+                <fieldset>
+                    <legend>About you</legend>
+                    @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
+                    @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant")
+                    @Field("City", "City", Form.City, ProfileLimits.City, placeholder: "e.g. Makati City")
+                    <div class="field">
+                        <label for="f-summary">Career summary <span class="req">(needed to be listed)</span></label>
+                        <textarea id="f-summary" name="Form.Summary" rows="5" aria-invalid="@Invalid("Summary")"
+                                  aria-describedby="@DescribedBy("Summary", "f-summary-hint")">@Form.Summary</textarea>
+                        <span class="hint" id="f-summary-hint">@((Form.Summary ?? "").Length.ToString("N0", CultureInfo.InvariantCulture)) / @ProfileLimits.Summary.ToString("N0", CultureInfo.InvariantCulture) characters. The first lines appear in the directory.</span>
+                        @ErrorFor("Summary")
+                    </div>
+                </fieldset>
+
+                <fieldset id="experience">
+                    <legend>Experience</legend>
+                    @ErrorFor("Experience")
+                    @for (var i = 0; i < Form.Experience.Count; i++)
+                    {
+                        var row = Form.Experience[i];
+                        var n = i + 1;
+                        <div class="row">
+                            <div class="row-head">
+                                <span>Experience @n</span>
+                                <button type="submit" name="command" value="remove-experience:@i" formaction="/account/profile#experience" class="btn btn-ghost btn-sm">
+                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> experience @n</span>
+                                </button>
+                            </div>
+                            @Field($"Experience[{i}].Role", "Role", row.Role, ProfileLimits.ExperienceText, placeholder: "e.g. Senior tax associate")
+                            @Field($"Experience[{i}].Organization", "Company or practice", row.Organization, ProfileLimits.ExperienceText, placeholder: "e.g. Self-employed")
+                            <div class="grid2">
+                                @Field($"Experience[{i}].Start", "Start month", row.Start, null, type: "month", placeholder: "YYYY-MM")
+                                @Field($"Experience[{i}].End", "End month", row.Current ? "" : row.End, null, type: "month", placeholder: "YYYY-MM")
+                            </div>
+                            <label class="check">
+                                <input type="checkbox" name="Form.Experience[@i].Current" value="true" checked="@row.Current" />
+                                I work here now
+                            </label>
+                        </div>
+                    }
+                    @if (Form.Experience.Count < ProfileLimits.ExperienceEntries)
+                    {
+                        <button type="submit" id="add-exp" name="command" value="add-experience" formaction="/account/profile#experience" class="btn btn-sm">
+                            <Icon Name="plus" Size="16" /> Add experience
+                        </button>
+                    }
+                    <p class="muted small mt-2">Your years of experience on your card are counted from the earliest start month here.</p>
+                </fieldset>
+
+                <fieldset id="services">
+                    <legend>Services</legend>
+                    @for (var i = 0; i < Form.Services.Count; i++)
+                    {
+                        var row = Form.Services[i];
+                        var n = i + 1;
+                        var nameKey = $"Services[{i}].Name";
+                        <div class="row">
+                            <div class="row-head">
+                                <span>Service @n</span>
+                                <button type="submit" name="command" value="remove-service:@i" formaction="/account/profile#services" class="btn btn-ghost btn-sm">
+                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> service @n</span>
+                                </button>
+                            </div>
+                            <div class="field">
+                                <label for="@IdFor(nameKey)">Service</label>
+                                <select id="@IdFor(nameKey)" name="Form.@nameKey" aria-invalid="@Invalid(nameKey)" aria-describedby="@DescribedBy(nameKey)">
+                                    <option value="">Choose a service</option>
+                                    @foreach (var service in ServiceCatalog.All)
+                                    {
+                                        <option value="@service" selected="@(string.Equals(service, row.Name, StringComparison.Ordinal))">@service</option>
+                                    }
+                                </select>
+                                @ErrorFor(nameKey)
+                            </div>
+                            @Field($"Services[{i}].Description", "Short description", row.Description, ProfileLimits.ServiceDescription, placeholder: "What this includes")
+                        </div>
+                    }
+                    @if (Form.Services.Count < ServiceCatalog.All.Count)
+                    {
+                        <button type="submit" id="add-svc" name="command" value="add-service" formaction="/account/profile#services" class="btn btn-sm">
+                            <Icon Name="plus" Size="16" /> Add service
+                        </button>
+                    }
+                    <p class="muted small mt-2">No prices in release 1. Clients ask about pricing in chat.</p>
+                </fieldset>
+
+                <fieldset>
+                    <legend>Contact details</legend>
+                    @Field("Email", "Email", Form.Email, ProfileLimits.Email, type: "email", required: true, placeholder: "name@example.com")
+                    @Field("Phone", "Phone", Form.Phone, ProfileLimits.Phone, type: "tel", placeholder: "+63 900 000 0000")
+                    @Field("Website", "Website", Form.Website, ProfileLimits.Website, placeholder: "example.com")
+                    <label class="check">
+                        <input type="checkbox" id="f-consent" name="Form.ConsentToShowContact" value="true" checked="@Form.ConsentToShowContact" />
+                        <span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using Tax Buddy can see them, including people who aren't signed in.</span></span>
+                    </label>
+                </fieldset>
+
+                <p class="save-status @SaveStatusClass" role="status">@SaveStatusText</p>
+                <div class="desk-footer">
+                    <button type="submit" name="command" value="save" class="btn btn-primary btn-block">Save profile</button>
+                </div>
+            </form>
+        </div>
+    </div>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm(FormName = "profile")] private ProfileForm? Form { get; set; }
+
+    [SupplyParameterFromForm(FormName = "profile", Name = "command")] private string? Command { get; set; }
+
+    [SupplyParameterFromQuery(Name = "saved")] public string? SavedFlag { get; set; }
+
+    private Guid owner;
+    private bool isAccountant;
+    private bool loadFailed;
+    private bool justSaved;
+    private bool conflict;
+    private bool saveFailed;
+    private ListingStatus? status;
+    private IReadOnlyDictionary<string, string> errors = new Dictionary<string, string>();
+
+    private bool IsListed => status?.IsListed == true;
+
+    /// <summary>The prototype's title: "Create your profile" until the profile is listed.</summary>
+    private string PageTitle => IsListed ? "My profile" : "Create your profile";
+
+    private string SaveStatusClass => saveFailed ? "fail" : justSaved ? "ok" : "";
+
+    private string SaveStatusText =>
+        saveFailed ? "Not saved: we couldn't reach the server. Your changes are still here."
+        : !justSaved || status is null ? ""
+        : status.IsListed ? "Saved. Your profile is listed in the directory."
+        : "Saved. Not listed yet: add " + string.Join(", ", status.Missing) + ".";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = HttpContext?.User;
+        isAccountant = user?.FindFirst(ClaimTypes.Role)?.Value == AccountRoles.ValueOf(AccountRole.Accountant)
+                       && Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out owner);
+        if (!isAccountant)
+        {
+            ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden);
+            return;
+        }
+
+        try
+        {
+            var (saved, savedStatus) = await Editor.LoadAsync(owner, user!.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value);
+            status = savedStatus;
+            if (Form is null)
+            {
+                Form = saved;
+                justSaved = SavedFlag == "1" && status is not null;
+            }
+        }
+        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        {
+            if (Form is null)
+            {
+                loadFailed = true;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+            }
+        }
+    }
+
+    private async Task HandleAsync()
+    {
+        if (!isAccountant || Form is null)
+        {
+            return;
+        }
+
+        switch (Command)
+        {
+            case "add-experience":
+                if (Form.Experience.Count < ProfileLimits.ExperienceEntries)
+                {
+                    Form.Experience.Add(new ExperienceInput());
+                }
+
+                return;
+            case "add-service":
+                if (Form.Services.Count < ServiceCatalog.All.Count)
+                {
+                    Form.Services.Add(new ServiceInput());
+                }
+
+                return;
+        }
+
+        if (RemoveRow("remove-experience:", Form.Experience) || RemoveRow("remove-service:", Form.Services))
+        {
+            return;
+        }
+
+        switch (await Editor.SaveAsync(owner, Form))
+        {
+            case ProfileSaveResult.Saved:
+                // SDD forms: a successful post redirects back to the page, so a reload doesn't save again.
+                Navigation.NavigateTo("/account/profile?saved=1");
+                break;
+            case ProfileSaveResult.Invalid invalid:
+                errors = invalid.Errors;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status422UnprocessableEntity);
+                break;
+            case ProfileSaveResult.Conflict stale:
+                conflict = true;
+                Form.Version = stale.LatestVersion;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status409Conflict);
+                break;
+            default:
+                saveFailed = true;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+                break;
+        }
+    }
+
+    /// <summary>Handles a "remove-…:index" command for <paramref name="rows"/>; false when the command is another one.</summary>
+    private bool RemoveRow<T>(string prefix, List<T> rows)
+    {
+        if (Command?.StartsWith(prefix, StringComparison.Ordinal) != true)
+        {
+            return false;
+        }
+
+        if (int.TryParse(Command[prefix.Length..], NumberStyles.None, CultureInfo.InvariantCulture, out var index) && index < rows.Count)
+        {
+            rows.RemoveAt(index);
+        }
+
+        return true;
+    }
+
+    /// <summary>The prototype's field ids (f-name, f-exp-0-role, f-svc-0-name …) for a form path.</summary>
+    private static string IdFor(string key) => key switch
+    {
+        "DisplayName" => "f-name",
+        "Title" => "f-title",
+        "City" => "f-city",
+        "Summary" => "f-summary",
+        "Email" => "f-email",
+        "Phone" => "f-phone",
+        "Website" => "f-website",
+        "Experience" => "add-exp",
+        _ when key.StartsWith("Experience[", StringComparison.Ordinal) => "f-exp-" + RowPart(key, "Experience[") switch
+        {
+            (var i, "Organization") => $"{i}-org",
+            (var i, var field) => $"{i}-{field.ToLowerInvariant()}",
+        },
+        _ when key.StartsWith("Services[", StringComparison.Ordinal) => "f-svc-" + RowPart(key, "Services[") switch
+        {
+            (var i, "Description") => $"{i}-desc",
+            (var i, var field) => $"{i}-{field.ToLowerInvariant()}",
+        },
+        _ => "f-" + key.ToLowerInvariant(),
+    };
+
+    private static (string Index, string Field) RowPart(string key, string prefix)
+    {
+        var rest = key[prefix.Length..];
+        var close = rest.IndexOf(']', StringComparison.Ordinal);
+        return (rest[..close], rest[(close + 2)..]);
+    }
+
+    private string? Invalid(string key) => errors.ContainsKey(key) ? "true" : null;
+
+    private string? DescribedBy(string key, string? hint = null)
+    {
+        var ids = new[] { hint, errors.ContainsKey(key) ? IdFor(key) + "-err" : null }.Where(id => id is not null);
+        var joined = string.Join(" ", ids);
+        return joined.Length == 0 ? null : joined;
+    }
+
+    private RenderFragment ErrorFor(string key) => __builder =>
+    {
+        if (errors.TryGetValue(key, out var message))
+        {
+            <span class="ferr" id="@(IdFor(key) + "-err")">@message</span>
+        }
+    };
+
+    private RenderFragment Field(string key, string label, string? value, int? max, string type = "text", bool required = false, string? placeholder = null) => __builder =>
+    {
+        <div class="field">
+            <label for="@IdFor(key)">@label@(required ? " " : "")@if (required) {<span class="req">(needed to be listed)</span>}</label>
+            <input id="@IdFor(key)" name="Form.@key" type="@type" value="@value" maxlength="@max" placeholder="@placeholder"
+                   aria-invalid="@Invalid(key)" aria-describedby="@DescribedBy(key)" />
+            @ErrorFor(key)
+        </div>
+    };
+}

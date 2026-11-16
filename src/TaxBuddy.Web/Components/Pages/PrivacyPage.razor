@@ -4,27 +4,26 @@
 
 <SeoHead Title="Privacy · Tax Buddy" Description="What Tax Buddy keeps and who can see it. Draft pending legal review." CanonicalPath="/privacy" />
 
-<article class="legal" aria-labelledby="page-title">
+<PhoneBar Title="Privacy" Back="/" />
+
+@* Laid out as the prototype's infoPage in a narrow panel (F02 BD10). *@
+<div class="narrow">
+<article class="panel prose" aria-labelledby="page-title">
     <h1 id="page-title" tabindex="-1">Privacy</h1>
     <DraftLegalNotice />
 
-    <h2>What Tax Buddy keeps</h2>
-    <p>When you sign in with Google: your name and email address from Google, a Google identifier for your account, whether you're a client or an accountant, and when you agreed to these terms. Tax Buddy never sees your Google password. Later features will keep your profile, chats, reviews and private service work.</p>
+    <section class="section"><h3>What Tax Buddy keeps</h3><p>When you sign in with Google: your name and email address from Google, a Google identifier for your account, whether you're a client or an accountant, and when you agreed to these terms. Tax Buddy never sees your Google password. Later features will keep your profile, chats, reviews and private service work.</p></section>
 
-    <h2>Cookies</h2>
-    <p>A sign-in cookie keeps you signed in on that browser for up to 14 days of inactivity, until you sign out. A security cookie protects the site's forms, and a theme cookie remembers light or dark if you choose one. None are used for advertising or tracking.</p>
+    <section class="section"><h3>Cookies</h3><p>A sign-in cookie keeps you signed in on that browser for up to 14 days of inactivity, until you sign out. A security cookie protects the site's forms, and a theme cookie remembers light or dark if you choose one. None are used for advertising or tracking.</p></section>
 
-    <h2>What is public</h2>
-    <p>Accountant profiles, portfolio highlights, reviews and replies. A review shows the client's first name and last initial.</p>
+    <section class="section"><h3>What is public</h3><p>Accountant profiles, portfolio highlights, reviews and replies. A review shows the client's first name and last initial.</p></section>
 
-    <h2>What is private</h2>
-    <p>Client accounts are never publicly listed. Chats and service work will be visible only to the client and accountant involved. Your saved-accountant list is private to you.</p>
+    <section class="section"><h3>What is private</h3><p>Client accounts are never publicly listed. Chats and service work will be visible only to the client and accountant involved. Your saved-accountant list is private to you.</p></section>
 
-    <h2>Emails</h2>
-    <p>Tax Buddy will email you about new messages. The emails won't include the message text, and you can turn them off.</p>
+    <section class="section"><h3>Emails</h3><p>Tax Buddy will email you about new messages. The emails won't include the message text, and you can turn them off.</p></section>
 
-    <h2>Deleting your data</h2>
-    <p>You'll be able to delete your account from your account page. What happens to your chats and reviews is still being decided (decision D07).</p>
+    <section class="section"><h3>Deleting your data</h3><p>You'll be able to delete your account from your account page. What happens to your chats and reviews is still being decided (decision D07).</p></section>
 
-    <p class="text-[13px] text-muted">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
+    <p class="muted small mt-4">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
 </article>
+</div>

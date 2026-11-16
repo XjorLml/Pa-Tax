@@ -1,37 +1,44 @@
 ﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Sections
+@* Site shell from the prototype (F02 BD10): desktopShell from 760 px, phoneShell below it. Pages fill the phone app bar
+   (PhoneBar) and, on top-level screens, the phone tab bar (PhoneTabs). *@
 
 <a href="#main" class="skip-link">Skip to main content</a>
 
-<header class="border-b border-border bg-surface">
-    <div class="page-container flex flex-wrap items-center gap-x-8 gap-y-2 py-3">
-        <a href="/" class="py-1" aria-label="Tax Buddy home"><BrandLogo /></a>
-        <nav aria-label="Main">
-            <NavLink href="/" Match="NavLinkMatch.All"
-                     class="inline-flex min-h-11 items-center border-b-2 border-transparent font-semibold text-text no-underline [&.active]:border-primary">
-                Find an accountant
-            </NavLink>
+<header class="sitebar">
+    <div class="page-container sitebar-inner">
+        <a href="/" aria-label="Tax Buddy home"><BrandLogo /></a>
+        <nav class="sitenav" aria-label="Main">
+            @* Chats and Clients / My accountants join this list when those features are built. *@
+            <NavLink href="/" Match="NavLinkMatch.All">Find an accountant</NavLink>
         </nav>
-        <ThemeSwitch />
-        <AccountMenu />
+        <SiteUser />
     </div>
 </header>
+
+<SectionOutlet SectionName="@PhoneBar.Section" />
+<SectionOutlet SectionName="@DeskTitle.Section" />
 
 <main id="main" tabindex="-1" class="page-container flex-1 py-6 md:py-8">
     @Body
 </main>
 
-<footer class="border-t border-border bg-surface">
-    <div class="page-container flex flex-col gap-2 py-6 text-[13px] text-muted md:flex-row md:items-center md:justify-between">
+<footer class="sitefoot">
+    <div class="page-container sitefoot-inner">
         <BrandLogo Width="120" />
         @* PRD D09 proposal: Tax Buddy does not verify accountants. Wording still needs review. *@
-        <p>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</p>
-        @* PRD R16: the terms and privacy policy are reachable from every page. *@
-        <nav aria-label="Legal" class="flex gap-4">
-            <a href="/terms">Terms of use</a>
+        <span class="sitefoot-note">Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</span>
+        @* PRD R16: the terms and privacy policy are reachable from every page. About, Help and For accountants join when built. *@
+        <nav class="infolinks" aria-label="About Tax Buddy">
             <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
         </nav>
+        @* F02 BD09: kept at the user's request; the prototype has no theme control on the site (recorded deviation). *@
+        <ThemeSwitch />
     </div>
 </footer>
+
+<SectionOutlet SectionName="@PhoneTabs.Section" />
 
 <div id="blazor-error-ui" data-nosnippet>
     An unhandled error has occurred.

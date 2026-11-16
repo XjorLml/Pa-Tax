@@ -1,0 +1,14 @@
+@using Microsoft.AspNetCore.Components.Sections
+@* The prototype's single-page heading band (desktopMain "single-wrap" pane-head). On phones the app bar shows the title,
+   so the heading is kept for screen readers only. *@
+<SectionContent SectionName="@Section">
+    <div class="pane-head">
+        <h1 tabindex="-1">@Title</h1>
+    </div>
+</SectionContent>
+
+@code {
+    public const string Section = "desk-title";
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+}

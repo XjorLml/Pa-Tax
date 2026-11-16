@@ -61,6 +61,29 @@ Exclusions: no account-level setting, no change to the palette or the logo files
 |---|---|---|---|
 | BD09 / DESIGN; SDD forms and no-script rule | A visitor on any page presses Light, Dark or System in the header | The page reloads at the same address with that theme; the logo, colours and the pressed option agree; the choice is kept across pages and visits until changed; System removes it and follows the browser again; without script it still works; a forged post (no antiforgery token, unknown value or an off-site return address) changes nothing or returns home; the switch is keyboard reachable with visible focus, its buttons are at least 44 px, and phones show icons with the names kept for screen readers | Web integration tests; Edge at 320–1440 px in both browser settings; screenshot review |
 
+## Application aligned to the prototype, 2026-11-16 (BD10)
+
+The user instructed: "update the current implementation based on the prototype, that should be the origin of the design". The prototype is now the design origin for every page ([CLAUDE.md](../../CLAUDE.md)). Baseline: branch `feature/f02-f04-theme-switch-google-sign-in` with F02 and F04 staged, plus F05 unstaged.
+
+In scope:
+- The site shell from `desktopShell` and `phoneShell`: the top bar with logo, navigation and avatar, or a "Sign in" button; the phone app bar with back and title; the phone tab bar; the footer.
+- The Account page from `meHTML`.
+- Sign-in and role choice from `signinHTML`.
+- The profile editor from `editorParts`: status pill, listing checklist and meter, error summary, service rows with a dropdown, field labels, hints and messages, save status.
+- The legal pages from `infoPage`.
+- The tokens these use (`ok`, `ok-soft`, avatar tones, `primary-strong`, radii, elevation).
+
+Kept, and recorded as deviations from the prototype:
+1. The theme switch (BD09, asked for by the user) stays, moved from the header to the footer. The prototype has no theme control on the site.
+2. Pages stay static and work without script (SDD; C04 for the editor). Choice buttons can't be disabled until the box is ticked, the end month can't be disabled live, and there is no leave confirmation or "Saving…" spinner; the server checks and messages replace them.
+3. Links to features that aren't built yet are left out: Chats, Clients or My accountants, For accountants, About, Help, email settings, My reviews, Delete account, and the portfolio fieldset (R12).
+4. Microsoft sign-in is not offered until it is built.
+5. The editor's stale-save warning has no prototype counterpart; it uses the error-summary style.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD10 / DESIGN, prototype | Open the directory, a profile, sign-in, registration, Account, the profile editor and the legal pages, signed out, as a client and as an accountant, on phone and desktop, light and dark | Each page follows its prototype screen's layout, wording and states, apart from the recorded deviations. The behaviour of F01, F04 and F05 is unchanged, and their tests still pass | Web tests, Edge screenshots compared with the prototype |
+
 ## Name availability, 2026-11-16
 
 This was a preliminary web survey for D01 and the open rename task ([record](../../docs/delivery/evidence/2026-11-16-name-availability.md)), not clearance. It found active "TaxBuddy" tax products in the Philippines (taxbuddyph.com) and India (taxbuddy.com), and a live US TAXBUDDIES mark for tax services. IPOPHL, WIPO and domain registrars were not searched directly. Nothing was decided; D01 stays with the owner.

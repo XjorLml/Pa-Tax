@@ -1,0 +1,99 @@
+@page "/account"
+@using System.Security.Claims
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Profiles
+@using TaxBuddy.Web.Domain
+@inject ProfileEditorService Editor
+@* Account (prototype meHTML; F02 BD10). Static. Rows for features not built yet are left out until they exist:
+   service work (F03), reviews (R13), email settings (R08) and account deletion (R09). *@
+
+<SeoHead Title="Account · Tax Buddy" Description="Your Tax Buddy account." CanonicalPath="/account" />
+<PhoneBar Title="Account" />
+<PhoneTabs Current="account" />
+<DeskTitle Title="Account" />
+
+<div class="single-inner">
+
+    @if (user is null)
+    {
+        <div class="me-card">
+            <span class="avatar lg" aria-hidden="true"><Icon Name="user" Size="30" /></span>
+            <div>
+                <h2>You're browsing as a visitor</h2>
+                <p class="sub">Sign in to message accountants, or to publish your profile as an accountant.</p>
+            </div>
+        </div>
+        <a class="btn btn-primary btn-block" href="@AccountEndpoints.SignInPageAddress("/account")">Sign in</a>
+    }
+    else
+    {
+        <div class="me-card">
+            <span class="avatar lg @Display.Tone(name)" aria-hidden="true">@Display.Initials(name)</span>
+            <div>
+                <h2>@name</h2>
+                <p class="sub">@(isAccountant ? "Accountant" : "Client") · Signed in with @provider</p>
+            </div>
+        </div>
+        <ul class="menu">
+            @if (isAccountant)
+            {
+                <li>
+                    <a class="mi" href="/account/profile">
+                        <Icon Name="edit" />
+                        <span class="mi-main">My profile<small>@ProfileStatusText</small></span>
+                        <Icon Name="chevron" />
+                    </a>
+                </li>
+            }
+            <li>
+                <form method="post" action="@AccountEndpoints.SignOutPath">
+                    <AntiforgeryToken />
+                    <button type="submit" class="mi"><Icon Name="logout" /><span class="mi-main">Sign out</span></button>
+                </form>
+            </li>
+        </ul>
+    }
+
+    <nav class="infolinks" aria-label="About Tax Buddy">
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+    </nav>
+</div>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    private ClaimsPrincipal? user;
+    private string name = "";
+    private string provider = "";
+    private bool isAccountant;
+    private ListingStatus? status;
+    private bool statusUnavailable;
+
+    private string ProfileStatusText => statusUnavailable ? "Status unavailable right now"
+        : status?.IsListed == true ? "Listed in the directory" : "Not listed yet";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (HttpContext?.User.Identity?.IsAuthenticated != true)
+        {
+            return;
+        }
+
+        user = HttpContext.User;
+        name = user.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "Tax Buddy user";
+        provider = user.FindFirst(ClaimTypes.AuthenticationMethod)?.Value ?? "Google";
+        isAccountant = user.FindFirst(ClaimTypes.Role)?.Value == AccountRoles.ValueOf(AccountRole.Accountant);
+        if (isAccountant && Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var owner))
+        {
+            try
+            {
+                (_, status) = await Editor.LoadAsync(owner, name);
+            }
+            catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+            {
+                statusUnavailable = true;
+            }
+        }
+    }
+}

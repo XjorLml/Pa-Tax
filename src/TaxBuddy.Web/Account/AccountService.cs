@@ -17,6 +17,9 @@ public enum RegistrationOutcome
     Failed,
 }
 
+/// <summary>The outcome, and when signed in, the role the account actually has (another tab may have registered it first).</summary>
+public sealed record RegistrationResult(RegistrationOutcome Outcome, AccountRole? Role = null);
+
 /// <summary>
 /// What the sign-in and registration pages need (F04). Pages use this rather than Identity's managers, so components
 /// never depend on the data layer (SDD dependency rules).
@@ -40,11 +43,11 @@ public sealed class AccountService(
     /// Creates the account with the one chosen role (D03) and the agreement time (R16), links the provider sign-in and
     /// signs in. A repeated submit after success signs in to the account the first one created.
     /// </summary>
-    public async Task<RegistrationOutcome> RegisterAsync(AccountRole role)
+    public async Task<RegistrationResult> RegisterAsync(AccountRole role)
     {
         if (await signIn.GetExternalLoginInfoAsync() is not { } info)
         {
-            return RegistrationOutcome.NoPendingSignIn;
+            return new RegistrationResult(RegistrationOutcome.NoPendingSignIn);
         }
 
         if (await users.FindByLoginAsync(info.LoginProvider, info.ProviderKey) is { } existing)
@@ -71,7 +74,7 @@ public sealed class AccountService(
         {
             // SDD diagnostics: Identity's error codes only, never the email or name.
             logger.LogWarning("Account creation failed: {Codes}", string.Join(",", created.Errors.Select(e => e.Code)));
-            return RegistrationOutcome.Failed;
+            return new RegistrationResult(RegistrationOutcome.Failed);
         }
 
         try
@@ -81,7 +84,7 @@ public sealed class AccountService(
             {
                 logger.LogWarning("Linking the sign-in failed: {Codes}", string.Join(",", linked.Errors.Select(e => e.Code)));
                 await users.DeleteAsync(user);
-                return RegistrationOutcome.Failed;
+                return new RegistrationResult(RegistrationOutcome.Failed);
             }
         }
         catch (DbUpdateException)
@@ -90,17 +93,17 @@ public sealed class AccountService(
             await users.DeleteAsync(user);
             return await users.FindByLoginAsync(info.LoginProvider, info.ProviderKey) is { } winner
                 ? await SignInAsync(winner, info)
-                : RegistrationOutcome.Failed;
+                : new RegistrationResult(RegistrationOutcome.Failed);
         }
 
         return await SignInAsync(user, info);
     }
 
-    private async Task<RegistrationOutcome> SignInAsync(TaxBuddyUser user, ExternalLoginInfo info)
+    private async Task<RegistrationResult> SignInAsync(TaxBuddyUser user, ExternalLoginInfo info)
     {
         await signIn.SignInAsync(user, isPersistent: true, info.LoginProvider);
         await signIn.Context.SignOutAsync(IdentityConstants.ExternalScheme);
-        return RegistrationOutcome.SignedIn;
+        return new RegistrationResult(RegistrationOutcome.SignedIn, user.Role);
     }
 
     private static string? EmailOf(ExternalLoginInfo info) =>

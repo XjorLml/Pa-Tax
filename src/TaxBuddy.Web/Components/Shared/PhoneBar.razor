@@ -1,0 +1,31 @@
+@using Microsoft.AspNetCore.Components.Sections
+@* Phone app bar (prototype phoneShell): the logo on the directory, otherwise a back arrow and the screen title.
+   Hidden from 760 px, where the site bar takes over. The page keeps its own h1 for assistive technology. *@
+<SectionContent SectionName="@Section">
+    <header class="appbar @(Back is null ? "" : "has-back")">
+        @if (Back is not null)
+        {
+            <a class="icon-btn" href="@Back" aria-label="Back"><Icon Name="back" /></a>
+        }
+        @if (Brand)
+        {
+            <a href="/" class="appbar-title" aria-label="Tax Buddy home"><BrandLogo Width="150" /></a>
+        }
+        else
+        {
+            <p class="appbar-title" aria-hidden="true">@Title</p>
+        }
+    </header>
+</SectionContent>
+
+@code {
+    public const string Section = "phone-bar";
+
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Where the back arrow goes; no arrow when null.</summary>
+    [Parameter] public string? Back { get; set; }
+
+    /// <summary>Show the logo instead of a title (the directory).</summary>
+    [Parameter] public bool Brand { get; set; }
+}

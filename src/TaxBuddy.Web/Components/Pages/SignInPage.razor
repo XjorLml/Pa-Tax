@@ -1,48 +1,53 @@
 @page "/signin"
 @using TaxBuddy.Web.Account
 @inject AccountService Accounts
-@* F04: Google sign-in (PRD R04; DESIGN sign-in states). Static: a plain form posted to the account endpoint. *@
+@* F04 sign-in, laid out as the prototype's signinHTML (F02 BD10). Static: a plain form posted to the account endpoint.
+   Microsoft joins when it is built. *@
 
 <SeoHead Title="Sign in · Tax Buddy" Description="Sign in to Tax Buddy with your Google account." CanonicalPath="/signin" />
+<PhoneBar Title="Sign in" Back="@returnUrl" />
+<h1 class="sr-only" tabindex="-1">Sign in</h1>
 
 @if (signedInAs is not null)
 {
-    <StateMessage IconName="lock" HeadingLevel="1" Title="@($"You're signed in as {signedInAs}")">
-        <a class="btn btn-primary" href="@returnUrl">Continue</a>
+    <StateMessage IconName="check" Title="@($"You're signed in as {signedInAs}")">
+        <a class="btn" href="@returnUrl">Continue</a>
     </StateMessage>
 }
 else
 {
-    <section class="mx-auto flex max-w-md flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-8" aria-labelledby="page-title">
-        <h1 id="page-title" class="text-[28px]" tabindex="-1">Welcome to Tax Buddy</h1>
-        <p class="text-muted">Sign in to message accountants, or to publish your profile as an accountant. Browsing never needs an account.</p>
+    <div class="center-col">
+        <BrandIcon Size="64" Class="mx-auto mb-2" />
+        <h2>Welcome to Tax Buddy</h2>
+        <p>@Lead</p>
 
         @if (Error == "failed")
         {
-            <div class="notice notice-danger" role="alert">
+            <div class="banner danger" role="alert">
                 <Icon Name="alert" Size="18" />
-                <p>We couldn't sign you in with Google. Please try again.</p>
+                <div>We couldn't sign you in with Google. Please try again.</div>
             </div>
         }
 
         @if (googleAvailable)
         {
-            <form method="post" action="@AccountEndpoints.ExternalSignInPath">
+            <form method="post" action="@AccountEndpoints.ExternalSignInPath" class="stack">
                 <AntiforgeryToken />
                 <input type="hidden" name="provider" value="@AccountSetup.GoogleScheme" />
                 <input type="hidden" name="returnUrl" value="@returnUrl" />
-                <button type="submit" class="btn w-full">Continue with Google</button>
+                <button type="submit" class="btn btn-block">Continue with Google</button>
             </form>
-            <p class="text-[13px] text-muted">Tax Buddy never sees your Google password. The first time, you'll choose how you'll use Tax Buddy.</p>
         }
         else
         {
-            <div class="notice" role="status">
+            <div class="banner warn" role="status">
                 <Icon Name="lock" Size="18" />
-                <p>Google sign-in isn't set up on this site yet.</p>
+                <div>Google sign-in isn't set up on this site yet.</div>
             </div>
         }
-    </section>
+
+        <p class="muted small">Tax Buddy never sees your Google password.</p>
+    </div>
 }
 
 @code {
@@ -55,6 +60,12 @@ else
     private string returnUrl = "/";
     private string? signedInAs;
     private bool googleAvailable;
+
+    /// <summary>The prototype's lead varies with where the visitor is going.</summary>
+    private string Lead =>
+        returnUrl.StartsWith("/chats/new/", StringComparison.Ordinal) ? "Sign in to send your message to this accountant."
+        : returnUrl == "/account/profile" ? "Sign in to create your accountant profile. You'll choose “I'm an accountant” on the next step."
+        : "Sign in to message accountants, or to publish your profile as an accountant.";
 
     protected override async Task OnInitializedAsync()
     {

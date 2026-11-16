@@ -4,6 +4,8 @@
 
 The prototype was created on 2026-11-10 for the MAUI plan, then reworked for the web on 2026-11-11 ([ADR 005](../docs/adr/005-web-platform-blazor.md)). Earlier passes and their four visual directions remain in [DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md) as history. Tax Buddy is now the default; the earlier looks are comparison options.
 
+**Origin of the design (owner decision, 2026-11-16):** every page of the real site follows its screen here: layout, components, wording and states. Where the site can't, because it works without script, a linked feature isn't built yet, or the owner decided otherwise, the deviation is recorded in [DESIGN](../docs/DESIGN.md) ([CLAUDE.md](../CLAUDE.md)). The site's pages were aligned on 2026-11-16 ([F02 BD10](../specs/brand-design-refresh/spec.md#application-aligned-to-the-prototype-2026-11-16-bd10)).
+
 What it is not:
 - It does not authorize building these pages. Scope stays in the [PRD](../docs/PRD.md).
 - It is not accessibility evidence. TP06 in the [TEST-PLAN](../docs/delivery/TEST-PLAN.md) still runs on the real site.

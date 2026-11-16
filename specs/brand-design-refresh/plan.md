@@ -20,6 +20,14 @@ Theme switch in the application, 2026-11-16 (BD09):
 
 No database, migration, package or new client is involved. The endpoint belongs to the one web app, like the planned account endpoints, so it is not an API ([AGENTS](../../AGENTS.md)).
 
+Application aligned to the prototype, 2026-11-16 (BD10):
+- Each page was rebuilt from its prototype render function, with the prototype's base styles and `taxbuddy.css` ported into `Styles/app.css`.
+- New tokens: `ok`, `ok-soft`, `t1` to `t3`, `primary-strong`, radii, `elev`.
+- Shell pieces are placed by pages through Blazor sections: `PhoneBar`, `PhoneTabs` and `DeskTitle` in the layout's outlets; `SiteUser` in the site bar.
+- The editor's services became rows: the form model, validator and messages follow `editorParts` and `validateFormat`.
+- `CLAUDE.md` records the instruction that the prototype is the design origin.
+- Verification: the tests updated and passing; a comparison script screenshots the prototype and the app at 390 and 1440 px.
+
 ## Affected modules and contracts
 
 | Source | Change | Scenario |

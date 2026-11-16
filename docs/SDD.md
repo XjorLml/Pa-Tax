@@ -57,7 +57,9 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | New chat `/chats/new/{accountantId}` | Interactive Server; open to visitors | The one interactive page a visitor can open. It shows no private data. A visitor can type before signing in (R06); sending requires sign-in, and the draft survives sign-in in the tab's session storage. Until chat is built it is a static "coming soon" page (F01) |
 | My accountants (the client's shortlist) and the accountant's client list `/workspace`, `/clients/{id}` | Interactive Server | Private to one user |
 | Service request, checklist, progress and documents `/accountants/{id}/request-service`, `/work/{id}` | Interactive Server | State shared by the two participants. File bytes go through endpoints, not the page connection ([private service workspaces](#private-service-workspaces)) |
-| Profile editor and account `/account/profile`, `/account`, `/account/delete` | Interactive Server | Rich forms |
+| Profile editor `/account/profile` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-16 by the owner's choice (C04 for this page, [F05](../specs/profile-editing/spec.md)). A failed or invalid save shows the form again with everything typed. There's no connection to lose, and it works without script. Adding or removing an experience row redraws the form. A stale save is refused through the profile's version |
+| Account `/account` | Static server rendering | Built 2026-11-16 (F02 BD10, prototype `meHTML`): menu links and the sign-out form only. Visitors see the visitor card, not a sign-in redirect |
+| Account deletion `/account/delete` | Interactive Server | Rich forms (not built yet) |
 
 Apart from new chat, every interactive page requires sign-in, so only signed-in users hold a server connection (the "circuit"). Cost of this choice: each open interactive page holds one, and it drops when the server restarts. Drafts on interactive forms other than chat depend on open conflict [C04](README.md#history-and-unresolved-conflicts).
 
@@ -231,8 +233,9 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `/chats` | Signed-in user | Conversation list | Email links fall back here when the conversation can't be opened |
 | `/chats/{id}` | GUID; the user must be a participant | Unsent text kept across a lost connection and a reload of the tab | Not a participant, or unknown ID: "not available", never another user's content |
 | `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Becomes the existing conversation if the pair already has one (per D06) |
-| `/account/profile` | Signed-in accountant | Unsaved edits; confirmation on leave | A save that succeeded is reported as saved even if the next navigation fails |
-| `/account`, `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/`; service/file handling still requires D27 |
+| `/account/profile` | Signed-in accountant, owner from the session only; `saved=1` after a save | Unsaved edits are kept through a failed, invalid or stale save. Deviation (F05): no confirmation when leaving with unsaved changes, and Save is not disabled while it runs, since both need script. A second submit is refused by the version check. Services are rows with a dropdown, as in the prototype (BD10) | A successful save redirects to `?saved=1`, so a reload doesn't save again. A visitor goes to sign-in and back; a client gets 403 "Only accountant accounts have a profile" |
+| `/account` | Anyone; content depends on who is signed in | None | Visitor card, or the account menu with sign-out (BD10) |
+| `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/`; service/file handling still requires D27 |
 | `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service`, `/work/{id}` | Authenticated participant and valid parent IDs; [private-workspace contract](#private-service-workspaces) | Draft request/task/note state retained on failed write; real file reselect/retry strategy decided at implementation | Missing/unauthorized is generic unavailable; proposed routes; durable metadata reloaded from server in the application |
 
 A submit button is disabled while its operation runs, so a double click can't run it twice.

@@ -1,0 +1,21 @@
+@using TaxBuddy.Web.Account
+@* Site bar user area (prototype desktopShell): the avatar and name link to Account, or "Sign in". The prototype's
+   "For accountants" link joins when that page exists (R17). *@
+<div class="siteuser">
+    <AuthorizeView>
+        <Authorized>
+            @{ var name = context.User.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "Account"; }
+            <NavLink class="userlink" href="/account">
+                <span class="avatar sm @Display.Tone(name)" aria-hidden="true">@Display.Initials(name)</span>
+                <span>@name</span>
+            </NavLink>
+        </Authorized>
+        <NotAuthorized>
+            <a class="btn btn-primary btn-sm" href="@AccountEndpoints.SignInLinkFor(HttpContext)">Sign in</a>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+}

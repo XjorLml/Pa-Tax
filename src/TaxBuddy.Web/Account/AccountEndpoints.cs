@@ -25,6 +25,20 @@ public static class AccountEndpoints
         return error is null ? address : address + "&error=" + Uri.EscapeDataString(error);
     }
 
+    /// <summary>
+    /// "Sign in" from any page: back to that page afterwards, except from the sign-in pages themselves.
+    /// </summary>
+    public static string SignInLinkFor(HttpContext? context)
+    {
+        var current = LocalAddress.CurrentFor(context);
+        var back = current.StartsWith("/signin", StringComparison.Ordinal)
+                   || current.StartsWith(RegisterPath, StringComparison.Ordinal)
+                   || current.StartsWith("/account/signin", StringComparison.Ordinal)
+            ? "/"
+            : current;
+        return SignInPageAddress(back);
+    }
+
     public static string RegisterPageAddress(string? returnUrl) =>
         RegisterPath + "?returnUrl=" + Uri.EscapeDataString(LocalAddress.OrHome(returnUrl));
 

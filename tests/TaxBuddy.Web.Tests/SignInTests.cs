@@ -1,10 +1,10 @@
 using System.Net;
-using System.Text.RegularExpressions;
 using Microsoft.EntityFrameworkCore;
 using TaxBuddy.TestSupport;
 using TaxBuddy.Web.Account;
 using TaxBuddy.Web.Domain;
 using TaxBuddy.Web.Tests.Support;
+using static TaxBuddy.Web.Tests.Support.FormPosts;
 
 namespace TaxBuddy.Web.Tests;
 
@@ -12,7 +12,7 @@ namespace TaxBuddy.Web.Tests;
 /// F04 Google sign-in and registration through the whole app (GS01–GS08, GS10). The test sign-in stands in for
 /// Google's round trip; cancel and error use Google's real callback address with a real state value.
 /// </summary>
-public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<EmptyAppFixture>
+public sealed class SignInTests(EmptyAppFixture app) : IClassFixture<EmptyAppFixture>
 {
     private const string StartPage = "/accountants/0193a6c0-0000-7000-8000-000000000001?from=test";
 
@@ -30,7 +30,7 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
         var html = await form.ReadHtmlAsync();
         Assert.Equal(HttpStatusCode.OK, form.StatusCode);
         Assert.Contains("How will you use Tax Buddy?", html);
-        Assert.Contains("ana.reyes@example.test", html);
+        Assert.Contains("Signed in with Google. Choose one: an account is either a client or an accountant.", html);
         Assert.Contains("""<a href="/terms">Terms of use</a>""", html);
 
         var registered = await PostRegisterAsync(client, html, role: "client", agree: true);
@@ -39,11 +39,12 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
         var cookies = registered.Headers.GetValues("Set-Cookie").Select(c => c[..c.IndexOf('=')]).ToList();
         Assert.Contains(".AspNetCore.Identity.Application", cookies);
 
-        var home = await client.GetAsync("/");
-        var homeHtml = await home.ReadHtmlAsync();
+        var homeHtml = await (await client.GetAsync("/")).ReadHtmlAsync();
+        Assert.Matches("""<a(?=[^>]*class="userlink)(?=[^>]*href="/account")[^>]*>""", homeHtml); // prototype: avatar and name link to Account
         Assert.Contains("Ana Reyes", homeHtml);
-        Assert.Contains("· Client", homeHtml);
-        Assert.Contains(">Sign out</button>", homeHtml);
+        var account = await (await client.GetAsync("/account")).ReadHtmlAsync();
+        Assert.Contains("Client · Signed in with Google", account);
+        Assert.Contains("Sign out</span></button>", account);
 
         await using var db = app.Schema.CreateContext();
         var user = await db.Users.SingleAsync(u => u.Email == "ana.reyes@example.test");
@@ -65,11 +66,11 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
 
         var registered = await PostRegisterAsync(client, html, role: "accountant", agree: true);
 
-        Assert.Equal("/", Target(registered));
+        Assert.Equal("/account/profile", Target(registered)); // F05: from the home page, straight to the profile editor
         await using var db = app.Schema.CreateContext();
         Assert.Equal(AccountRole.Accountant, (await db.Users.SingleAsync(u => u.Email == "ben.cruz@example.test")).Role);
         Assert.Empty(await db.AccountantProfiles.ToListAsync()); // BR01: nothing listed until R05
-        Assert.Contains("· Accountant", await (await client.GetAsync("/terms")).ReadHtmlAsync());
+        Assert.Contains("Accountant · Signed in with Google", await (await client.GetAsync("/account")).ReadHtmlAsync());
     }
 
     [DatabaseTheory]
@@ -88,10 +89,7 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains(error, again);
-        if (role == "client")
-        {
-            Assert.Matches("""value="client" checked""", again);
-        }
+        Assert.Contains("""value="client" class="choice" """.Trim(), again); // both choices still offered
 
         Assert.DoesNotContain(response.Headers.TryGetValues("Set-Cookie", out var cookies) ? cookies : [],
             c => c.StartsWith(".AspNetCore.Identity.Application=", StringComparison.Ordinal));
@@ -183,10 +181,6 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
 
     private static string NewKey() => Guid.NewGuid().ToString("N");
 
-    /// <summary>A redirect's path and query: endpoints send relative addresses, Blazor pages absolute ones.</summary>
-    internal static string? Target(HttpResponseMessage response) =>
-        response.Headers.Location is { } location ? (location.IsAbsoluteUri ? location.PathAndQuery : location.OriginalString) : null;
-
     /// <summary>The browser comes back from Google: the test sign-in, then the site's callback (as Google's handler redirects).</summary>
     private static async Task<HttpResponseMessage> ArriveFromGoogleAsync(HttpClient client, string key, string email, string name)
     {
@@ -197,7 +191,7 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
 
     private static Task<HttpResponseMessage> PostRegisterAsync(HttpClient client, string registerPage, string role, bool agree)
     {
-        var fields = HiddenFields(registerPage);
+        var fields = HiddenFields(registerPage, "How will you use Tax Buddy?");
         fields["Form.Role"] = role;
         if (agree)
         {
@@ -208,35 +202,11 @@ public sealed partial class SignInTests(EmptyAppFixture app) : IClassFixture<Emp
         return client.PostAsync(AccountEndpoints.RegisterPath, new FormUrlEncodedContent(fields));
     }
 
-    internal static string Token(string html) =>
-        TokenPattern().Match(html) is { Success: true } m ? m.Groups[1].Value : throw new InvalidOperationException("No antiforgery token on the page.");
-
-    internal static FormUrlEncodedContent Form(string token, params (string Name, string Value)[] fields) =>
-        new(new Dictionary<string, string>(fields.Select(f => KeyValuePair.Create(f.Name, f.Value)))
-        {
-            ["__RequestVerificationToken"] = token,
-        });
-
-    /// <summary>The registration form's hidden fields: antiforgery token, Blazor's form name and the return address.</summary>
-    private static Dictionary<string, string> HiddenFields(string html)
-    {
-        var form = html[html.IndexOf("""<form method="post" """, html.IndexOf("How will you use Tax Buddy?", StringComparison.Ordinal), StringComparison.Ordinal)..];
-        form = form[..form.IndexOf("</form>", StringComparison.Ordinal)];
-        return HiddenPattern().Matches(form).ToDictionary(m => m.Groups[1].Value, m => m.Groups[2].Value);
-    }
-
-    [GeneratedRegex("""name="__RequestVerificationToken" value="([^"]+)" """)]
-    private static partial Regex TokenPattern();
-
-    [GeneratedRegex("""<input type="hidden" name="([^"]+)" value="([^"]*)" """)]
-    private static partial Regex HiddenPattern();
 }
 
 /// <summary>F04 checks that need no database: the sign-in page, the challenge, cancel and failure, legal pages.</summary>
 public sealed class SignInWithoutDatabaseTests : IDisposable
 {
-    private static string? Target(HttpResponseMessage response) => SignInTests.Target(response);
-
     private readonly TaxBuddyAppFactory factory = new(TaxBuddyAppFactory.UnreachableDatabase);
     private readonly TaxBuddyAppFactory withoutGoogle = new(TaxBuddyAppFactory.UnreachableDatabase, withGoogle: false);
 
@@ -246,7 +216,7 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
         var html = await factory.CreateHttpsClient().GetHtmlAsync("/signin?returnUrl=" + Uri.EscapeDataString("/accountants/x"));
 
         Assert.Contains("Welcome to Tax Buddy", html);
-        Assert.Contains($"""<form method="post" action="{AccountEndpoints.ExternalSignInPath}">""", html);
+        Assert.Contains($"""<form method="post" action="{AccountEndpoints.ExternalSignInPath}" """.Trim(), html);
         Assert.Contains("""name="provider" value="Google" """.Trim(), html);
         Assert.Contains("""name="returnUrl" value="/accountants/x" """.Trim(), html);
         Assert.Contains("Continue with Google", html);
@@ -257,10 +227,10 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
     public async Task Continue_with_Google_sends_the_browser_to_Google_with_the_site_callback()
     {
         var client = factory.CreateHttpsClient();
-        var token = SignInTests.Token(await client.GetHtmlAsync("/signin"));
+        var token = Token(await client.GetHtmlAsync("/signin"));
 
         var response = await client.PostAsync(AccountEndpoints.ExternalSignInPath,
-            SignInTests.Form(token, ("provider", "Google"), ("returnUrl", "/accountants/x")));
+            Form(token, ("provider", "Google"), ("returnUrl", "/accountants/x")));
 
         Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
         var location = response.Headers.Location!.AbsoluteUri;
@@ -280,7 +250,7 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
         var fields = new List<(string, string)> { ("provider", provider), ("returnUrl", "/") };
         var content = token is null
             ? new FormUrlEncodedContent(fields.ToDictionary(f => f.Item1, f => f.Item2))
-            : SignInTests.Form(SignInTests.Token(await client.GetHtmlAsync("/signin")), [.. fields]);
+            : Form(Token(await client.GetHtmlAsync("/signin")), [.. fields]);
 
         var response = await client.PostAsync(AccountEndpoints.ExternalSignInPath, content);
 
@@ -335,8 +305,8 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
 
         Assert.Contains("Google sign-in isn't set up on this site yet.", html);
         Assert.DoesNotContain("Continue with Google", html);
-        var token = SignInTests.Token(html); // the theme switch's form still has one
-        var response = await client.PostAsync(AccountEndpoints.ExternalSignInPath, SignInTests.Form(token, ("provider", "Google"), ("returnUrl", "/")));
+        var token = Token(html); // the theme switch's form still has one
+        var response = await client.PostAsync(AccountEndpoints.ExternalSignInPath, Form(token, ("provider", "Google"), ("returnUrl", "/")));
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
@@ -350,7 +320,7 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains($">{heading}</h1>", html);
-        Assert.Contains("Draft, not reviewed legal text.", html);
+        Assert.Contains("Draft outline for review. This is not legal text yet (decision D10).", html);
         Assert.Contains(LegalText.CurrentVersion, html);
     }
 
@@ -359,7 +329,7 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
     {
         var html = await (await factory.CreateHttpsClient().GetAsync("/no-such-page")).ReadHtmlAsync();
 
-        Assert.Matches("""<a href="/terms"[^>]*>Terms of use</a>""", html);
+        Assert.Matches("""<a href="/terms"[^>]*>Terms</a>""", html);
         Assert.Matches("""<a href="/privacy"[^>]*>Privacy</a>""", html);
         Assert.Contains("""href="/signin?returnUrl=%2Fno-such-page">Sign in</a>""", html);
     }
@@ -374,9 +344,9 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
     private async Task<(HttpClient Client, string State)> StartGoogleSignInAsync(string returnUrl)
     {
         var client = factory.CreateHttpsClient();
-        var token = SignInTests.Token(await client.GetHtmlAsync("/signin"));
+        var token = Token(await client.GetHtmlAsync("/signin"));
         var challenge = await client.PostAsync(AccountEndpoints.ExternalSignInPath,
-            SignInTests.Form(token, ("provider", "Google"), ("returnUrl", returnUrl)));
+            Form(token, ("provider", "Google"), ("returnUrl", returnUrl)));
         var query = System.Web.HttpUtility.ParseQueryString(challenge.Headers.Location!.Query);
         return (client, query["state"]!);
     }

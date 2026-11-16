@@ -1,5 +1,7 @@
 # F04: Google sign-in and registration
 
+Amended 2026-11-16 by [F02 BD10](../brand-design-refresh/spec.md#application-aligned-to-the-prototype-2026-11-16-bd10): the pages now follow the prototype. The header shows the avatar and name, linking to a new Account page, and "Sign out" lives there. The role is chosen with two large choice buttons, and the footer links read Privacy and Terms. Behaviour is unchanged.
+
 Governing requirements: [PRD](../../docs/PRD.md) R04 (Google part) and R16 (agreement at first sign-in), with BR07 for stored times. Contracts: [SDD sign-in](../../docs/SDD.md#sign-in-sessions-and-authorization), [ADR 006](../../docs/adr/006-web-sign-in.md), [DESIGN states](../../docs/DESIGN.md#screen-and-component-states). Approach: [plan](plan.md). Tracking: [tasks](tasks.md).
 
 ## Intent and scope

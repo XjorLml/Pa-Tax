@@ -46,6 +46,12 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             profile.Property(p => p.Website).HasMaxLength(ProfileLimits.Website);
             profile.Ignore(p => p.IsListed);
 
+            // F05: one profile per accountant account, deleted with the account (BR06). Seed profiles have no owner.
+            profile.HasIndex(p => p.OwnerAccountId).IsUnique();
+            profile.HasOne<TaxBuddyUser>().WithOne().HasForeignKey<AccountantProfile>(p => p.OwnerAccountId)
+                .OnDelete(DeleteBehavior.Cascade);
+            profile.Property(p => p.Version).IsConcurrencyToken();
+
             profile.OwnsMany(p => p.Services, service =>
             {
                 service.ToTable("accountant_services");

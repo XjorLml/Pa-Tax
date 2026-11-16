@@ -47,6 +47,18 @@ public static class Display
         return initials.Length > 0 ? initials : "?";
     }
 
+    /// <summary>The prototype's avatar tone (<c>tone()</c> in prototypes/index.html): t1, t2 or t3 from the name.</summary>
+    public static string Tone(string name)
+    {
+        var h = 0;
+        foreach (var c in name)
+        {
+            h = (h * 31 + c) % 997;
+        }
+
+        return "t" + (h % 3 + 1);
+    }
+
     public static string YearsOfExperience(int years) => years == 1 ? "1 year's experience" : $"{years} years' experience";
 
     public static string AccountantCount(int count) => count == 1 ? "1 accountant" : $"{count} accountants";

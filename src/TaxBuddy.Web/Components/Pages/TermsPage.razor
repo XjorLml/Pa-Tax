@@ -3,27 +3,26 @@
 
 <SeoHead Title="Terms of use · Tax Buddy" Description="The terms for using Tax Buddy. Draft pending legal review." CanonicalPath="/terms" />
 
-<article class="legal" aria-labelledby="page-title">
+<PhoneBar Title="Terms of use" Back="/" />
+
+@* Laid out as the prototype's infoPage in a narrow panel (F02 BD10). *@
+<div class="narrow">
+<article class="panel prose" aria-labelledby="page-title">
     <h1 id="page-title" tabindex="-1">Terms of use</h1>
     <DraftLegalNotice />
 
-    <h2>Using Tax Buddy</h2>
-    <p>Browsing is free and needs no account. You sign in with your Google account to message accountants, review them or publish a profile. Signing in with Microsoft is planned.</p>
+    <section class="section"><h3>Using Tax Buddy</h3><p>Browsing is free and needs no account. You sign in with your Google account to message accountants, review them or publish a profile. Signing in with Microsoft is planned.</p></section>
 
-    <h2>Your account</h2>
-    <p>When you first sign in you choose to be a client or an accountant. An account is one or the other. You agree to these terms and the privacy policy when you create your account.</p>
+    <section class="section"><h3>Your account</h3><p>When you first sign in you choose to be a client or an accountant. An account is one or the other. You agree to these terms and the privacy policy when you create your account.</p></section>
 
-    <h2>Accountant profiles</h2>
-    <p>Accountants write their own profiles and are responsible for what they say. Tax Buddy doesn't check licences or qualifications.</p>
+    <section class="section"><h3>Accountant profiles</h3><p>Accountants write their own profiles and are responsible for what they say. Tax Buddy doesn't check licences or qualifications.</p></section>
 
-    <h2>Reviews</h2>
-    <p>A client can review an accountant who has replied to them, once, and can change or delete it. Reviews must describe the reviewer's own experience.</p>
+    <section class="section"><h3>Reviews</h3><p>A client can review an accountant who has replied to them, once, and can change or delete it. Reviews must describe the reviewer's own experience.</p></section>
 
-    <h2>Reports and blocking</h2>
-    <p>Anyone signed in can report a profile, review or conversation, and block someone from messaging them. Tax Buddy may remove content or close accounts that break these terms.</p>
+    <section class="section"><h3>Reports and blocking</h3><p>Anyone signed in can report a profile, review or conversation, and block someone from messaging them. Tax Buddy may remove content or close accounts that break these terms.</p></section>
 
-    <h2>Agreements between you</h2>
-    <p>Work, fees and deadlines are agreed between the client and the accountant. Tax Buddy is not a party to them.</p>
+    <section class="section"><h3>Agreements between you</h3><p>Work, fees and deadlines are agreed between the client and the accountant. Tax Buddy is not a party to them.</p></section>
 
-    <p class="text-[13px] text-muted">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
+    <p class="muted small mt-4">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
 </article>
+</div>

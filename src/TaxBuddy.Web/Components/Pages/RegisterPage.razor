@@ -6,61 +6,58 @@
 @* F04 first sign-in (PRD R04, R16; D03: one role per account). A named form posted to this page (SDD render modes). *@
 
 <SeoHead Title="Create your account · Tax Buddy" Description="Choose how you'll use Tax Buddy." CanonicalPath="/register" />
+<PhoneBar Title="Sign in" Back="@AccountEndpoints.SignInPageAddress(returnUrl)" />
+<h1 class="sr-only" tabindex="-1">Create your account</h1>
 
 @if (pending is not null)
 {
-    <section class="mx-auto flex max-w-xl flex-col gap-4 rounded-xl border border-border bg-surface px-6 py-8" aria-labelledby="page-title">
-        <h1 id="page-title" class="text-[28px]" tabindex="-1">How will you use Tax Buddy?</h1>
-        <p class="text-muted">
-            Signed in with @pending.ProviderName@(pending.Email is null ? "" : " as ")<strong class="text-text">@pending.Email</strong>.
-            Choose one: an account is either a client or an accountant.
-        </p>
+    @* The prototype's role step (signinHTML): tick the agreement, then press one of the two choices. Its choices are
+       disabled until the box is ticked, which needs script; here the server checks the box instead (BD10 deviation). *@
+    <div class="center-col">
+        <h2>How will you use Tax Buddy?</h2>
+        <p class="muted">Signed in with @pending.ProviderName. Choose one: an account is either a client or an accountant.</p>
 
         @if (failed)
         {
-            <div class="notice notice-danger" role="alert">
+            <div class="banner danger" role="alert">
                 <Icon Name="alert" Size="18" />
-                <p>We couldn't create your account. Please try again.</p>
+                <div>We couldn't create your account. Please try again.</div>
             </div>
         }
 
-        <form method="post" @formname="register" @onsubmit="RegisterAsync" class="flex flex-col gap-4" novalidate>
+        <form method="post" @formname="register" @onsubmit="RegisterAsync" novalidate>
             <AntiforgeryToken />
             <input type="hidden" name="Form.ReturnUrl" value="@returnUrl" />
 
-            <fieldset class="flex flex-col gap-3" aria-describedby="@(roleError is null ? null : "role-error")">
-                <legend class="mb-1 font-semibold">I am…</legend>
+            <label class="check">
+                <input type="checkbox" name="Form.Agree" value="true" checked="@Form!.Agree"
+                       aria-describedby="@(agreeError is null ? null : "agree-error")" />
+                <span>I agree to the <a href="/terms">Terms of use</a> and the <a href="/privacy">Privacy policy</a>.</span>
+            </label>
+            @if (agreeError is not null)
+            {
+                <p id="agree-error" class="ferr mt-2 text-left" role="alert">@agreeError</p>
+            }
+
+            <div class="choices">
                 @foreach (var (value, title, description) in Choices)
                 {
-                    <label class="choice">
-                        <input type="radio" name="Form.Role" value="@value" checked="@(Form!.Role == value)" />
-                        <span><strong>@title</strong><span class="block text-[13.5px] text-muted">@description</span></span>
-                    </label>
-                }
-                @if (roleError is not null)
-                {
-                    <p id="role-error" class="field-error">@roleError</p>
-                }
-            </fieldset>
-
-            <div>
-                <label class="flex items-start gap-3">
-                    <input type="checkbox" name="Form.Agree" value="true" checked="@Form!.Agree" class="mt-1 size-5 shrink-0"
-                           aria-describedby="@(agreeError is null ? null : "agree-error")" />
-                    <span>I agree to the <a href="/terms">Terms of use</a> and the <a href="/privacy">Privacy policy</a>.</span>
-                </label>
-                @if (agreeError is not null)
-                {
-                    <p id="agree-error" class="field-error">@agreeError</p>
+                    <button type="submit" name="Form.Role" value="@value" class="choice">
+                        <strong>@title</strong>
+                        <span>@description</span>
+                    </button>
                 }
             </div>
-
-            <div class="flex flex-wrap gap-3">
-                <button type="submit" class="btn btn-primary">Create my account</button>
-                <a class="btn" href="@AccountEndpoints.SignInPageAddress(returnUrl)">Start again</a>
-            </div>
+            @if (roleError is not null)
+            {
+                <p class="ferr mt-2 text-left" role="alert">@roleError</p>
+            }
+            else if (agreeError is null)
+            {
+                <p class="muted small mt-3">Tick the box, then choose.</p>
+            }
         </form>
-    </section>
+    </div>
 }
 
 @code {
@@ -108,10 +105,13 @@
             return;
         }
 
-        switch (await Accounts.RegisterAsync(role.Value))
+        var result = await Accounts.RegisterAsync(role.Value);
+        switch (result.Outcome)
         {
             case RegistrationOutcome.SignedIn:
-                Navigation.NavigateTo(returnUrl);
+                // F05: an accountant who started from the home page goes straight to their profile. The account's own
+                // role decides, since another tab may already have registered it with the other role.
+                Navigation.NavigateTo(result.Role == AccountRole.Accountant && returnUrl == "/" ? "/account/profile" : returnUrl);
                 break;
             case RegistrationOutcome.NoPendingSignIn:
                 Navigation.NavigateTo(AccountEndpoints.SignInPageAddress(returnUrl));

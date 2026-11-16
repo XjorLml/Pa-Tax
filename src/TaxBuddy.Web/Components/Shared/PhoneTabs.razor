@@ -1,0 +1,25 @@
+@using Microsoft.AspNetCore.Components.Sections
+@using TaxBuddy.Web.Account
+@* Phone tab bar (prototype tabbarHTML) on top-level screens. Chats and Clients join when those features exist. *@
+<SectionContent SectionName="@Section">
+    <nav class="tabbar" aria-label="Main">
+        <a href="/" aria-current="@(Current == "directory" ? "page" : null)"><Icon Name="search" Size="22" /><span>Accountants</span></a>
+        <AuthorizeView>
+            <Authorized>
+                <a href="/account" aria-current="@(Current == "account" ? "page" : null)"><Icon Name="user" Size="22" /><span>Account</span></a>
+            </Authorized>
+            <NotAuthorized>
+                <a href="@AccountEndpoints.SignInLinkFor(HttpContext)"><Icon Name="user" Size="22" /><span>Sign in</span></a>
+            </NotAuthorized>
+        </AuthorizeView>
+    </nav>
+</SectionContent>
+
+@code {
+    public const string Section = "phone-tabs";
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    /// <summary>"directory" or "account".</summary>
+    [Parameter] public string? Current { get; set; }
+}
