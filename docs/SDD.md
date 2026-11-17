@@ -52,7 +52,7 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | Sign-in, registration (role choice and agreement), information, not-found and error pages | Static server rendering | Plain links and forms that work before any script loads |
 | Theme switch in the site header, on every page | Static server rendering: a plain form posted to the endpoint `POST /preferences/theme`, which redirects back to the page | Added 2026-11-16 (F02 BD09). A choice shared by all pages, so it is posted to an endpoint rather than to each page as a named form. Antiforgery applies as for any form; no script and no server connection |
 | Signed-in actions on static pages: add to or remove from my accountants, report a profile or a review, the accountant's reply to a review | Static server rendering, as named forms posted to the same page | Visitors never open a server connection. Shown only to signed-in users who may take the action; see the form rules below |
-| Review submission `/accountants/{id}/review` | Interactive Server | An action by a signed-in client |
+| Review page `/accountants/{id}/review` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-17 by the user's choice ([F09](../specs/reviews/spec.md)), as for the profile editor: a failed or invalid save shows the form again with the stars and text, and it works without script. This closes C04 for reviews |
 | Conversation list and chat thread `/chats`, `/chats/{id}` | Static pages holding one Interactive Server chat panel | Private, with live updates over SignalR. Built in F07 (2026-11-16): the static page checks sign-in and access and sets the title and status; only the panel inside is interactive, so a visitor or an outsider never opens a connection |
 | New chat `/chats/new/{accountantId}` | Interactive Server; open to visitors | The one interactive page a visitor can open. It shows no private data. A visitor can type before signing in (R06); sending requires sign-in, and the draft survives sign-in in the tab's session storage. Built in F07 like the other chat pages: static, with the interactive panel |
 | My accountants (the client's shortlist) and the accountant's client list `/workspace`, `/clients/{id}` | Interactive Server | Private to one user |
@@ -222,9 +222,9 @@ Addresses are proposed; the first feature spec refines the directory ones.
 
 | Address | Input contract | Retained state | Back, reload, shared-link behavior |
 |---|---|---|---|
-| `/` | Query: `q` (search text), `service`, `sort` (`rating`; absent means name A–Z; added with ratings), `page`. Search and service are submitted with a plain GET form; on wide screens each service button submits it. Sort and page are links that carry the current search and filter. No live filtering in the page ([C03](README.md#history-and-unresolved-conflicts), resolved) | All in the address, so Back, reload and shared links show the same list | Unknown or malformed query values are ignored |
-| `/accountants/{id}` | GUID | None | Unknown, deleted or unlisted ID shows "no longer available" with HTTP 404 (R03) |
-| `/accountants/{id}/review` | GUID; the user must be an eligible client | Stars and text kept through a failed save | An ineligible user sees why, and no form (BR09) |
+| `/` | Query: `q` (search text), `service`, `sort` (`rating`; absent or any other value means name A–Z; built in F09), `page`. The search form carries `sort` in a hidden field, so a new search keeps the order. Search and service are submitted with a plain GET form; on wide screens each service button submits it. Sort and page are links that carry the current search and filter. No live filtering in the page ([C03](README.md#history-and-unresolved-conflicts), resolved) | All in the address, so Back, reload and shared links show the same list | Unknown or malformed query values are ignored |
+| `/accountants/{id}` | GUID. Query, F09: `reply` (a review ID; opens the owner's reply box) and `saved` (`review-posted`, `review-updated`, `review-deleted` or `reply`, the status after a redirect) | None | Unknown, deleted or unlisted ID shows "no longer available" with HTTP 404 (R03). Unknown query values are ignored |
+| `/accountants/{id}/review` | GUID; the user must be an eligible client | Stars and text kept through a failed save | An ineligible user sees why, and no form (BR09). An unlisted or unknown accountant: "This accountant is no longer available" with HTTP 404 |
 | `/privacy`, `/terms`, `/about`, `/help`, `/for-accountants` | None | None | Static pages, public (R16, R17) |
 | `/email/off` | The signed-in user, or a signed link from an email | None | Turns notification emails off and offers to turn them back on (R08) |
 | Any other address | — | — | "Page not found" with HTTP 404; failures show an error page with a support code (R18) |
@@ -300,6 +300,29 @@ A submit button is disabled while its operation runs, so a double click can't ru
 **Known limits:**
 - An open chat page keeps the sign-in it started with until it reloads.
 - The navigation count changes on the next page load.
+### As built in F09 (2026-11-17)
+
+[Evidence](delivery/evidence/2026-11-17-f09-reviews.md); scenarios in [F09](../specs/reviews/spec.md).
+
+**Table (migration `AddReviews`):** `reviews` holds:
+- the profile, the client account, and the stars (checked 1–5);
+- the text (1,000 characters at most), and the created and updated times;
+- the reply text (600 at most) and its time.
+
+The profile and client pair is unique (BR09). Reviews are deleted with the profile. The foreign key to `users` refuses deletion until D07, as for chat.
+
+**Rules:**
+- **Who may review:** `ReviewService` checks it on every request: a signed-in client whose conversation with this accountant holds a message from the accountant.
+- **One review per client:** posting again updates the client's one review. Two inserts at once are settled by the unique index.
+- **Replies:** only the profile's owner posts or edits the reply. A reply can't be deleted, only edited, as in the prototype.
+- **Names:** reviewers are shown as "First L." (D21), from `users.display_name` at render time.
+
+**Pages:**
+- The review page and the owner's reply form are static named forms.
+- A post for a form the page didn't draw is refused by Blazor with 400 before the page runs, and the service would refuse it too.
+- After a save, the page redirects to the profile with `saved=…`.
+- "Highest rated" is ordered in SQL: accountants with reviews first, then the average and count descending, then name and ID.
+
 ## DI, startup, async work, and lifecycle
 
 | Service / page | Lifetime | Owner and concurrency/disposal contract |

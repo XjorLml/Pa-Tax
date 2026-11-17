@@ -4,7 +4,7 @@
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
    message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
 
-<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
+<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
 
 @if (kind == Kind.Chat)
 {
@@ -14,9 +14,9 @@
         <a class="btn" href="/chats">Back to chats</a>
     </StateMessage>
 }
-else if (kind == Kind.NewChat)
+else if (kind is Kind.NewChat or Kind.Review)
 {
-    @* F07 CH08 (prototype threadParts): the accountant's profile is unlisted, removed or unknown. *@
+    @* F07 CH08 and F09 (prototype threadParts, reviewPageHTML): the accountant's profile is unlisted, removed or unknown. *@
     <SeoHead Title="Accountant not available · Tax Buddy" Description="This accountant is no longer available." CanonicalPath="/" />
     <StateMessage IconName="alert" HeadingLevel="1" Title="This accountant is no longer available">
         <a class="btn" href="/">Back to directory</a>
@@ -41,7 +41,7 @@ else
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    private enum Kind { Page, Profile, Chat, NewChat }
+    private enum Kind { Page, Profile, Review, Chat, NewChat }
 
     private Kind kind;
 
@@ -51,6 +51,8 @@ else
         var original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value;
         kind = original switch
         {
+            { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase)
+                          && path.TrimEnd('/').EndsWith("/review", StringComparison.OrdinalIgnoreCase) => Kind.Review,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) => Kind.Profile,
             { } path when path.StartsWith("/chats/new/", StringComparison.OrdinalIgnoreCase) => Kind.NewChat,
             { } path when path.StartsWith("/chats/", StringComparison.OrdinalIgnoreCase) => Kind.Chat,

@@ -31,6 +31,11 @@
 
     @* SDD render modes / C03: a plain GET form. See the .dir-form notes in Styles/app.css for why source order matters. *@
     <form method="get" action="/" role="search" class="dir-form rounded-xl border border-border bg-surface p-4" aria-label="Find an accountant">
+        @if (query.Sort == DirectorySort.Rating)
+        {
+            @* A new search keeps the chosen order. *@
+            <input type="hidden" name="sort" value="@DirectoryQuery.RatingSortValue" />
+        }
         <div class="dir-search">
             <label for="q" class="mb-2 block text-[13px] font-semibold">What can we help you with?</label>
             <div class="relative">
@@ -89,13 +94,21 @@
         }
         else
         {
-            <p class="mb-3 text-[14px] text-muted">
-                @MatchSummary()
-                @if (result.Query.IsFiltered)
-                {
-                    <a class="ml-1 font-semibold" href="/">Clear</a>
-                }
-            </p>
+            @* Prototype resultsHTML meta row: the count, then the sort links, which carry the search and filter (C03). *@
+            <div class="meta-row">
+                <p>
+                    @MatchSummary()
+                    @if (result.Query.IsFiltered)
+                    {
+                        <a class="ml-1 font-semibold" href="@Display.DirectoryPath(DirectoryQuery.Default with { Sort = query.Sort })">Clear</a>
+                    }
+                </p>
+                <p class="sortctl" role="group" aria-label="Sort">
+                    Sort:
+                    <a class="sortlink" href="@Display.DirectoryPath(query with { Sort = DirectorySort.Name, Page = 1 })" aria-current="@(query.Sort == DirectorySort.Name ? "true" : null)">Name (A–Z)</a>
+                    <a class="sortlink" href="@Display.DirectoryPath(query with { Sort = DirectorySort.Rating, Page = 1 })" aria-current="@(query.Sort == DirectorySort.Rating ? "true" : null)">Highest rated</a>
+                </p>
+            </div>
             <ul class="grid gap-4 md:grid-cols-2" aria-label="Accountants">
                 @foreach (var card in result.Cards)
                 {
@@ -114,6 +127,8 @@
 
     [SupplyParameterFromQuery(Name = "page")] public string? PageText { get; set; }
 
+    [SupplyParameterFromQuery(Name = "sort")] public string? SortText { get; set; }
+
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
     private DirectoryQuery query = DirectoryQuery.Default;
@@ -122,7 +137,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        query = DirectoryQuery.From(SearchText, Services, PageText);
+        query = DirectoryQuery.From(SearchText, Services, PageText, SortText);
         if (Services is { Length: > 1 })
         {
             // A service button was pressed on a wide screen, so the address holds two service values.

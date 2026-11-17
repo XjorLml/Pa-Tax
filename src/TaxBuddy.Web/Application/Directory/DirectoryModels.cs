@@ -1,3 +1,4 @@
+using TaxBuddy.Web.Application.Reviews;
 using TaxBuddy.Web.Domain;
 
 namespace TaxBuddy.Web.Application.Directory;
@@ -15,7 +16,10 @@ public sealed record DirectoryResult(
     public bool NoMatch => MatchCount == 0 && !DirectoryIsEmpty;
 }
 
-/// <summary>A directory card: name, short career summary and services (PRD R01), plus city and years (DESIGN card order).</summary>
+/// <summary>
+/// A directory card: name, short career summary and services (PRD R01), plus city and years (DESIGN card order), the
+/// highlight count (F08) and the rating (F09, R13).
+/// </summary>
 public sealed record AccountantCard(
     AccountantId Id,
     string Name,
@@ -25,7 +29,8 @@ public sealed record AccountantCard(
     IReadOnlyList<string> Services,
     string Summary,
     string? PictureAddress = null,
-    int HighlightCount = 0);
+    int HighlightCount = 0,
+    RatingSummary? Rating = null);
 
 /// <summary>Everything the public profile shows (PRD R03). Contact details are public by the accountant's consent (R11).</summary>
 public sealed record AccountantProfileView(
@@ -107,13 +112,16 @@ public sealed record CardRow(
     IReadOnlyList<string> Services,
     IReadOnlyList<YearMonth> ExperienceStarts,
     string? PictureAddress = null,
-    int HighlightCount = 0);
+    int HighlightCount = 0,
+    int ReviewCount = 0,
+    int StarTotal = 0);
 
 /// <summary>Reads listed profiles. Implemented in Data; the Application layer never sees EF Core types.</summary>
 public interface IDirectoryStore
 {
     /// <summary>
-    /// Listed profiles matching <paramref name="query"/>, ordered by name A–Z then ID (PRD BR02).
+    /// Listed profiles matching <paramref name="query"/>, ordered by name A–Z then ID, or for "Highest rated" by average,
+    /// review count, name and ID with unreviewed accountants last (PRD BR02).
     /// A page past the end falls back to page 1, as malformed address values are ignored.
     /// </summary>
     Task<DirectoryRows> SearchAsync(DirectoryQuery query, int pageSize, CancellationToken cancellationToken);

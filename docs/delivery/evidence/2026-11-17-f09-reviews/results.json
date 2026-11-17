@@ -1,0 +1,122 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-17T08:46:12.835Z",
+  "results": [
+    {
+      "n": "visitor: head rating \"4.0 (1 review)\", the review by \"Noel B.\", the sign-in hint, no form link",
+      "ok": true,
+      "d": {
+        "head": "★ ★ ★ ★ ★ 4.0 (1 review)",
+        "v": "Reviews\n4.0\n★\n★\n★\n★\n★\n1 review\n\nReviews come from clients Nina has chatted with. Sign in if that's you.\n\n★\n★\n★\n★\n★\nNoel B.\n4:45 PM\n\nClear monthly reports. Replies can take a day during filing season.\n\nOnly clients this accountant has replied to can leave a review. Tax Buddy doesn't edit or check reviews."
+      }
+    },
+    {
+      "n": "client: \"Write a review\" on the profile",
+      "ok": true,
+      "d": "Reviews\n4.0\n★\n★\n★\n★\n★\n1 review\nWrite a review\n★\n★\n★\n★\n★\nNoel B.\n4:45 PM\n\nClear monthly reports. Replies can take a day during filing season.\n\nOnly clients this accountant has replied to can leave a review. Tax Buddy doesn't edit or check reviews."
+    },
+    {
+      "n": "star picker: picking 4 lights stars 1–4 and leaves 5",
+      "ok": true,
+      "d": {
+        "before": [
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)",
+          "rgb(255, 255, 255)"
+        ],
+        "after": [
+          "rgb(229, 238, 228)",
+          "rgb(229, 238, 228)",
+          "rgb(229, 238, 228)",
+          "rgb(229, 238, 228)",
+          "rgb(255, 255, 255)"
+        ]
+      }
+    },
+    {
+      "n": "no stars: \"Choose a rating from 1 to 5 stars.\" and the text is kept",
+      "ok": true,
+      "d": {
+        "err": "Choose a rating from 1 to 5 stars.",
+        "text": "Explained every line of my financial statements."
+      }
+    },
+    {
+      "n": "posted: status, \"Liza F. (you)\" first, average 4.5 from 2 reviews",
+      "ok": true,
+      "d": {
+        "status": "Your review was posted.",
+        "first": "Liza F. (you)",
+        "avg": "4.5",
+        "sum": "4.5\n★\n★\n★\n★\n★\n2 reviews",
+        "facts": "4.5 average from 2 reviews"
+      }
+    },
+    {
+      "n": "390 dark: the edit form keeps 5 stars, \"Update review\" and \"Delete review\", no overflow",
+      "ok": true,
+      "d": {
+        "checked": "5",
+        "button": "Update review",
+        "del": true
+      }
+    },
+    {
+      "n": "without script: the update posts, \"Your review was updated.\", average 4.0",
+      "ok": true,
+      "d": {
+        "noScriptUrl": "http://localhost:5240/accountants/0f6d941c-c2a6-4e94-a99e-5cb4d01cf908?saved=review-updated#reviews-heading",
+        "updated": {
+          "status": "Your review was updated.",
+          "avg": "4.0"
+        }
+      }
+    },
+    {
+      "n": "390: \"Highest rated\" puts the reviewed accountant first with \"4.0 (2 reviews)\", the others \"No reviews yet\"",
+      "ok": true,
+      "d": {
+        "first": "Nina Ocampo",
+        "rating": "★ ★ ★ ★ ★ 4.0 (2 reviews)",
+        "current": "Highest rated",
+        "unrated": true
+      }
+    },
+    {
+      "n": "owner: Reply on each review, no \"Write a review\" and no reason",
+      "ok": true,
+      "d": {
+        "replies": [
+          "Reply",
+          "Reply"
+        ],
+        "write": false,
+        "why": false
+      }
+    },
+    {
+      "n": "Reply opens the reply box",
+      "ok": true,
+      "d": "http://localhost:5240/accountants/0f6d941c-c2a6-4e94-a99e-5cb4d01cf908?reply=a2f5749f-92aa-41d6-9575-b06368e4ab5a#reply-text"
+    },
+    {
+      "n": "reply posted: \"Reply from Nina\", the text, \"Edit reply\"",
+      "ok": true,
+      "d": {
+        "who": "Reply from Nina",
+        "text": "Thank you, Liza. Glad the statements helped.",
+        "edit": [
+          "Edit reply"
+        ],
+        "status": "Your reply was posted."
+      }
+    },
+    {
+      "n": "390 dark: the owner's profile has no overflow",
+      "ok": true,
+      "d": null
+    }
+  ]
+}

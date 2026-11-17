@@ -1,0 +1,15 @@
+@using TaxBuddy.Web.Application.Reviews
+@* Prototype ratingLine (F09; PRD R13, BR10): stars, the average to one decimal and the count; "No reviews yet" with none,
+   never a zero score. *@
+@if (Rating.Average is { } average)
+{
+    <Stars Value="average" /><strong>@Display.Rating(average)</strong><span class="muted">(@Display.ReviewCount(Rating.Count))</span>
+}
+else
+{
+    <span class="muted">No reviews yet</span>
+}
+
+@code {
+    [Parameter, EditorRequired] public RatingSummary Rating { get; set; } = RatingSummary.None;
+}

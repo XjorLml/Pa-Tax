@@ -7,7 +7,7 @@ using TaxBuddy.Web.Domain;
 
 namespace TaxBuddy.Web.Data;
 
-/// <summary>Directory queries on PostgreSQL (SDD: queries; PRD BR01, BR02, D05).</summary>
+/// <summary>Directory queries on PostgreSQL (SDD: queries; PRD BR01, BR02, D05; ratings R13, F09).</summary>
 public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextFactory, ILogger<DirectoryStore> logger)
     : IDirectoryStore
 {
@@ -43,10 +43,20 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
             var pageCount = Math.Max(1, (matchCount + pageSize - 1) / pageSize);
             var page = query.Page <= pageCount ? query.Page : 1;
 
-            // BR02: name A–Z with the unique ID as tie-breaker, so paging never repeats or skips anyone.
-            var rows = await matching
-                .OrderBy(p => p.DisplayName.ToLower())
-                .ThenBy(p => p.Id)
+            // BR02: name A–Z with the unique ID as tie-breaker, so paging never repeats or skips anyone. "Highest rated"
+            // (F09) puts reviewed accountants first, by average and then count; the average is computed, never stored.
+            var ordered = query.Sort == DirectorySort.Rating
+                ? matching
+                    .OrderByDescending(p => db.Reviews.Any(r => r.AccountantId == p.Id))
+                    .ThenByDescending(p => db.Reviews.Where(r => r.AccountantId == p.Id).Average(r => (double?)r.Stars))
+                    .ThenByDescending(p => db.Reviews.Count(r => r.AccountantId == p.Id))
+                    .ThenBy(p => p.DisplayName.ToLower())
+                    .ThenBy(p => p.Id)
+                : matching
+                    .OrderBy(p => p.DisplayName.ToLower())
+                    .ThenBy(p => p.Id);
+
+            var rows = await ordered
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .Select(p => new
@@ -60,6 +70,8 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                     Services = p.Services.OrderBy(s => s.Position).Select(s => s.Name).ToList(),
                     Starts = p.Experience.Select(e => e.Start).ToList(),
                     Highlights = p.Highlights.Count(),
+                    ReviewCount = db.Reviews.Count(r => r.AccountantId == p.Id),
+                    StarTotal = db.Reviews.Where(r => r.AccountantId == p.Id).Sum(r => r.Stars),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -78,7 +90,9 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                     r.OwnerAccountId is { } owner && pictures.TryGetValue(owner, out var picture)
                         ? ProfilePictureService.AddressFor(owner, picture)
                         : null,
-                    r.Highlights)).ToList(),
+                    r.Highlights,
+                    r.ReviewCount,
+                    r.StarTotal)).ToList(),
                 matchCount,
                 page,
                 anyListed);

@@ -5,6 +5,7 @@ using TaxBuddy.Web.Application.Chat;
 using TaxBuddy.Web.Application.Directory;
 using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Application.Profiles;
+using TaxBuddy.Web.Application.Reviews;
 using TaxBuddy.Web.Components;
 using TaxBuddy.Web.Data;
 using TaxBuddy.Web.Domain;
@@ -46,6 +47,8 @@ builder.Services.AddSingleton<IChatNotifier, ChatNotifier>();
 builder.Services.AddScoped<IChatStore, ChatStore>();
 builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<UnreadChats>();
+builder.Services.AddScoped<IReviewStore, ReviewStore>();
+builder.Services.AddScoped<ReviewService>();
 
 // F04: Google sign-in and accounts (ADR 006).
 builder.AddTaxBuddyAccounts();

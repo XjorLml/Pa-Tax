@@ -108,7 +108,7 @@ public sealed class DirectoryPageTests(SeededAppFixture app) : IClassFixture<See
     [DatabaseFact]
     public async Task Unknown_and_malformed_values_are_ignored()
     {
-        var response = await app.Factory.CreateClient().GetAsync("/?service=Crypto&page=abc&sort=rating&extra=1");
+        var response = await app.Factory.CreateClient().GetAsync("/?service=Crypto&page=abc&sort=price&extra=1");
         var html = await response.ReadHtmlAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);

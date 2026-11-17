@@ -1,3 +1,4 @@
+using TaxBuddy.Web.Application.Reviews;
 using TaxBuddy.Web.Domain;
 
 namespace TaxBuddy.Web.Application.Directory;
@@ -19,7 +20,8 @@ public sealed class DirectoryService(IDirectoryStore store, IClock clock)
         var today = ManilaTime.Today(clock);
         var cards = rows.Rows
             .Select(r => new AccountantCard(
-                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary, r.PictureAddress, r.HighlightCount))
+                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary, r.PictureAddress,
+                r.HighlightCount, new RatingSummary(r.ReviewCount, r.StarTotal)))
             .ToList();
         var pageCount = Math.Max(1, (rows.MatchCount + PageSize - 1) / PageSize);
 

@@ -11,7 +11,7 @@ public static class Display
     public static string ProfilePath(AccountantId id) => $"/accountants/{id}";
 
     /// <summary>
-    /// The directory address for a query (SDD navigation: <c>q</c>, <c>service</c>, <c>page</c>). Defaults are left out,
+    /// The directory address for a query (SDD navigation: <c>q</c>, <c>service</c>, <c>sort</c>, <c>page</c>). Defaults are left out,
     /// so each list has one address that Back, reload and shared links reproduce.
     /// </summary>
     public static string DirectoryPath(DirectoryQuery query, int? page = null)
@@ -25,6 +25,11 @@ public static class Display
         if (query.Service is { } service)
         {
             values["service"] = service;
+        }
+
+        if (query.Sort == DirectorySort.Rating)
+        {
+            values["sort"] = DirectoryQuery.RatingSortValue;
         }
 
         var effectivePage = page ?? query.Page;
@@ -63,6 +68,15 @@ public static class Display
 
     /// <summary>The card fact (prototype cardHTML): "1 highlight", "3 highlights".</summary>
     public static string HighlightCount(int count) => count == 1 ? "1 highlight" : $"{count} highlights";
+
+    /// <summary>The average to one decimal, "4.5" (BR10).</summary>
+    public static string Rating(decimal average) => average.ToString("0.0", CultureInfo.InvariantCulture);
+
+    /// <summary>"1 review", "12 reviews" (prototype countText).</summary>
+    public static string ReviewCount(int count) => count == 1 ? "1 review" : $"{count} reviews";
+
+    /// <summary>The review page for an accountant.</summary>
+    public static string ReviewPath(AccountantId id) => $"/accountants/{id}/review";
 
     public static string AccountantCount(int count) => count == 1 ? "1 accountant" : $"{count} accountants";
 

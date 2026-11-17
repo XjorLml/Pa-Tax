@@ -154,6 +154,61 @@ public sealed class DirectoryStoreTests(SchemaFixture fixture) : IClassFixture<S
     }
 
     [DatabaseFact]
+    public async Task Highest_rated_orders_by_average_then_count_then_name_with_unreviewed_accountants_last()
+    {
+        await fixture.Schema.ClearAsync();
+        var low = Profiles.Listed("Aaron Abad");     // 3.0 from 1
+        var topFew = Profiles.Listed("Bea Ramos");   // 5.0 from 1
+        var topMany = Profiles.Listed("Carl Uy");    // 5.0 from 2
+        var mid = Profiles.Listed("Dana Cruz");      // 4.5 from 2
+        var unreviewed = new[] { Profiles.Listed("Zeny Zamora"), Profiles.Listed("Al Lim"), Profiles.Listed("Ella Sy") };
+        await fixture.Schema.AddAsync([low, topFew, topMany, mid, .. unreviewed]);
+        var (first, second) = (await ClientAsync(), await ClientAsync());
+        await ReviewsAsync(
+            (low.Id, first, 3), (topFew.Id, first, 5), (topMany.Id, first, 5), (topMany.Id, second, 5), (mid.Id, first, 4), (mid.Id, second, 5));
+
+        var byRating = new DirectoryQuery(null, null, 1, DirectorySort.Rating);
+        var page1 = await Store.SearchAsync(byRating, PageSize, default);
+        var page2 = await Store.SearchAsync(byRating with { Page = 2 }, PageSize, default);
+
+        Assert.Equal(
+            ["Carl Uy", "Bea Ramos", "Dana Cruz", "Aaron Abad", "Al Lim", "Ella Sy", "Zeny Zamora"],
+            page1.Rows.Concat(page2.Rows).Select(r => r.Name));
+        var dana = page1.Rows.Single(r => r.Name == "Dana Cruz");
+        Assert.Equal((2, 9), (dana.ReviewCount, dana.StarTotal));
+        Assert.Equal((0, 0), (page2.Rows.Single().ReviewCount, page2.Rows.Single().StarTotal));
+        Assert.Equal("Aaron Abad", (await Store.SearchAsync(DirectoryQuery.Default, PageSize, default)).Rows[0].Name); // A–Z by default.
+    }
+
+    private async Task<Guid> ClientAsync()
+    {
+        var id = Guid.NewGuid();
+        var at = new DateTimeOffset(2026, 11, 17, 0, 0, 0, TimeSpan.Zero);
+        await using var db = fixture.Schema.CreateContext();
+        db.Users.Add(new TaxBuddyUser
+        {
+            Id = id,
+            UserName = id.ToString("N"),
+            Email = $"{id:N}@example.test",
+            DisplayName = "Client Person",
+            Role = AccountRole.Client,
+            AgreedToTermsAt = at,
+            AgreedTermsVersion = LegalText.CurrentVersion,
+            CreatedAt = at,
+        });
+        await db.SaveChangesAsync();
+        return id;
+    }
+
+    /// <summary>Reviews stored directly: eligibility (BR09) is the review service's rule, tested there.</summary>
+    private async Task ReviewsAsync(params (AccountantId Profile, Guid Client, int Stars)[] reviews)
+    {
+        await using var db = fixture.Schema.CreateContext();
+        db.Reviews.AddRange(reviews.Select(r => new Review(Guid.NewGuid(), r.Profile, r.Client, r.Stars, null, DateTimeOffset.UtcNow)));
+        await db.SaveChangesAsync();
+    }
+
+    [DatabaseFact]
     public async Task Development_seed_lists_eight_and_keeps_the_profile_without_consent_unlisted()
     {
         await fixture.Schema.ClearAsync();

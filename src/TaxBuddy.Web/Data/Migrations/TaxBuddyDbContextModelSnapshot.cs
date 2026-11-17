@@ -362,6 +362,62 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.ToTable("conversations", (string)null);
                 });
 
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Review", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountantId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountant_id");
+
+                    b.Property<Guid>("ClientAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_account_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset?>("ReplyAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reply_at");
+
+                    b.Property<string>("ReplyText")
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)")
+                        .HasColumnName("reply_text");
+
+                    b.Property<int>("Stars")
+                        .HasColumnType("integer")
+                        .HasColumnName("stars");
+
+                    b.Property<string>("Text")
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("text");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reviews");
+
+                    b.HasIndex("ClientAccountId")
+                        .HasDatabaseName("ix_reviews_client_account_id");
+
+                    b.HasIndex("AccountantId", "ClientAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reviews_accountant_id_client_account_id");
+
+                    b.ToTable("reviews", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_reviews_stars", "stars BETWEEN 1 AND 5");
+                        });
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
@@ -574,6 +630,23 @@ namespace TaxBuddy.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_conversations_client_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Review", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Domain.AccountantProfile", null)
+                        .WithMany()
+                        .HasForeignKey("AccountantId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_reviews_accountant_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("ClientAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reviews_client_account_id");
                 });
 #pragma warning restore 612, 618
         }

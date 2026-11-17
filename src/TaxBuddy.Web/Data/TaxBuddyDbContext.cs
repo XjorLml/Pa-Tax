@@ -24,6 +24,8 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
 
     public DbSet<ChatMessage> Messages => Set<ChatMessage>();
 
+    public DbSet<Review> Reviews => Set<Review>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<AccountantId>().HaveConversion<AccountantIdConverter>();
@@ -89,6 +91,7 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
         });
 
         ConfigureChat(modelBuilder);
+        ConfigureReviews(modelBuilder);
         ApplySnakeCaseNames(modelBuilder);
     }
 
@@ -119,6 +122,27 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             message.HasIndex(m => new { m.SenderAccountId, m.SentAt });
             message.HasOne<Conversation>().WithMany().HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade);
             message.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(m => m.SenderAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    /// <summary>
+    /// F09: one review per client and accountant (BR09), deleted with the profile. As with chat, deleting the client's
+    /// account is refused until D07 decides what happens to their reviews.
+    /// </summary>
+    private static void ConfigureReviews(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Review>(review =>
+        {
+            review.ToTable("reviews", table => table.HasCheckConstraint(
+                "ck_reviews_stars", $"stars BETWEEN {ReviewLimits.MinStars} AND {ReviewLimits.MaxStars}"));
+            review.HasKey(r => r.Id);
+            review.Property(r => r.Id).ValueGeneratedNever();
+            review.Property(r => r.Text).HasMaxLength(ReviewLimits.Text);
+            review.Property(r => r.ReplyText).HasMaxLength(ReviewLimits.Reply);
+            review.HasIndex(r => new { r.AccountantId, r.ClientAccountId }).IsUnique();
+            review.HasIndex(r => r.ClientAccountId);
+            review.HasOne<AccountantProfile>().WithMany().HasForeignKey(r => r.AccountantId).OnDelete(DeleteBehavior.Cascade);
+            review.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(r => r.ClientAccountId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 

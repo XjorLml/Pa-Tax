@@ -45,6 +45,15 @@ public sealed class DirectoryServiceTests
         Assert.Null(DirectoryQuery.From(null, ["Audit", ""], null).Service);
     }
 
+    [Theory]
+    [InlineData("rating", DirectorySort.Rating)]
+    [InlineData(null, DirectorySort.Name)]
+    [InlineData("name", DirectorySort.Name)]
+    [InlineData("RATING", DirectorySort.Name)]
+    [InlineData("price", DirectorySort.Name)]
+    public void Only_sort_rating_picks_highest_rated(string? sort, DirectorySort expected) =>
+        Assert.Equal(expected, DirectoryQuery.From(null, null, null, sort).Sort);
+
     [Fact]
     public async Task Empty_directory_is_distinct_from_no_match()
     {

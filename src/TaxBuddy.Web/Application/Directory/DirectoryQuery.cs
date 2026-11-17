@@ -4,12 +4,22 @@ using TaxBuddy.Web.Domain;
 
 namespace TaxBuddy.Web.Application.Directory;
 
+/// <summary>The directory's order (BR02, D05): name A–Z by default, or "Highest rated", added with ratings (F09).</summary>
+public enum DirectorySort
+{
+    Name,
+    Rating,
+}
+
 /// <summary>
 /// What the directory was asked for, already cleaned (SDD navigation, address <c>/</c>):
 /// unknown or malformed values are ignored, and search text is capped.
 /// </summary>
-public sealed partial record DirectoryQuery(string? SearchText, string? Service, int Page)
+public sealed partial record DirectoryQuery(string? SearchText, string? Service, int Page, DirectorySort Sort = DirectorySort.Name)
 {
+    /// <summary>The address value for "Highest rated"; any other value means name A–Z.</summary>
+    public const string RatingSortValue = "rating";
+
     public const int MaxSearchLength = 100;
     public const int MaxPage = 10_000;
 
@@ -22,10 +32,11 @@ public sealed partial record DirectoryQuery(string? SearchText, string? Service,
     /// service button is submitted after the form's own service menu (SDD render modes). "All services" sends an empty
     /// value, which clears the filter.
     /// </summary>
-    public static DirectoryQuery From(string? searchText, IReadOnlyList<string?>? services, string? page)
+    public static DirectoryQuery From(string? searchText, IReadOnlyList<string?>? services, string? page, string? sort = null)
     {
         var lastService = services is { Count: > 0 } ? services[^1] : null;
-        return new DirectoryQuery(NormalizeSearch(searchText), ServiceCatalog.Find(lastService), ParsePage(page));
+        return new DirectoryQuery(NormalizeSearch(searchText), ServiceCatalog.Find(lastService), ParsePage(page),
+            sort == RatingSortValue ? DirectorySort.Rating : DirectorySort.Name);
     }
 
     private static string? NormalizeSearch(string? text)

@@ -1,0 +1,204 @@
+@page "/accountants/{Id}/review"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Application.Reviews
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Domain
+@inject ReviewService ReviewService
+@inject NavigationManager Navigation
+@* F09 review page (PRD R13, BR09; prototype reviewPageHTML, desktop "d-review"). A static form posted to this page, not
+   Interactive Server: the owner chose it on 2026-11-17, closing C04 for reviews. A failed or invalid save shows the form
+   again with the stars and text kept. The service checks who may review on every request; hiding the form isn't the check. *@
+
+<SeoHead Title="@($"Review {Name} · Tax Buddy")" Description="Rate and review an accountant on Tax Buddy." CanonicalPath="@Path" />
+<PhoneBar Title="Write a review" Back="@ProfilePath" />
+
+@if (loadFailed)
+{
+    <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't open the review form" Text="That's a problem on our side, not yours. Please try again.">
+        <a class="btn btn-primary" href="@Path">Try again</a>
+    </StateMessage>
+}
+else if (view is not null)
+{
+    var first = Display.FirstName(view.Accountant.Name);
+    <div class="narrow">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="@ProfilePath">Back to profile</a></nav>
+        @switch (access)
+        {
+            case ReviewAccess.SignIn:
+                <StateMessage IconName="user" HeadingLevel="1" Title="Sign in to write a review" Text="@($"Reviews come from clients {first} has chatted with.")">
+                    <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(Path)">Sign in</a>
+                </StateMessage>
+                break;
+            case ReviewAccess.NotAClient:
+            case ReviewAccess.NoReplyYet:
+                <StateMessage IconName="chat" HeadingLevel="1" Title="@($"You can't review {first} yet")"
+                              Text="@(access == ReviewAccess.NoReplyYet ? $"You can leave a review after {first} replies to a message from you." : "Only clients can write reviews.")">
+                    <a class="btn" href="@ProfilePath">Back to profile</a>
+                </StateMessage>
+                break;
+            default:
+                <div class="panel">
+                    <h1 id="page-title" tabindex="-1">Write a review</h1>
+                    <form method="post" @formname="review" @onsubmit="HandleAsync" class="form" novalidate>
+                        <AntiforgeryToken />
+                        @* Enter in the text field presses the first submit button: make that the save, not "Delete". *@
+                        <button type="submit" name="command" value="save" class="sr-only" tabindex="-1" aria-hidden="true">Save</button>
+                        <p>How was working with <strong>@view.Accountant.Name</strong>?</p>
+
+                        <fieldset aria-describedby="@(StarsError is null ? null : "stars-error")">
+                            <legend>Your rating</legend>
+                            @* Real radio inputs, styled as the prototype's star buttons (DESIGN deviation): they work without script.
+                               Stars up to the checked one light up through CSS. *@
+                            <div class="starpick">
+                                @for (var i = ReviewLimits.MinStars; i <= ReviewLimits.MaxStars; i++)
+                                {
+                                    var value = i.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                                    <input type="radio" id="@($"star-{i}")" name="Form.Stars" value="@value" checked="@(Form!.Stars == value)" />
+                                    <label for="@($"star-{i}")" class="starbtn"><span aria-hidden="true">★</span><span class="sr-only">@(i == 1 ? "1 star" : $"{i} stars")</span></label>
+                                }
+                            </div>
+                            @if (StarsError is { } starsError)
+                            {
+                                <span class="ferr" id="stars-error" role="alert">@starsError</span>
+                            }
+                        </fieldset>
+
+                        <div class="field">
+                            <label for="rv-text">Your review <span class="req">(optional)</span></label>
+                            <textarea id="rv-text" name="Form.Text" rows="5" maxlength="@ReviewLimits.Text"
+                                      aria-invalid="@(TextError is null ? null : "true")"
+                                      aria-describedby="@(TextError is null ? "rv-hint" : "rv-error rv-hint")">@Form!.Text</textarea>
+                            @if (TextError is { } textError)
+                            {
+                                <span class="ferr" id="rv-error" role="alert">@textError</span>
+                            }
+                            <span class="hint" id="rv-hint">Shown publicly under the name “@view.ReviewerName”. Describe your own experience, and leave out private details. @first can post one public reply.</span>
+                        </div>
+
+                        <p class="save-status @(saveFailed ? "fail" : "")" role="status">@(saveFailed ? "Not saved: we couldn't reach the server. Your review is still here." : "")</p>
+                        <div class="actions">
+                            <button type="submit" name="command" value="save" class="btn btn-primary">@(view.Saved is null ? "Post review" : "Update review")</button>
+                            @if (view.Saved is not null)
+                            {
+                                <button type="submit" name="command" value="delete" class="btn">Delete review</button>
+                            }
+                            <a class="btn btn-ghost" href="@ProfilePath">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+                break;
+        }
+    </div>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "review")] private ReviewForm? Form { get; set; }
+
+    [SupplyParameterFromForm(FormName = "review", Name = "command")] private string? Command { get; set; }
+
+    private AccountantId profileId;
+    private ChatViewer? viewer;
+    private ReviewFormPage? view;
+    private ReviewAccess access;
+    private IReadOnlyDictionary<string, string> errors = new Dictionary<string, string>();
+    private bool loadFailed;
+    private bool saveFailed;
+
+    private string Name => view?.Accountant.Name ?? "an accountant";
+
+    private string Path => Display.ReviewPath(profileId);
+
+    private string ProfilePath => Display.ProfilePath(profileId);
+
+    private string? StarsError => errors.GetValueOrDefault(ReviewService.StarsKey);
+
+    private string? TextError => errors.GetValueOrDefault(ReviewService.TextKey);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!AccountantId.TryParse(Id, out profileId))
+        {
+            Navigation.NotFound(); // "This accountant is no longer available", from the not-found page.
+            return;
+        }
+
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        try
+        {
+            view = await ReviewService.OpenFormAsync(viewer, profileId);
+        }
+        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        {
+            if (Form is null)
+            {
+                loadFailed = true;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+                return;
+            }
+
+            // A post while the database is down: keep what was typed; the save below reports the failure.
+            view = new ReviewFormPage(new ReviewTarget(profileId, null, "this accountant"), ReviewAccess.Allowed,
+                ReviewerName.Fallback, null);
+        }
+
+        if (view is null)
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        access = view.Access;
+        if (access is ReviewAccess.NotAClient or ReviewAccess.NoReplyYet)
+        {
+            ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden); // A visitor gets the sign-in state, as on /chats.
+        }
+
+        Form ??= view.Saved ?? new ReviewForm();
+    }
+
+    private async Task HandleAsync()
+    {
+        if (view is null || Form is null)
+        {
+            return;
+        }
+
+        var result = Command == "delete"
+            ? await ReviewService.DeleteAsync(viewer, profileId)
+            : await ReviewService.SaveAsync(viewer, profileId, Form);
+        switch (result.Outcome)
+        {
+            case ReviewOutcome.Posted or ReviewOutcome.Updated or ReviewOutcome.Deleted:
+                // SDD forms: redirect, so a reload doesn't post again. The profile shows the saved review and new average.
+                var saved = result.Outcome switch
+                {
+                    ReviewOutcome.Posted => "review-posted",
+                    ReviewOutcome.Updated => "review-updated",
+                    _ => "review-deleted",
+                };
+                Navigation.NavigateTo($"{ProfilePath}?saved={saved}#reviews-heading");
+                break;
+            case ReviewOutcome.Invalid:
+                errors = result.Errors!;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status422UnprocessableEntity);
+                break;
+            case ReviewOutcome.NotAllowed:
+                access = result.Access ?? ReviewAccess.NoReplyYet;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden);
+                break;
+            case ReviewOutcome.Gone:
+                Navigation.NotFound();
+                break;
+            default:
+                saveFailed = true;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+                break;
+        }
+    }
+}

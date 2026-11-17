@@ -1,0 +1,16 @@
+@using System.Globalization
+@* Prototype starsHTML (F09). Stars always come with a number and a count, never alone (DESIGN ratings). The label
+   carries the value; the star glyphs are decoration. *@
+<span class="stars" role="img" aria-label="@($"{Value.ToString("0.#", CultureInfo.InvariantCulture)} out of 5 stars")">
+    @for (var i = 1; i <= 5; i++)
+    {
+        <span class="@(i <= Filled ? "star on" : "star")" aria-hidden="true">★</span>
+    }
+</span>
+
+@code {
+    [Parameter, EditorRequired] public decimal Value { get; set; }
+
+    /// <summary>As the prototype: the shown value rounded to whole stars.</summary>
+    private int Filled => (int)Math.Round(Value, MidpointRounding.AwayFromZero);
+}

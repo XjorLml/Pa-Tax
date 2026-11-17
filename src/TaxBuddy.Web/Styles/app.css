@@ -2098,3 +2098,240 @@ main:has(> .panes) {
     font-weight: 600;
   }
 }
+
+/* F09 ratings, reviews and the directory order (prototype .rating, .stars, .sortctl, .rev*, .starpick; Tax Buddy look). */
+@layer components {
+  .rating {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin: 8px 0 0;
+    font-size: 13.5px;
+  }
+
+  .stars {
+    display: inline-flex;
+    gap: 1px;
+    font-size: 15px;
+    line-height: 1;
+  }
+
+  .star {
+    color: var(--ctl);
+  }
+
+  .star.on {
+    color: var(--primary);
+  }
+
+  .rating-link {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    min-height: 28px;
+    color: var(--text);
+    font-size: 13.5px;
+    text-decoration: none;
+  }
+
+  .rating-link:hover {
+    text-decoration: underline;
+  }
+
+  .profile-head .rating {
+    margin-top: 2px;
+  }
+
+  /* Tax Buddy look: on cards the rating line carries the divider, and the facts follow it. */
+  .card .rating {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  .card .rating + .facts {
+    margin-top: 8px;
+    padding-top: 0;
+    border-top: 0;
+  }
+
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin: 0 0 12px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .sortctl {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+  }
+
+  .sortlink {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .sortlink[aria-current="true"] {
+    color: var(--text);
+    text-decoration: none;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .rev-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .rev-sum {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rev-avg {
+    font: 700 26px/1 var(--font-heading);
+  }
+
+  .revs {
+    display: grid;
+    gap: 10px;
+    margin: 10px 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .rev {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+  }
+
+  .rev-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .rev-who {
+    font-weight: 600;
+  }
+
+  .rev-top .time {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .rev p {
+    margin: 6px 0 0;
+  }
+
+  .rev-reply {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+    font-size: 14px;
+  }
+
+  .rev-reply textarea {
+    display: block;
+    width: 100%;
+    margin-top: 6px;
+    padding: 9px 12px;
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--text);
+  }
+
+  .rev-reply .actions {
+    margin-top: 8px;
+  }
+
+  .rev-reply-btn {
+    margin-top: 10px;
+  }
+
+  /* The star picker: real radio inputs (work without script), drawn as the prototype's star buttons. The checked star and
+     every star before it light up. */
+  .starpick {
+    display: flex;
+    gap: 6px;
+  }
+
+  .starpick input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: 0;
+    opacity: 0;
+  }
+
+  .starbtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-md);
+    background: var(--surface);
+    color: var(--ctl);
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .starpick input:checked + .starbtn,
+  .starpick .starbtn:has(~ input:checked) {
+    border-color: var(--primary);
+    background: var(--primary-soft);
+    color: var(--primary);
+  }
+
+  .starpick input:focus-visible + .starbtn {
+    outline: 3px solid var(--primary);
+    outline-offset: 2px;
+  }
+
+  /* Prototype: phone controls are at least 44 px, and the sort links sit on the right. */
+  @media (max-width: 47.4375rem) {
+    .rating-link {
+      min-height: 44px;
+    }
+
+    .sortctl {
+      margin-left: auto;
+    }
+
+    .sortlink {
+      display: inline-flex;
+      align-items: center;
+      min-height: 44px;
+      padding: 0 4px;
+    }
+  }
+}

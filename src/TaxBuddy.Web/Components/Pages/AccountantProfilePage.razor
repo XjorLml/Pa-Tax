@@ -1,6 +1,12 @@
 ﻿@page "/accountants/{Id}"
-@* F01 profile (PRD R03, R11, BR01; FT04, FT05, FT06). Static server rendering. *@
+@* F01 profile (PRD R03, R11, BR01; FT04, FT05, FT06). Static server rendering. Reviews and the accountant's reply form
+   came with R13 and R14 (F09): the reply is a named form posted to this page (SDD render modes). *@
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Application.Reviews
+@using TaxBuddy.Web.Components.Chat
 @inject DirectoryService Directory
+@inject ReviewService ReviewService
+@inject TaxBuddy.Web.Domain.IClock Clock
 @inject NavigationManager Navigation
 
 <PhoneBar Title="Profile" Back="/" />
@@ -18,8 +24,8 @@ else if (profile is not null)
     <SeoHead Title="@($"{profile.Name}, {profile.Title} · Tax Buddy")" Description="@Excerpt(profile.Summary)"
              CanonicalPath="@Display.ProfilePath(profile.Id)" />
 
-    @* The prototype's profile (profileBodyHTML, Tax Buddy look; F02 BD10). Portfolio highlights came with R12 (F08); its
-       rating, reviews and "Report this profile" join with R13 and R15. *@
+    @* The prototype's profile (profileBodyHTML, Tax Buddy look; F02 BD10). Portfolio highlights came with R12 (F08), the
+       rating and reviews with R13 and R14 (F09); "Report this profile" joins with R15. *@
     <nav class="crumbs" aria-label="Breadcrumb">
         <a href="/">Accountants</a><span aria-hidden="true">/</span><span>@profile.Name</span>
     </nav>
@@ -34,9 +40,14 @@ else if (profile is not null)
                     {
                         <p class="sub"><Icon Name="pin" Size="14" /> @profile.City</p>
                     }
+                    <p class="rating"><a class="rating-link" href="#reviews-heading"><RatingLine Rating="@reviews.Rating" /></a></p>
                 </div>
             </div>
             <ul class="facts-row">
+                @if (reviews.Rating.Average is { } average)
+                {
+                    <li><strong>@Display.Rating(average)</strong> average from @Display.ReviewCount(reviews.Rating.Count)</li>
+                }
                 @if (profile.YearsOfExperience is { } years)
                 {
                     <li><strong>@years</strong> @(years == 1 ? "year" : "years") of experience</li>
@@ -110,6 +121,103 @@ else if (profile is not null)
                     <p class="muted">No experience listed.</p>
                 }
             </section>
+
+            @* F09 (prototype reviewsHTML; PRD R13, R14, BR09–BR11). *@
+            <section class="section" aria-labelledby="reviews-heading">
+                <h2 id="reviews-heading" class="section-title" tabindex="-1">Reviews</h2>
+                @if (SavedText is { } saved)
+                {
+                    <p class="save-status ok" role="status">@saved</p>
+                }
+                <div class="rev-head">
+                    <div class="rev-sum">
+                        @if (reviews.Rating.Average is { } summaryAverage)
+                        {
+                            <strong class="rev-avg">@Display.Rating(summaryAverage)</strong>
+                            <Stars Value="summaryAverage" />
+                            <span class="muted">@Display.ReviewCount(reviews.Rating.Count)</span>
+                        }
+                        else
+                        {
+                            <span class="muted">No reviews yet.</span>
+                        }
+                    </div>
+                    @if (reviews.Access == ReviewAccess.Allowed)
+                    {
+                        <a class="btn btn-sm" href="@Display.ReviewPath(profile.Id)">@(reviews.HasReview ? "Edit your review" : "Write a review")</a>
+                    }
+                </div>
+                @if (!reviews.IsOwner)
+                {
+                    var first = Display.FirstName(profile.Name);
+                    switch (reviews.Access)
+                    {
+                        case ReviewAccess.SignIn:
+                            <p class="muted small">Reviews come from clients @first has chatted with. <a href="@TaxBuddy.Web.Account.AccountEndpoints.SignInPageAddress(Display.ProfilePath(profile.Id))">Sign in</a> if that's you.</p>
+                            break;
+                        case ReviewAccess.NoReplyYet:
+                            <p class="muted small">You can review @first after they reply to a message from you.</p>
+                            break;
+                        case ReviewAccess.NotAClient:
+                            <p class="muted small">Only clients can write reviews.</p>
+                            break;
+                    }
+                }
+                @if (reviews.Reviews.Count > 0)
+                {
+                    <ul class="revs">
+                        @foreach (var review in reviews.Reviews)
+                        {
+                            <li class="rev" id="@($"review-{review.Id:D}")">
+                                <div class="rev-top">
+                                    <Stars Value="review.Stars" />
+                                    <span class="rev-who">@review.ReviewerName@(review.IsMine ? " (you)" : "")</span>
+                                    <span class="time">@ChatDisplay.Short(review.At, Clock.UtcNow)</span>
+                                </div>
+                                @if (review.Text is not null)
+                                {
+                                    <p class="whitespace-pre-line">@review.Text</p>
+                                }
+                                @if (reviews.IsOwner && editingReply == review.Id)
+                                {
+                                    <form method="post" @formname="reply" @onsubmit="ReplyAsync" class="rev-reply" novalidate>
+                                        <AntiforgeryToken />
+                                        <input type="hidden" name="Reply.ReviewId" value="@review.Id.ToString("D")" />
+                                        <label for="reply-text"><strong>Your public reply</strong></label>
+                                        <textarea id="reply-text" name="Reply.Text" rows="3" maxlength="@TaxBuddy.Web.Domain.ReviewLimits.Reply"
+                                                  aria-invalid="@(replyError is null ? null : "true")"
+                                                  aria-describedby="@(replyError is null ? null : "reply-error")">@(Reply?.Text ?? review.ReplyText)</textarea>
+                                        @if (replyError is not null)
+                                        {
+                                            <span class="ferr" id="reply-error" role="alert">@replyError</span>
+                                        }
+                                        <div class="actions">
+                                            <button type="submit" class="btn btn-primary btn-sm">Post reply</button>
+                                            <a class="btn btn-sm" href="@($"{Display.ProfilePath(profile.Id)}#review-{review.Id:D}")">Cancel</a>
+                                        </div>
+                                    </form>
+                                }
+                                else if (review.ReplyText is not null)
+                                {
+                                    <div class="rev-reply">
+                                        <strong>Reply from @Display.FirstName(profile.Name)</strong>
+                                        <p class="whitespace-pre-line">@review.ReplyText</p>
+                                        @if (reviews.IsOwner)
+                                        {
+                                            <a class="linkbtn" href="@ReplyEditPath(review.Id)">Edit reply</a>
+                                        }
+                                    </div>
+                                }
+                                else if (reviews.IsOwner)
+                                {
+                                    <a class="btn btn-sm rev-reply-btn" href="@ReplyEditPath(review.Id)">Reply</a>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+                <p class="muted small mt-2.5">Only clients this accountant has replied to can leave a review. Tax Buddy doesn't edit or check reviews.</p>
+            </section>
         </article>
 
         <aside class="profile-aside" aria-label="Contact">
@@ -159,7 +267,7 @@ else if (profile is not null)
                 </ul>
                 <p class="muted small mt-2">Shown publicly by the accountant.</p>
             </div>
-            <p class="note"><Icon Name="info" Size="18" /><span>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications, so ask about credentials in your chat.</span></p>
+            <p class="note"><Icon Name="info" Size="18" /><span>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>
         </aside>
     </div>
 
@@ -174,11 +282,33 @@ else if (profile is not null)
 
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
+    [SupplyParameterFromForm(FormName = "reply")] private ReplyForm? Reply { get; set; }
+
+    /// <summary>The review whose reply the owner is writing (prototype "Reply" and "Edit reply"); a plain link opens it.</summary>
+    [SupplyParameterFromQuery(Name = "reply")] public string? ReplyTo { get; set; }
+
+    /// <summary>What was just saved, after the redirect: the prototype's toast as a status line.</summary>
+    [SupplyParameterFromQuery(Name = "saved")] public string? Saved { get; set; }
+
     private AccountantProfileView? profile;
+    private ProfileReviews reviews = ProfileReviews.Empty;
+    private ChatViewer? viewer;
+    private Guid? editingReply;
+    private string? replyError;
     private bool failed;
+
+    private string? SavedText => Saved switch
+    {
+        "review-posted" => "Your review was posted.",
+        "review-updated" => "Your review was updated.",
+        "review-deleted" => "Your review was deleted.",
+        "reply" => "Your reply was posted.",
+        _ => null,
+    };
 
     protected override async Task OnInitializedAsync()
     {
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
         try
         {
             profile = await Directory.GetProfileAsync(Id);
@@ -186,14 +316,56 @@ else if (profile is not null)
             {
                 // Blazor sends no body with a page-set 404; the not-found page renders "no longer available" for this address (FT05).
                 Navigation.NotFound();
+                return;
             }
+
+            reviews = await ReviewService.ForProfileAsync(viewer, profile.Id);
         }
         catch (DataUnavailableException)
         {
             failed = true;
             SetStatus(StatusCodes.Status503ServiceUnavailable);
+            return;
+        }
+
+        if (reviews.IsOwner && Guid.TryParse(Reply?.ReviewId ?? ReplyTo, out var reviewId) && reviews.Reviews.Any(r => r.Id == reviewId))
+        {
+            editingReply = reviewId;
         }
     }
+
+    /// <summary>R14: the owner's reply. The service checks the owner again; a failed post keeps the text.</summary>
+    private async Task ReplyAsync()
+    {
+        if (profile is null || Reply is null)
+        {
+            return;
+        }
+
+        Guid.TryParse(Reply.ReviewId, out var reviewId);
+        var result = await ReviewService.ReplyAsync(viewer, profile.Id, reviewId, Reply.Text);
+        switch (result.Outcome)
+        {
+            case ReplyOutcome.Posted:
+                // SDD forms: redirect, so a reload doesn't post again.
+                Navigation.NavigateTo($"{Display.ProfilePath(profile.Id)}?saved=reply#review-{reviewId:D}");
+                break;
+            case ReplyOutcome.Invalid:
+                replyError = result.Error;
+                SetStatus(StatusCodes.Status422UnprocessableEntity);
+                break;
+            case ReplyOutcome.NotAllowed:
+                editingReply = null;
+                SetStatus(StatusCodes.Status403Forbidden);
+                break;
+            default:
+                replyError = "Not posted: we couldn't reach the server. Your reply is still here.";
+                SetStatus(StatusCodes.Status503ServiceUnavailable);
+                break;
+        }
+    }
+
+    private string ReplyEditPath(Guid reviewId) => $"{Display.ProfilePath(profile!.Id)}?reply={reviewId:D}#reply-text";
 
     private void SetStatus(int status) => ResponseStatus.Set(HttpContext, status);
 
