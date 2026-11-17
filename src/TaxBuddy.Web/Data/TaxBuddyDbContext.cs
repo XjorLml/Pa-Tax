@@ -20,6 +20,10 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
 
     public DbSet<AccountantProfile> AccountantProfiles => Set<AccountantProfile>();
 
+    public DbSet<Conversation> Conversations => Set<Conversation>();
+
+    public DbSet<ChatMessage> Messages => Set<ChatMessage>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<AccountantId>().HaveConversion<AccountantIdConverter>();
@@ -71,9 +75,41 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
                 entry.Property(e => e.End).HasColumnName("end_month");
                 entry.Ignore(e => e.IsCurrent);
             });
+
         });
 
+        ConfigureChat(modelBuilder);
         ApplySnakeCaseNames(modelBuilder);
+    }
+
+    /// <summary>
+    /// F07: one conversation per client and accountant (D06). Deleting an account does not remove the other person's copy
+    /// here: what happens then is open (D07), so the database refuses it until account deletion (R09) decides.
+    /// </summary>
+    private static void ConfigureChat(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Conversation>(conversation =>
+        {
+            conversation.ToTable("conversations");
+            conversation.HasKey(c => c.Id);
+            conversation.Property(c => c.Id).ValueGeneratedNever();
+            conversation.HasIndex(c => new { c.ClientAccountId, c.AccountantAccountId }).IsUnique();
+            conversation.HasIndex(c => c.AccountantAccountId);
+            conversation.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(c => c.ClientAccountId).OnDelete(DeleteBehavior.Restrict);
+            conversation.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(c => c.AccountantAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<ChatMessage>(message =>
+        {
+            message.ToTable("messages");
+            message.HasKey(m => m.Id);
+            message.Property(m => m.Id).ValueGeneratedNever();
+            message.Property(m => m.Text).HasMaxLength(ChatLimits.MessageLength);
+            message.HasIndex(m => new { m.ConversationId, m.SentAt });
+            message.HasIndex(m => new { m.SenderAccountId, m.SentAt });
+            message.HasOne<Conversation>().WithMany().HasForeignKey(m => m.ConversationId).OnDelete(DeleteBehavior.Cascade);
+            message.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(m => m.SenderAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
     }
 
     /// <summary>F04: Identity's tables under plain names, and the account fields.</summary>

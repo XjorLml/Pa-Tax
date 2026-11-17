@@ -18,7 +18,7 @@ This reverses F05's "profile photos" exclusion and the SDD's "Supabase Storage n
 
 **Who sees a picture:**
 - An accountant's picture is public: header, directory card, public profile, Account.
-- A client's picture is shown only to that client for now (header, Account). Chat (R06) will show it to the client's accountants.
+- A client's picture is shown to that client (header, Account) and, since F07 (2026-11-16), to the accountants they have a conversation with, in the chat list.
 
 **In scope:**
 - Upload and remove from the Account page; a "Change picture" link from the profile editor.
@@ -29,7 +29,7 @@ This reverses F05's "profile photos" exclusion and the SDD's "Supabase Storage n
 
 **Exclusions:**
 - Cropping or rotating in the browser (script).
-- Pictures in chat (R06 not built).
+- Pictures in chat (R06 not built). Superseded 2026-11-16: [F07](../chat/spec.md) shows them in the conversation list.
 - Moderation beyond reporting (R15 not built).
 - Pictures for the synthetic seed profiles.
 

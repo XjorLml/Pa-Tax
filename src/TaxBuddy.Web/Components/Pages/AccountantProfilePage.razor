@@ -1,4 +1,4 @@
-@page "/accountants/{Id}"
+﻿@page "/accountants/{Id}"
 @* F01 profile (PRD R03, R11, BR01; FT04, FT05, FT06). Static server rendering. *@
 @inject DirectoryService Directory
 @inject NavigationManager Navigation
@@ -87,7 +87,7 @@ else if (profile is not null)
 
         <aside class="profile-aside" aria-label="Contact">
             <div class="aside-card">
-                @* F01 exclusion: messaging (R06) is shown but leads to a "coming soon" page in this slice. *@
+                @* F07: Message opens a new chat, or the existing conversation (D06: one per client and accountant). *@
                 <div class="aside-cta">
                     <a class="btn btn-primary btn-block" href="@($"/chats/new/{profile.Id}")"><Icon Name="chat" Size="18" />Message @Display.FirstName(profile.Name)</a>
                     <p class="cta-hint">It's free to send a message. You'll sign in with Google before it's sent.</p>

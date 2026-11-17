@@ -52,7 +52,7 @@ public sealed partial class ProfilePictureTests(EmptyAppFixture app) : IClassFix
         Assert.Equal(HttpStatusCode.NotFound, (await app.Factory.CreateHttpsClient().GetAsync(address)).StatusCode);
         var (other, _) = await SignedInAsync(AccountRole.Client, "Paolo Tan");
         Assert.Equal(HttpStatusCode.NotFound, (await other.GetAsync(address)).StatusCode);
-        Assert.Contains("For now only you see it.", await (await owner.GetAsync("/account")).ReadHtmlAsync());
+        Assert.Contains("Only you and the accountants you chat with see it.", await (await owner.GetAsync("/account")).ReadHtmlAsync());
     }
 
     [DatabaseFact]

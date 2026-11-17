@@ -15,6 +15,7 @@
         {
             <p class="appbar-title" aria-hidden="true">@Title</p>
         }
+        @Actions
     </header>
 </SectionContent>
 
@@ -28,4 +29,7 @@
 
     /// <summary>Show the logo instead of a title (the directory).</summary>
     [Parameter] public bool Brand { get; set; }
+
+    /// <summary>Icon buttons at the end of the bar (prototype phoneShell <c>actions</c>), such as "View profile" in a chat.</summary>
+    [Parameter] public RenderFragment? Actions { get; set; }
 }

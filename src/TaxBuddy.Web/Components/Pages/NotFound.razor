@@ -4,9 +4,25 @@
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
    message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
 
-<PhoneBar Title="@(isProfileAddress ? "Profile" : "Page not found")" Back="/" />
+<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
 
-@if (isProfileAddress)
+@if (kind == Kind.Chat)
+{
+    @* F07 CH07: someone else's conversation or an unknown one; nothing about it is shown. *@
+    <SeoHead Title="Conversation not available · Tax Buddy" Description="This conversation isn't available." CanonicalPath="/chats" />
+    <StateMessage IconName="alert" HeadingLevel="1" Title="This conversation isn't available" Text="It may have been removed, or it belongs to a different account.">
+        <a class="btn" href="/chats">Back to chats</a>
+    </StateMessage>
+}
+else if (kind == Kind.NewChat)
+{
+    @* F07 CH08 (prototype threadParts): the accountant's profile is unlisted, removed or unknown. *@
+    <SeoHead Title="Accountant not available · Tax Buddy" Description="This accountant is no longer available." CanonicalPath="/" />
+    <StateMessage IconName="alert" HeadingLevel="1" Title="This accountant is no longer available">
+        <a class="btn" href="/">Back to directory</a>
+    </StateMessage>
+}
+else if (kind == Kind.Profile)
 {
     <SeoHead Title="Profile no longer available · Tax Buddy" Description="This accountant profile is no longer available." CanonicalPath="/" />
     <StateMessage IconName="list" HeadingLevel="1" Title="This profile is no longer available"
@@ -25,12 +41,20 @@ else
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    private bool isProfileAddress;
+    private enum Kind { Page, Profile, Chat, NewChat }
+
+    private Kind kind;
 
     protected override void OnInitialized()
     {
         // Re-executed for a 404: the feature holds the address the visitor asked for. Rendered in place: the request path is it.
         var original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value;
-        isProfileAddress = original?.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) == true;
+        kind = original switch
+        {
+            { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) => Kind.Profile,
+            { } path when path.StartsWith("/chats/new/", StringComparison.OrdinalIgnoreCase) => Kind.NewChat,
+            { } path when path.StartsWith("/chats/", StringComparison.OrdinalIgnoreCase) => Kind.Chat,
+            _ => Kind.Page,
+        };
     }
 }

@@ -1,0 +1,101 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-16T08:01:09.677Z",
+  "results": [
+    {
+      "n": "visitor sees \"Sign in to send\", the intro and the Enter hint",
+      "ok": true,
+      "d": {
+        "button": "Sign in to send",
+        "intro": "Write your message to Nina. You'll sign in before it's sent, and your text is kept.",
+        "hint": "Enter to send · Shift+Enter for a new line"
+      }
+    },
+    {
+      "n": "a reload keeps the visitor's text",
+      "ok": true,
+      "d": "Hi! I need help with monthly bookkeeping. Monthly, for a small shop."
+    },
+    {
+      "n": "\"Sign in to send\" goes to sign-in and back here",
+      "ok": true,
+      "d": "http://localhost:5240/signin?returnUrl=%2Fchats%2Fnew%2F9b61e8fb-1d39-48f1-b8f0-d9f33e70376a"
+    },
+    {
+      "n": "after sign-in the text is still there, ready to send",
+      "ok": true,
+      "d": {
+        "value": "Hi! I need help with monthly bookkeeping. Monthly, for a small shop.",
+        "button": "Send",
+        "intro": "Say hello to Nina and describe what you need help with."
+      }
+    },
+    {
+      "n": "sending moves to the new conversation with the message sent and the draft cleared",
+      "ok": true,
+      "d": {
+        "path": "/chats/db25bc47-ee1b-4a7d-a119-892f711e8459",
+        "last": "Hi! I need help with monthly bookkeeping. Monthly, for a small shop.",
+        "status": "4:00 PM· Sent",
+        "field": "",
+        "stored": []
+      }
+    },
+    {
+      "n": "the accountant's list shows Olive with \"1 new\" and the navigation count",
+      "ok": true,
+      "d": {
+        "name": "Olive Reyes",
+        "badge": "1 new",
+        "nav": "1 unread",
+        "prev": "Hi! I need help with monthly bookkeeping. Monthly, for a small shop."
+      }
+    },
+    {
+      "n": "Enter sends the accountant's reply",
+      "ok": true,
+      "d": "Today\nHi! I need help with monthly bookkeeping. Monthly, for a small shop.\n4:00 PM\nHello Olive! Yes, I can help. What does the shop sell?\n4:00 PM\n· Sent"
+    },
+    {
+      "n": "the reply appears for the client without a reload",
+      "ok": true,
+      "d": "Today\nHi! I need help with monthly bookkeeping. Monthly, for a small shop.\n4:00 PM\n· Sent\nHello Olive! Yes, I can help. What does the shop sell?\n4:00 PM"
+    },
+    {
+      "n": "the accountant's unread mark is gone after opening",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "a reload keeps the thread draft",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "the connection-lost banner shows",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "while disconnected the text stays in the field",
+      "ok": true,
+      "d": {
+        "value": "Draft about our sales",
+        "banner": "Connection lost. Trying again in 3 seconds. Your typed text is kept."
+      }
+    },
+    {
+      "n": "after the server returns, the page is live again with the text still there",
+      "ok": true,
+      "d": {
+        "v": "Draft about our sales",
+        "open": false
+      }
+    },
+    {
+      "n": "nothing was sent in the background",
+      "ok": true,
+      "d": null
+    }
+  ]
+}

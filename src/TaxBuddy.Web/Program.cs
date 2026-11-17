@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 using TaxBuddy.Web.Account;
+using TaxBuddy.Web.Application.Chat;
 using TaxBuddy.Web.Application.Directory;
 using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Application.Profiles;
@@ -39,6 +40,12 @@ else
 {
     builder.Services.AddSingleton<IPictureStorage, NoPictureStorage>();
 }
+
+// F07: chat. The notifier is one per server (SDD live updates: a single instance until a shared notifier is decided).
+builder.Services.AddSingleton<IChatNotifier, ChatNotifier>();
+builder.Services.AddScoped<IChatStore, ChatStore>();
+builder.Services.AddScoped<ChatService>();
+builder.Services.AddScoped<UnreadChats>();
 
 // F04: Google sign-in and accounts (ADR 006).
 builder.AddTaxBuddyAccounts();

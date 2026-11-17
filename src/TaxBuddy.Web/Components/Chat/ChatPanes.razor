@@ -1,0 +1,521 @@
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Domain
+@implements IAsyncDisposable
+@inject ChatService Chat
+@inject IChatNotifier Notifier
+@inject IClock Clock
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@* F07 chat (prototype convListHTML, messagesHTML, composerHTML, threadParts and the desktop panes). The one interactive
+   part of the chat pages (SDD render modes): it receives only IDs, takes the viewer from the sign-in, and reloads from
+   the database whenever the notifier says a conversation changed. The composer's text and its message ID live in the
+   browser tab (ChatPanes.razor.js), so a lost connection or a reload never loses typed text (R10). Full page loads
+   between chats, so each page starts from the database. *@
+
+<div class="panes @(IsList ? "is-list" : "is-thread")" data-enhance-nav="false" @ref="root">
+    <section class="pane-list" aria-label="Conversations">
+        <div class="pane-head">
+            @if (IsList)
+            {
+                <h1 tabindex="-1">Chats</h1>
+            }
+            else
+            {
+                <h2>Chats</h2>
+            }
+        </div>
+        <div class="pane-scroll">
+            @if (viewer is null)
+            {
+                <StateMessage IconName="chat" Title="Sign in to see your chats" Text="Clients message accountants here, and accountants reply here.">
+                    <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/chats")">Sign in</a>
+                </StateMessage>
+            }
+            else if (listFailed)
+            {
+                <StateMessage IconName="alert" Title="We couldn't load your chats" Text="That's a problem on our side, not yours. Please try again.">
+                    <button type="button" class="btn" @onclick="ReloadAsync">Try again</button>
+                </StateMessage>
+            }
+            else if (conversations is { Count: 0 })
+            {
+                @if (viewer.IsClient)
+                {
+                    <StateMessage IconName="chat" Title="No chats yet" Text="Find an accountant and send a message to start.">
+                        <a class="btn btn-primary" href="/">Find an accountant</a>
+                    </StateMessage>
+                }
+                else
+                {
+                    <StateMessage IconName="chat" Title="No client messages yet" Text="When a client messages you, the conversation appears here." />
+                }
+            }
+            else if (conversations is not null)
+            {
+                <ul class="convs">
+                    @foreach (var c in conversations)
+                    {
+                        <li>
+                            <a class="conv @(c.Unread > 0 ? "unread" : "")" href="@ChatDisplay.ThreadPath(c.Id)" aria-current="@(c.Id == ConversationId ? "true" : null)">
+                                <Avatar Name="@c.PeerName" Picture="@c.PeerPicture" />
+                                <span class="conv-main">
+                                    <span class="conv-top">
+                                        <span class="conv-name">@c.PeerName</span>
+                                        <span class="time">@(c.LastAt is { } at ? ChatDisplay.Short(at, now) : "")</span>
+                                    </span>
+                                    <span class="conv-bottom">
+                                        <span class="conv-prev">@(c.LastIsMine ? "You: " : "")@c.LastText</span>
+                                        @if (c.Unread > 0)
+                                        {
+                                            <span class="badge">@c.Unread new</span>
+                                        }
+                                    </span>
+                                </span>
+                            </a>
+                        </li>
+                    }
+                </ul>
+            }
+        </div>
+    </section>
+
+    <section class="pane-detail" aria-label="Conversation">
+        @if (IsList)
+        {
+            <div class="empty-detail">
+                <div>
+                    <Icon Name="chat" Size="40" />
+                    <p>@(viewer is null ? "Sign in to see your chats." : "Select a conversation.")</p>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="pane-head">
+                <h1 tabindex="-1">@PeerName</h1>
+                @if (PeerProfile is { } profile)
+                {
+                    <a class="btn btn-sm" href="@Display.ProfilePath(profile)">View profile</a>
+                }
+            </div>
+            <div class="pane-scroll pad" data-chat-scroll>
+                @if (threadFailed)
+                {
+                    <StateMessage IconName="alert" Title="We couldn't load this conversation" Text="That's a problem on our side, not yours. Please try again.">
+                        <button type="button" class="btn" @onclick="ReloadAsync">Try again</button>
+                    </StateMessage>
+                }
+                else
+                {
+                    <div class="thread">
+                        @if (Messages.Count == 0 && pending.Count == 0)
+                        {
+                            <div class="thread-intro">
+                                <p>
+                                    @if (viewer is null)
+                                    {
+                                        @($"Write your message to {Display.FirstName(PeerName)}. You'll sign in before it's sent, and your text is kept.")
+                                    }
+                                    else
+                                    {
+                                        @($"Say hello to {Display.FirstName(PeerName)} and describe what you need help with.")
+                                    }
+                                </p>
+                                @if (Mode == NewMode)
+                                {
+                                    <div class="starters" role="group" aria-label="Ideas to start with">
+                                        @foreach (var starter in Starters)
+                                        {
+                                            <button type="button" class="chip" data-starter="@starter">@starter</button>
+                                        }
+                                    </div>
+                                }
+                            </div>
+                        }
+                        @{ DateOnly? lastDay = null; }
+                        @foreach (var m in Shown)
+                        {
+                            var day = ChatDisplay.ManilaDate(m.SentAt);
+                            if (day != lastDay)
+                            {
+                                lastDay = day;
+                                <div class="day">@ChatDisplay.Day(m.SentAt, now)</div>
+                            }
+
+                            <div class="msg @(m.Mine ? "mine" : "theirs") @(m.Status == SendStatus.Failed ? "failed" : "")" @key="m.Id">
+                                <div class="bubble">@m.Text</div>
+                                <div class="msg-meta">
+                                    <span>@ChatDisplay.Time(m.SentAt)</span>
+                                    @if (m.Mine && (m.Status != SendStatus.Sent || m.Id == LastMineId))
+                                    {
+                                        @switch (m.Status)
+                                        {
+                                            case SendStatus.Sending:
+                                                <span>· Sending…</span>
+                                                break;
+                                            case SendStatus.Checking:
+                                                <span>· Checking whether it was sent…</span>
+                                                break;
+                                            case SendStatus.Failed:
+                                                <span>·</span>
+                                                <span class="err">Not sent.</span>
+                                                <button type="button" class="linkbtn" @onclick="() => RetryAsync(m.Id)">Retry</button>
+                                                break;
+                                            default:
+                                                <span>· Sent</span>
+                                                break;
+                                        }
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+            @if (!threadFailed)
+            {
+                <div class="footer">
+                    @* The text, count, hint and errors belong to the script; it enables Send once it is running. *@
+                    <form class="composer" data-chat-composer novalidate>
+                        <label class="sr-only" for="composer">Message</label>
+                        <textarea id="composer" rows="1" placeholder="Write a message" aria-describedby="composer-status composer-count"></textarea>
+                        <button type="submit" class="btn btn-primary" disabled><Icon Name="send" Size="18" /><span>@(viewer is null ? "Sign in to send" : "Send")</span></button>
+                        <div class="composer-meta">
+                            <span class="cerr" id="composer-status" role="status" data-composer-status></span>
+                            <span class="count" id="composer-count" data-composer-count>0 / @ChatDisplay.Count(ChatLimits.MessageLength)</span>
+                        </div>
+                    </form>
+                </div>
+            }
+        }
+    </section>
+
+    <p class="sr-only" role="status">@announcement</p>
+</div>
+
+@code {
+    public const string ListMode = "list";
+    public const string ThreadMode = "thread";
+    public const string NewMode = "new";
+
+    /// <summary>The prototype's message ideas (STARTERS).</summary>
+    private static readonly string[] Starters =
+    [
+        "Hi! I need help with monthly bookkeeping.",
+        "Hi! Can you help me file my taxes?",
+        "Hi! I'm starting a business and need to register it.",
+    ];
+
+    [CascadingParameter] public Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    /// <summary><see cref="ListMode"/>, <see cref="ThreadMode"/> or <see cref="NewMode"/>.</summary>
+    [Parameter, EditorRequired] public string Mode { get; set; } = ListMode;
+
+    [Parameter] public Guid? ConversationId { get; set; }
+
+    /// <summary>The accountant's profile for a new chat.</summary>
+    [Parameter] public Guid? ProfileId { get; set; }
+
+    private enum SendStatus { Sent, Sending, Checking, Failed }
+
+    private sealed record ShownMessage(Guid Id, bool Mine, string Text, DateTimeOffset SentAt, SendStatus Status);
+
+    private sealed class Pending(Guid id, string text, DateTimeOffset sentAt)
+    {
+        public Guid Id { get; } = id;
+        public string Text { get; } = text;
+        public DateTimeOffset SentAt { get; set; } = sentAt;
+        public SendStatus Status { get; set; } = SendStatus.Sending;
+    }
+
+    /// <summary>What a render loaded. The prerender's copy is carried to the live connection, so its first render shows
+    /// the same page instead of an empty one while it loads again.</summary>
+    public sealed record ChatSnapshot(
+        DateTimeOffset Now, IReadOnlyList<ConversationSummary>? Conversations, bool ListFailed, ThreadView? Thread, NewChat? NewChat,
+        bool ThreadFailed);
+
+    [PersistentState] public ChatSnapshot? Snapshot { get; set; }
+
+    /// <summary>The composer's reply to the script.</summary>
+    public sealed record ComposerReply(string Outcome, string? Error = null, string? Url = null);
+
+    private ElementReference root;
+    private ChatViewer? viewer;
+    private DateTimeOffset now;
+    private IReadOnlyList<ConversationSummary>? conversations;
+    private bool listFailed;
+    private ThreadView? thread;
+    private NewChat? newChat;
+    private bool threadFailed;
+    private readonly List<Pending> pending = [];
+    private string? announcement;
+    private IDisposable? subscription;
+    private IJSObjectReference? module;
+    private DotNetObjectReference<ChatPanes>? self;
+    private int renderedCount = -1;
+
+    private bool IsList => Mode == ListMode;
+
+    private string PeerName => thread?.PeerName ?? newChat?.Recipient?.Name ?? "Chat";
+
+    private AccountantId? PeerProfile => Mode == NewMode ? newChat?.Recipient?.ProfileId : thread is { ViewerIsClient: true } t ? t.PeerProfileId : null;
+
+    private IReadOnlyList<MessageView> Messages => thread?.Messages ?? [];
+
+    private IEnumerable<ShownMessage> Shown =>
+        Messages.Select(m => new ShownMessage(m.Id, m.Mine, m.Text, m.SentAt, SendStatus.Sent))
+            .Concat(pending.Select(p => new ShownMessage(p.Id, true, p.Text, p.SentAt, p.Status)));
+
+    private Guid? LastMineId => Shown.LastOrDefault(m => m.Mine)?.Id;
+
+    private string DraftKey => Mode == NewMode ? $"new:{ProfileId:D}" : $"thread:{ConversationId:D}";
+
+    /// <summary>A visitor's draft for this accountant, carried into the conversation once it exists (CH05).</summary>
+    private string? FallbackKey => thread is { ViewerIsClient: true, PeerProfileId: { } p } ? $"new:{p}" : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewer = AuthenticationState is null ? null : ChatDisplay.ViewerOf((await AuthenticationState).User);
+        if (RendererInfo.IsInteractive && Snapshot is { } loaded)
+        {
+            (now, conversations, listFailed, thread, newChat, threadFailed) =
+                (loaded.Now, loaded.Conversations, loaded.ListFailed, loaded.Thread, loaded.NewChat, loaded.ThreadFailed);
+        }
+        else
+        {
+            await LoadAsync();
+            Snapshot = new ChatSnapshot(now, conversations, listFailed, thread, newChat, threadFailed);
+        }
+
+        if (RendererInfo.IsInteractive && viewer is not null)
+        {
+            subscription = Notifier.Subscribe(viewer.AccountId, OnConversationChanged);
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!RendererInfo.IsInteractive || IsList || threadFailed)
+        {
+            return;
+        }
+
+        try
+        {
+            if (module is null)
+            {
+                module = await JS.InvokeAsync<IJSObjectReference>("import", $"./{Assets["Components/Chat/ChatPanes.razor.js"]}");
+                self = DotNetObjectReference.Create(this);
+                await module.InvokeVoidAsync("init", root, self, DraftKey, FallbackKey);
+            }
+
+            var count = Messages.Count + pending.Count;
+            if (count != renderedCount)
+            {
+                renderedCount = count;
+                await module.InvokeVoidAsync("scrollToEnd", root);
+            }
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        now = Clock.UtcNow;
+        if (viewer is not null)
+        {
+            try
+            {
+                conversations = await Chat.ListAsync(viewer.AccountId);
+                listFailed = false;
+            }
+            catch (Application.Directory.DataUnavailableException)
+            {
+                listFailed = true;
+            }
+        }
+
+        if (Mode == ThreadMode && ConversationId is { } id && viewer is not null)
+        {
+            try
+            {
+                var before = thread?.Messages.Count(m => !m.Mine) ?? -1;
+                thread = await Chat.OpenThreadAsync(viewer.AccountId, id);
+                threadFailed = thread is null;
+                pending.RemoveAll(p => thread?.Messages.Any(m => m.Id == p.Id) == true);
+                var after = thread?.Messages.Count(m => !m.Mine) ?? 0;
+                if (before >= 0 && after > before)
+                {
+                    announcement = $"New message from {Display.FirstName(PeerName)}.";
+                }
+            }
+            catch (Application.Directory.DataUnavailableException)
+            {
+                threadFailed = true;
+            }
+        }
+        else if (Mode == NewMode && ProfileId is { } profileId && newChat is null)
+        {
+            try
+            {
+                newChat = await Chat.PrepareNewChatAsync(viewer, new AccountantId(profileId));
+            }
+            catch (Application.Directory.DataUnavailableException)
+            {
+                threadFailed = true;
+            }
+        }
+    }
+
+    /// <summary>"Try again": the event handler renders afterwards.</summary>
+    private Task ReloadAsync() => LoadAsync();
+
+    /// <summary>From the notifier, on another thread: reload on this page's dispatcher, then render.</summary>
+    private Task OnConversationChanged(Guid conversationId) => InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    /// <summary>Called by the composer script with the text and the message ID it keeps with the draft.</summary>
+    [JSInvokable]
+    public async Task<ComposerReply> SendFromComposer(string text, string messageId)
+    {
+        if (viewer is null)
+        {
+            return new ComposerReply("signin", Url: AccountEndpoints.SignInPageAddress(new Uri(Navigation.Uri).PathAndQuery));
+        }
+
+        if (!Guid.TryParse(messageId, out var id) || id == Guid.Empty)
+        {
+            return new ComposerReply("invalid", "Something went wrong. Reload the page and try again.");
+        }
+
+        var (normalized, problem) = MessageText.Normalize(text);
+        if (normalized is null)
+        {
+            return new ComposerReply("invalid", ProblemText(problem));
+        }
+
+        var message = new Pending(id, normalized, Clock.UtcNow);
+        pending.RemoveAll(p => p.Id == id);
+        pending.Add(message);
+        StateHasChanged();
+        var result = await SendPendingAsync(message);
+        return result.Outcome switch
+        {
+            SendOutcome.Sent when Mode == NewMode => new ComposerReply("moved", Url: AfterFirstMessage(result)),
+            SendOutcome.Sent => new ComposerReply("sent"),
+            SendOutcome.Failed => new ComposerReply("failed"),
+            SendOutcome.Invalid => new ComposerReply("invalid", ProblemText(result.Problem)),
+            SendOutcome.TooFast => new ComposerReply("too-fast", "You're sending messages quickly. Wait a moment and try again."),
+            _ => new ComposerReply("not-allowed", "You can't send messages in this conversation."),
+        };
+    }
+
+    private async Task RetryAsync(Guid id)
+    {
+        if (pending.FirstOrDefault(p => p.Id == id) is not { Status: SendStatus.Failed } message)
+        {
+            return;
+        }
+
+        message.Status = SendStatus.Sending;
+        var result = await SendPendingAsync(message);
+        if (result.Outcome == SendOutcome.Sent && module is not null)
+        {
+            try
+            {
+                await module.InvokeVoidAsync("confirmed", root, id.ToString("D"));
+                if (Mode == NewMode)
+                {
+                    Navigation.NavigateTo(AfterFirstMessage(result), forceLoad: true, replace: true);
+                }
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+    }
+
+    /// <summary>Sends, then shows the true outcome: sent, or after a failure, whether it was stored after all (DESIGN states).</summary>
+    private async Task<SendResult> SendPendingAsync(Pending message)
+    {
+        var result = await Chat.SendAsync(viewer!, Mode == ThreadMode ? ConversationId : null,
+            Mode == NewMode && ProfileId is { } p ? new AccountantId(p) : null, message.Id, message.Text);
+
+        if (result.Outcome == SendOutcome.Failed)
+        {
+            message.Status = SendStatus.Checking;
+            StateHasChanged();
+            if (await Chat.IsStoredAsync(viewer!.AccountId, message.Id) == true)
+            {
+                result = new SendResult(SendOutcome.Sent, Mode == ThreadMode ? ConversationId : await ConversationOfAsync());
+            }
+        }
+
+        switch (result.Outcome)
+        {
+            case SendOutcome.Sent:
+                message.Status = SendStatus.Sent;
+                announcement = "Message sent.";
+                if (Mode == ThreadMode)
+                {
+                    await LoadAsync();
+                }
+
+                break;
+            case SendOutcome.Failed:
+                message.Status = SendStatus.Failed;
+                announcement = "Not sent. Your message is shown with a Retry button.";
+                break;
+            default:
+                pending.Remove(message);
+                break;
+        }
+
+        StateHasChanged();
+        return result;
+    }
+
+    /// <summary>A new chat's conversation, once its first message is known to be stored.</summary>
+    private async Task<Guid?> ConversationOfAsync()
+    {
+        try
+        {
+            return ProfileId is { } p && await Chat.PrepareNewChatAsync(viewer, new AccountantId(p)) is { ConversationId: { } id } ? id : null;
+        }
+        catch (Application.Directory.DataUnavailableException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>A new chat moves to its conversation after the first message; the list if that can't be found.</summary>
+    private static string AfterFirstMessage(SendResult result) =>
+        result.ConversationId is { } id ? ChatDisplay.ThreadPath(id) : "/chats";
+
+    private static string ProblemText(MessageProblem? problem) => problem == MessageProblem.TooLong
+        ? $"Messages can be up to {ChatDisplay.Count(ChatLimits.MessageLength)} characters."
+        : "Write a message first.";
+
+    public async ValueTask DisposeAsync()
+    {
+        subscription?.Dispose();
+        if (module is not null)
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+            }
+        }
+
+        self?.Dispose();
+    }
+}

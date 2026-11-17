@@ -10,7 +10,8 @@ resumeButton.addEventListener("click", resume);
 
 function handleReconnectStateChanged(event) {
     if (event.detail.state === "show") {
-        reconnectModal.showModal();
+        // Not modal: the page stays usable, so typed text stays in reach (R10).
+        if (!reconnectModal.open) reconnectModal.show();
     } else if (event.detail.state === "hide") {
         reconnectModal.close();
     } else if (event.detail.state === "failed") {

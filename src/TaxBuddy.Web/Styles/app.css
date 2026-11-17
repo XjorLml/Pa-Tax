@@ -1685,3 +1685,382 @@
     overflow: hidden;
   }
 }
+
+/* F07 chat: the prototype's .panes, .convs, .thread and .composer (desktopMain chats, phoneShell thread), in the Tax
+   Buddy look. Phones show one pane at a time; from 760 px the list sits beside the conversation. */
+@layer components {
+  .badge {
+    display: inline-block;
+    min-width: 20px;
+    padding: 2px 7px;
+    border-radius: var(--r-pill);
+    background: var(--primary);
+    color: var(--on-primary);
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.4;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .tabbar a {
+    position: relative;
+  }
+
+  .tabbar .badge {
+    position: absolute;
+    top: 6px;
+    left: calc(50% + 6px);
+  }
+
+  .panes {
+    display: flex;
+    min-height: 0;
+  }
+
+  .pane-list {
+    display: flex;
+    flex: none;
+    flex-direction: column;
+    width: 100%;
+    min-height: 0;
+    background: var(--app-bg);
+  }
+
+  .pane-detail {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 0;
+    background: var(--surface);
+  }
+
+  .pane-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px 16px;
+  }
+
+  .panes .pane-head h1,
+  .panes .pane-head h2 {
+    flex: 1;
+    align-self: center;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    font-size: 20px;
+    line-height: 1.25;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .empty-detail {
+    display: grid;
+    flex: 1;
+    place-items: center;
+    padding: 24px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .pane-detail > .footer {
+    flex: none;
+    padding: 10px 16px 14px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+
+  /* Phones: the list alone, or the conversation alone filling the screen under the app bar. */
+  @media (max-width: 47.4375rem) {
+    .panes.is-list .pane-detail,
+    .panes.is-thread .pane-list {
+      display: none;
+    }
+
+    .panes.is-list .pane-scroll {
+      overflow: visible;
+    }
+
+    .panes.is-thread {
+      height: calc(100dvh - 57px);
+    }
+  }
+
+  @media (min-width: 47.5rem) {
+    .panes {
+      height: calc(100dvh - 77px);
+      min-height: 420px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .pane-list {
+      width: 300px;
+      border-right: 1px solid var(--border);
+    }
+
+    .panes .pane-head {
+      justify-content: flex-start;
+      gap: 8px;
+      padding: 8px 12px 8px 20px;
+    }
+
+    .pane-scroll.pad {
+      padding: 24px 32px;
+    }
+
+    .theirs .bubble {
+      background: var(--surface-2);
+    }
+  }
+
+  @media (min-width: 56.25rem) {
+    .pane-list {
+      width: 400px;
+    }
+  }
+
+  .convs {
+    margin: 0 -16px;
+    padding: 0;
+    list-style: none;
+  }
+
+  .conv {
+    display: flex;
+    gap: 12px;
+    padding: 12px 16px;
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .conv:hover {
+    background: var(--surface-2);
+  }
+
+  .conv[aria-current="true"] {
+    background: var(--primary-soft);
+    box-shadow: inset 4px 0 0 var(--primary);
+  }
+
+  .conv-main {
+    display: grid;
+    flex: 1;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .conv-top,
+  .conv-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .conv-name {
+    min-width: 0;
+    overflow: hidden;
+    font-weight: 600;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .conv.unread .conv-name {
+    font-weight: 800;
+  }
+
+  .conv-prev {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 13.5px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .conv.unread .conv-prev {
+    color: var(--text);
+  }
+
+  .time {
+    color: var(--muted);
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .thread {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .day {
+    align-self: center;
+    margin: 10px 0 4px;
+    padding: 3px 10px;
+    border-radius: var(--r-pill);
+    background: var(--surface-2);
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 82%;
+  }
+
+  .msg.mine {
+    align-self: flex-end;
+    align-items: flex-end;
+  }
+
+  .msg.theirs {
+    align-self: flex-start;
+  }
+
+  .bubble {
+    padding: 9px 13px;
+    border-radius: 16px;
+    font-size: 14.5px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+
+  .mine .bubble {
+    background: var(--primary);
+    color: var(--on-primary);
+    border-bottom-right-radius: var(--r-sm);
+  }
+
+  .theirs .bubble {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: var(--r-sm);
+  }
+
+  .msg.failed .bubble {
+    background: var(--danger-soft);
+    color: var(--text);
+    border: 1px solid var(--danger);
+  }
+
+  .msg-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px;
+    margin: 3px 4px 0;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .msg-meta .err,
+  .composer-meta .err {
+    color: var(--danger);
+    font-weight: 600;
+  }
+
+  .linkbtn {
+    min-height: 24px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--primary);
+    font-size: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  @media (max-width: 47.4375rem) {
+    .linkbtn {
+      min-height: 44px;
+      padding: 0 6px;
+    }
+  }
+
+  .thread-intro {
+    padding: 20px 8px;
+    color: var(--muted);
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .thread-intro p {
+    margin: 0 0 12px;
+  }
+
+  .starters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  .starters .chip {
+    height: auto;
+    padding: 8px 14px;
+    font-size: 13.5px;
+    text-align: left;
+    white-space: normal;
+  }
+
+  .composer {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 8px;
+  }
+
+  .composer textarea {
+    min-height: 44px;
+    max-height: 120px;
+    padding: 11px 12px;
+    border: 1px solid var(--ctl);
+    border-radius: var(--r-md);
+    background: var(--app-bg);
+    color: var(--text);
+    font: inherit;
+    line-height: 1.35;
+    resize: none;
+  }
+
+  .composer .btn {
+    gap: 6px;
+    padding: 0 14px;
+  }
+
+  .composer .btn:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+  }
+
+  .composer-meta {
+    display: flex;
+    grid-column: 1 / -1;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 12px;
+  }
+
+  .composer-meta .count.over {
+    color: var(--danger);
+    font-weight: 700;
+  }
+}
+
+/* Chat pages fill the window, so the composer stays in view. Outside the layers, because the main element's spacing
+   comes from utility classes. */
+main:has(> .panes) {
+  max-width: none;
+  padding: 0;
+}
+

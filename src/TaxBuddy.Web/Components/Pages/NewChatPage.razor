@@ -1,0 +1,86 @@
+﻿@page "/chats/new/{AccountantId}"
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Domain
+@inject ChatService Chat
+@inject NavigationManager Navigation
+@* F07 new chat (PRD R06, BR03; prototype threadParts "compose"). The one interactive page a visitor can open (SDD): a
+   visitor types first and signs in to send, and the text is kept. If the client already has a conversation with this
+   accountant, they go there (D06: one per pair). *@
+
+<SeoHead Title="@($"Message {Name} · Tax Buddy")" Description="Send a message to an accountant on Tax Buddy." CanonicalPath="@Canonical" />
+
+@switch (newChat?.Outcome)
+{
+    case NewChatOutcome.Ready:
+        <PhoneBar Title="@Name" Back="@Display.ProfilePath(profileId)">
+            <Actions>
+                <a class="icon-btn" href="@Display.ProfilePath(profileId)" aria-label="View profile"><Icon Name="user" /></a>
+            </Actions>
+        </PhoneBar>
+        <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.NewMode" ProfileId="profileId.Value" />
+        break;
+    case NewChatOutcome.NotAClient:
+        <PhoneBar Title="@Name" Back="@Display.ProfilePath(profileId)" />
+        <StateMessage IconName="chat" HeadingLevel="1" Title="Only clients can start chats" Text="You're signed in as an accountant.">
+            <a class="btn" href="@Display.ProfilePath(profileId)">Back to profile</a>
+        </StateMessage>
+        break;
+    case NewChatOutcome.NoAccount:
+        <PhoneBar Title="@Name" Back="@Display.ProfilePath(profileId)" />
+        <StateMessage IconName="chat" HeadingLevel="1" Title="This accountant can't receive messages yet" Text="Their profile isn't connected to a Tax Buddy account. Their contact details are on their profile.">
+            <a class="btn" href="@Display.ProfilePath(profileId)">Back to profile</a>
+        </StateMessage>
+        break;
+    case null when loadFailed:
+        <PhoneBar Title="Chat" Back="/" />
+        <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't open this chat" Text="That's a problem on our side, not yours. Please try again.">
+            <a class="btn btn-primary" href="@Canonical">Try again</a>
+        </StateMessage>
+        break;
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [Parameter] public string? AccountantId { get; set; }
+
+    private AccountantId profileId;
+    private NewChat? newChat;
+    private bool loadFailed;
+
+    private string Name => newChat?.Recipient?.Name ?? "an accountant";
+
+    private string Canonical => newChat is null ? "/" : ChatDisplay.NewChatPath(profileId);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!TaxBuddy.Web.Domain.AccountantId.TryParse(AccountantId, out profileId))
+        {
+            Navigation.NotFound(); // "This accountant is no longer available", from the not-found page.
+            return;
+        }
+
+        try
+        {
+            newChat = await Chat.PrepareNewChatAsync(ChatDisplay.ViewerOf(HttpContext?.User), profileId);
+        }
+        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        {
+            loadFailed = true;
+            ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+            return;
+        }
+
+        switch (newChat.Outcome)
+        {
+            case NewChatOutcome.Existing:
+                // The draft goes with the client: the thread's composer picks it up from this accountant's key.
+                Navigation.NavigateTo(ChatDisplay.ThreadPath(newChat.ConversationId!.Value), replace: true);
+                break;
+            case NewChatOutcome.Unavailable:
+                Navigation.NotFound();
+                break;
+        }
+    }
+}

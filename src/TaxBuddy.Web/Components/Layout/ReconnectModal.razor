@@ -1,31 +1,27 @@
-﻿<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
+﻿@* Connection notice for interactive pages (PRD R10; DESIGN connection states; prototype offlineBanner). A banner, not a
+   modal, so typed text stays in reach while Blazor reconnects; nothing is sent meanwhile. *@
+<script type="module" src="@Assets["Components/Layout/ReconnectModal.razor.js"]"></script>
 
-<dialog id="components-reconnect-modal" data-nosnippet>
-    <div class="components-reconnect-container">
-        <div class="components-rejoining-animation" aria-hidden="true">
-            <div></div>
-            <div></div>
-        </div>
+@* Styled in ReconnectModal.razor.css, not with .banner: that class sets display and would show the closed dialog. *@
+<dialog id="components-reconnect-modal" data-nosnippet aria-live="polite">
+    <Icon Name="wifiOff" Size="18" />
+    <div>
         <p class="components-reconnect-first-attempt-visible">
-            Rejoining the server...
+            <strong>Connection lost.</strong> Reconnecting… Your typed text is kept.
         </p>
         <p class="components-reconnect-repeated-attempt-visible">
-            Rejoin failed... trying again in <span id="components-seconds-to-next-attempt"></span> seconds.
+            <strong>Connection lost.</strong> Trying again in <span id="components-seconds-to-next-attempt"></span> seconds. Your typed text is kept.
         </p>
         <p class="components-reconnect-failed-visible">
-            Failed to rejoin.<br />Please retry or reload the page.
+            <strong>Couldn't reconnect.</strong> Your typed text is kept in this tab.
         </p>
-        <button id="components-reconnect-button" class="components-reconnect-failed-visible">
-            Retry
-        </button>
         <p class="components-pause-visible">
-            The session has been paused by the server.
+            <strong>This page was paused.</strong> Your typed text is kept.
         </p>
         <p class="components-resume-failed-visible">
-            Failed to resume the session.<br />Please retry or reload the page.
+            <strong>Couldn't resume.</strong> Reload the page; your typed text is kept in this tab.
         </p>
-        <button id="components-resume-button" class="components-pause-visible components-resume-failed-visible">
-            Resume
-        </button>
     </div>
+    <button id="components-reconnect-button" type="button" class="btn btn-sm components-reconnect-failed-visible">Try again</button>
+    <button id="components-resume-button" type="button" class="btn btn-sm components-pause-visible components-resume-failed-visible">Resume</button>
 </dialog>

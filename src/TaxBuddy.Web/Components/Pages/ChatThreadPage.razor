@@ -1,0 +1,75 @@
+﻿@page "/chats/{Id:guid}"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Components.Chat
+@inject ChatService Chat
+@inject NavigationManager Navigation
+@* F07 thread (PRD R06, R07; prototype threadParts). The static page checks access first (BR05, CH07): someone outside
+   the conversation, or an unknown ID, gets "isn't available" with a 404 and no names or messages. Then the live chat
+   panel shows the thread. *@
+
+<SeoHead Title="@($"{Title} · Tax Buddy")" Description="A conversation on Tax Buddy." CanonicalPath="@ChatDisplay.ThreadPath(Id)" />
+
+@if (viewer is null)
+{
+    <PhoneBar Title="Chat" Back="/chats" />
+    <StateMessage IconName="chat" HeadingLevel="1" Title="Sign in to see this chat">
+        <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(ChatDisplay.ThreadPath(Id))">Sign in</a>
+    </StateMessage>
+}
+else if (loadFailed)
+{
+    <PhoneBar Title="Chat" Back="/chats" />
+    <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't load this conversation" Text="That's a problem on our side, not yours. Please try again.">
+        <a class="btn btn-primary" href="@ChatDisplay.ThreadPath(Id)">Try again</a>
+    </StateMessage>
+}
+else if (thread is not null)
+{
+    <PhoneBar Title="@thread.PeerName" Back="/chats">
+        <Actions>
+            @if (thread is { ViewerIsClient: true, PeerProfileId: { } profile })
+            {
+                <a class="icon-btn" href="@Display.ProfilePath(profile)" aria-label="View profile"><Icon Name="user" /></a>
+            }
+        </Actions>
+    </PhoneBar>
+    <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.ThreadMode" ConversationId="Id" />
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [Parameter] public Guid Id { get; set; }
+
+    private ChatViewer? viewer;
+    private ThreadView? thread;
+    private bool loadFailed;
+
+    private string Title => thread?.PeerName ?? "Chat";
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        if (viewer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            // Read only: the live panel marks the thread read when it shows it.
+            thread = await Chat.OpenThreadAsync(viewer.AccountId, Id, markRead: false);
+            if (thread is null)
+            {
+                // The not-found page says "This conversation isn't available" for this address (Blazor sends no body here).
+                Navigation.NotFound();
+            }
+        }
+        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        {
+            loadFailed = true;
+            ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+        }
+    }
+}

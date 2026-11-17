@@ -283,6 +283,85 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.ToTable("accountant_profiles", (string)null);
                 });
 
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ChatMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<Guid>("SenderAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("sender_account_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_messages");
+
+                    b.HasIndex("ConversationId", "SentAt")
+                        .HasDatabaseName("ix_messages_conversation_id_sent_at");
+
+                    b.HasIndex("SenderAccountId", "SentAt")
+                        .HasDatabaseName("ix_messages_sender_account_id_sent_at");
+
+                    b.ToTable("messages", (string)null);
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Conversation", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountantAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountant_account_id");
+
+                    b.Property<DateTimeOffset?>("AccountantReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accountant_read_at");
+
+                    b.Property<Guid>("ClientAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_account_id");
+
+                    b.Property<DateTimeOffset?>("ClientReadAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("client_read_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("LastMessageAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_message_at");
+
+                    b.HasKey("Id")
+                        .HasName("pk_conversations");
+
+                    b.HasIndex("AccountantAccountId")
+                        .HasDatabaseName("ix_conversations_accountant_account_id");
+
+                    b.HasIndex("ClientAccountId", "AccountantAccountId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_conversations_client_account_id_accountant_account_id");
+
+                    b.ToTable("conversations", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
@@ -410,6 +489,40 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.Navigation("Experience");
 
                     b.Navigation("Services");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ChatMessage", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Domain.Conversation", null)
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_messages_conversation_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("SenderAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_messages_sender_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Conversation", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("AccountantAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_conversations_accountant_account_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("ClientAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_conversations_client_account_id");
                 });
 #pragma warning restore 612, 618
         }

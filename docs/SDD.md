@@ -33,7 +33,7 @@ tests/
 | Data | EF Core context, migrations, queries, user store | Domain, Application interfaces, EF Core, the chosen database provider | `src/TaxBuddy.Web/Data/` (planned) |
 | Pages and components | Rendering, forms, validation display, draft retention | Application services | `src/TaxBuddy.Web/Components/` (planned) |
 | Account endpoints | External sign-in challenge and callback, sign-out, cookie session | ASP.NET Core authentication, Application | `src/TaxBuddy.Web/Account/` (planned) |
-| Services | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/TaxBuddy.Web/Services/` (planned) |
+| Services | Email sender adapter, in-process chat notifier, background email worker | Application, hosting APIs | `src/TaxBuddy.Web/Services/` (chat notifier since F07; email planned) |
 
 Dependency rules:
 - One production project. Its layers are folders: Domain references nothing project-specific; Application depends on Domain; Data implements their interfaces; Components, Account endpoints and Services call Application.
@@ -53,8 +53,8 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | Theme switch in the site header, on every page | Static server rendering: a plain form posted to the endpoint `POST /preferences/theme`, which redirects back to the page | Added 2026-11-16 (F02 BD09). A choice shared by all pages, so it is posted to an endpoint rather than to each page as a named form. Antiforgery applies as for any form; no script and no server connection |
 | Signed-in actions on static pages: add to or remove from my accountants, report a profile or a review, the accountant's reply to a review | Static server rendering, as named forms posted to the same page | Visitors never open a server connection. Shown only to signed-in users who may take the action; see the form rules below |
 | Review submission `/accountants/{id}/review` | Interactive Server | An action by a signed-in client |
-| Conversation list and chat thread `/chats`, `/chats/{id}` | Interactive Server | Private, with live updates over SignalR |
-| New chat `/chats/new/{accountantId}` | Interactive Server; open to visitors | The one interactive page a visitor can open. It shows no private data. A visitor can type before signing in (R06); sending requires sign-in, and the draft survives sign-in in the tab's session storage. Until chat is built it is a static "coming soon" page (F01) |
+| Conversation list and chat thread `/chats`, `/chats/{id}` | Static pages holding one Interactive Server chat panel | Private, with live updates over SignalR. Built in F07 (2026-11-16): the static page checks sign-in and access and sets the title and status; only the panel inside is interactive, so a visitor or an outsider never opens a connection |
+| New chat `/chats/new/{accountantId}` | Interactive Server; open to visitors | The one interactive page a visitor can open. It shows no private data. A visitor can type before signing in (R06); sending requires sign-in, and the draft survives sign-in in the tab's session storage. Built in F07 like the other chat pages: static, with the interactive panel |
 | My accountants (the client's shortlist) and the accountant's client list `/workspace`, `/clients/{id}` | Interactive Server | Private to one user |
 | Service request, checklist, progress and documents `/accountants/{id}/request-service`, `/work/{id}` | Interactive Server | State shared by the two participants. File bytes go through endpoints, not the page connection ([private service workspaces](#private-service-workspaces)) |
 | Profile editor `/account/profile` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-16 by the owner's choice (C04 for this page, [F05](../specs/profile-editing/spec.md)). A failed or invalid save shows the form again with everything typed. There's no connection to lose, and it works without script. Adding or removing an experience row redraws the form. A stale save is refused through the profile's version |
@@ -231,12 +231,12 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `POST /preferences/theme` | Form: `theme` (`light`, `dark` or `system`), `returnUrl`, antiforgery token | A cookie for light or dark; System deletes it | Redirects to `returnUrl` when it is an address on this site, otherwise to `/`. Missing token or unknown theme: 400, nothing stored (F02 BD09) |
 | `/signin` | Local return address; `error=failed` shows the failure alert | None | Cancel at the provider returns to the previous page; success continues to the return address. Built in F04 |
 | `/register` | Local return address; a first sign-in in progress (Identity's external cookie), otherwise redirect to `/signin` | The role chosen and the agreement box are kept through a failed submit | Named form posted to the same page. Built in F04 |
-| `/chats` | Signed-in user | Conversation list | Email links fall back here when the conversation can't be opened |
-| `/chats/{id}` | GUID; the user must be a participant | Unsent text kept across a lost connection and a reload of the tab | Not a participant, or unknown ID: "not available", never another user's content |
-| `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Becomes the existing conversation if the pair already has one (per D06) |
+| `/chats` | Signed-in user; a visitor sees "Sign in to see your chats" | Conversation list | Email links fall back here when the conversation can't be opened |
+| `/chats/{id}` | GUID; the user must be a participant | Unsent text kept across a lost connection and a reload of the tab | Not a participant, or unknown ID: "This conversation isn't available" with HTTP 404, never another user's content (F07) |
+| `/chats/new/{accountantId}` | GUID of a listed accountant | Unsent text kept through sign-in | Redirects to the existing conversation if the pair has one (D06). An accountant gets "Only clients can start chats"; a listed profile with no account, "This accountant can't receive messages yet"; an unknown or unlisted one, 404 "This accountant is no longer available" (F07) |
 | `/account/profile` | Signed-in accountant, owner from the session only; `saved=1` after a save | Unsaved edits are kept through a failed, invalid or stale save. Deviation (F05): no confirmation when leaving with unsaved changes, and Save is not disabled while it runs, since both need script. A second submit is refused by the version check. Services are rows with a dropdown, as in the prototype (BD10) | A successful save redirects to `?saved=1`, so a reload doesn't save again. A visitor goes to sign-in and back; a client gets 403 "Only accountant accounts have a profile" |
 | `/account` | Anyone; content depends on who is signed in | None | Visitor card, or the account menu with sign-out (BD10) |
-| `/pictures/{accountId}` | GUID; `v` = the picture version | None | An accountant's picture for anyone (`public, immutable` when `v` matches); a client's picture for that client only (`private`); otherwise 404. JPEG with `nosniff` (F06) |
+| `/pictures/{accountId}` | GUID; `v` = the picture version | None | An accountant's picture for anyone (`public, immutable` when `v` matches); a client's picture for that client and the accountants they have a conversation with (`private`, F07); otherwise 404. JPEG with `nosniff` (F06) |
 | `/account/delete` | Signed-in user | None | Delete needs confirmation; on success the user is signed out and sent to `/`; service/file handling still requires D27 |
 | `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service`, `/work/{id}` | Authenticated participant and valid parent IDs; [private-workspace contract](#private-service-workspaces) | Draft request/task/note state retained on failed write; real file reselect/retry strategy decided at implementation | Missing/unauthorized is generic unavailable; proposed routes; durable metadata reloaded from server in the application |
 
@@ -256,7 +256,7 @@ A submit button is disabled while its operation runs, so a double click can't ru
 - An unknown, unlisted or malformed ID calls `NavigationManager.NotFound()`. This Blazor version sends no body with a page-set 404, so the not-found page renders "This profile is no longer available" for `/accountants/…` addresses and "Page not found" for everything else, both with HTTP 404.
 - A database failure shows "We couldn't load this profile" with HTTP 503. Status-code pages are switched off for that response so they don't replace the page.
 
-**`/chats/new/{accountantId}`:** a static "coming soon" page until chat is built.
+**`/chats/new/{accountantId}`:** a static "coming soon" page until chat was built; replaced in F07 (below).
 
 **Tables:** `accountant_profiles`, `accountant_services` and `accountant_experience`, with snake_case names. Services are unique per profile, and both child tables are deleted with their profile. Experience months are stored as the first day of the month in `date` columns.
 
@@ -266,6 +266,40 @@ A submit button is disabled while its operation runs, so a double click can't ru
 
 **Public pages:** every response carries `X-Robots-Tag: noindex, nofollow` and a matching meta tag, unless `Seo:AllowIndexing` is true (D19).
 
+### As built in F07 (2026-11-16)
+
+[Evidence](delivery/evidence/2026-11-16-f07-chat.md); scenarios in [F07](../specs/chat/spec.md).
+
+**Tables (migration `AddChat`):**
+- `conversations`: client and accountant account, created and last-message times, and each side's read time. The pair is unique (D06).
+- `messages`: an ID made by the composer, the conversation, the sender, the text (2,000 characters at most) and the time sent. Messages are deleted with their conversation.
+- Foreign keys from both tables to `users` refuse deletion for now, because what deletion does to the other person's copy is open (D07). Account deletion (R09) must decide it.
+
+**Rules:**
+- A message is unread for you when the other side sent it after your read time. Opening a thread moves your read time to its latest message from the other side.
+- Sending is idempotent through the message ID. A save with an unknown outcome is followed by a check ("Checking whether it was sent…").
+- An account may send 20 messages a minute across all its conversations.
+
+**Pages and the live panel:**
+- The three chat pages are static. They hold one `ChatPanes` component in Interactive Server mode, which receives only IDs and takes the viewer from the sign-in.
+- The panel is prerendered, and its data is carried to the live connection with `[PersistentState]`.
+- `ChatNotifier` (a singleton) tells the open panels of both participants to reload from the database. It assumes one server.
+
+**Drafts:**
+- A small script owns the composer: its text and the message ID are kept in the tab's session storage.
+- A visitor's draft moves into the conversation once it exists.
+- A send gets 20 seconds to answer. After that the text stays, with "You're offline…".
+- Nothing is sent without a press of Send or Enter.
+
+**Connection:**
+- The reconnect notice is a non-modal banner.
+- When the server no longer knows the page, it reloads, and the draft comes back from the tab.
+
+**Navigation:** "Chats" with the unread count, read once per request (`UnreadChats`); the chat list itself updates live.
+
+**Known limits:**
+- An open chat page keeps the sign-in it started with until it reloads.
+- The navigation count changes on the next page load.
 ## DI, startup, async work, and lifecycle
 
 | Service / page | Lifetime | Owner and concurrency/disposal contract |

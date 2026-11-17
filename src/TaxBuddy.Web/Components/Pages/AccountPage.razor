@@ -53,7 +53,7 @@
                     <input id="picture-file" name="picture" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="picture-hint" />
                     <button type="submit" class="btn btn-primary btn-sm">Upload picture</button>
                 </form>
-                <p id="picture-hint" class="hint">JPEG, PNG or WebP, up to 5 MB. It's cropped to a square, and location and camera details are removed. @(isAccountant ? "Shown on your public profile and in the directory." : "For now only you see it.")</p>
+                <p id="picture-hint" class="hint">JPEG, PNG or WebP, up to 5 MB. It's cropped to a square, and location and camera details are removed. @(isAccountant ? "Shown on your public profile and in the directory." : "Only you and the accountants you chat with see it.")</p>
                 @if (picture is not null)
                 {
                     <form method="post" action="@PictureEndpoints.RemovePath">

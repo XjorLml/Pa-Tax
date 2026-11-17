@@ -1,0 +1,24 @@
+@page "/chats"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Components.Chat
+@* F07 conversation list (PRD R07; prototype convListHTML in its desktop panes). Static for visitors; signed in, the
+   list is the live chat panel (SDD render modes). *@
+
+<SeoHead Title="Chats · Tax Buddy" Description="Your conversations on Tax Buddy." CanonicalPath="/chats" />
+<PhoneBar Title="Chats" />
+<PhoneTabs Current="chats" />
+
+@if (ChatDisplay.ViewerOf(HttpContext?.User) is null)
+{
+    <StateMessage IconName="chat" HeadingLevel="1" Title="Sign in to see your chats" Text="Clients message accountants here, and accountants reply here.">
+        <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/chats")">Sign in</a>
+    </StateMessage>
+}
+else
+{
+    <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.ListMode" />
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+}

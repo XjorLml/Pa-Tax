@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using TaxBuddy.TestSupport;
 using TaxBuddy.Web.Tests.Support;
 
@@ -56,13 +56,14 @@ public sealed class ProfilePageTests(SeededAppFixture app) : IClassFixture<Seede
     }
 
     [DatabaseFact]
-    public async Task Message_leads_to_a_coming_soon_page_in_this_slice()
+    public async Task Message_on_a_profile_without_an_account_says_it_cannot_receive_messages()
     {
+        // F07 CH08: seed profiles have no account behind them, so nobody would read the message.
         var response = await app.Factory.CreateClient().GetAsync($"/chats/new/{Andrea}");
         var html = await response.ReadHtmlAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Contains("Messaging is coming soon", html);
+        Assert.Contains("This accountant can't receive messages yet", html);
         Assert.Contains($"""href="/accountants/{Andrea}" """.Trim(), html);
     }
 

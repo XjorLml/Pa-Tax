@@ -27,6 +27,9 @@ public interface IAccountPictureStore
 
     /// <summary>Points the account at <paramref name="objectName"/> (null for none) and returns the previous object.</summary>
     Task<string?> SetAsync(Guid accountId, string? objectName, CancellationToken cancellationToken);
+
+    /// <summary>Whether the client and the viewer have a conversation (F07): an accountant sees their clients' pictures.</summary>
+    Task<bool> SharesConversationAsync(Guid clientAccountId, Guid viewerId, CancellationToken cancellationToken) => Task.FromResult(false);
 }
 
 public sealed record AccountPicture(bool IsAccountant, string? ObjectName);
@@ -118,7 +121,8 @@ public sealed class ProfilePictureService(IPictureStorage storage, IAccountPictu
         try
         {
             if (await accounts.FindAsync(accountId, cancellationToken) is not { ObjectName: { } objectName } account
-                || (!account.IsAccountant && viewerId != accountId))
+                || (!account.IsAccountant && viewerId != accountId
+                    && !(viewerId is { } viewer && await accounts.SharesConversationAsync(accountId, viewer, cancellationToken))))
             {
                 return null;
             }

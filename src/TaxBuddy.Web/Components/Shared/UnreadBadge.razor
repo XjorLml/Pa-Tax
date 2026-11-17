@@ -1,0 +1,15 @@
+@inject UnreadChats Unread
+@* The unread count beside "Chats" (prototype desktopShell and tabbarHTML): a number with "unread" for screen readers,
+   so the mark is never colour alone (DESIGN). Up to date when the page loads; the chat list itself updates live. *@
+@if (count > 0)
+{
+    <span class="badge">@(count > 99 ? "99+" : count.ToString(System.Globalization.CultureInfo.InvariantCulture))<span class="sr-only"> unread</span></span>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    private int count;
+
+    protected override async Task OnInitializedAsync() => count = await Unread.CountAsync(HttpContext?.User);
+}

@@ -46,6 +46,20 @@ public sealed class AccountPictureStore(IDbContextFactory<TaxBuddyDbContext> con
         }
     }
 
+    public async Task<bool> SharesConversationAsync(Guid clientAccountId, Guid viewerId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+            return await db.Conversations.AnyAsync(
+                c => c.ClientAccountId == clientAccountId && c.AccountantAccountId == viewerId, cancellationToken);
+        }
+        catch (Exception ex) when (ex is DbException or TimeoutException or InvalidOperationException { InnerException: DbException })
+        {
+            throw Unavailable(ex);
+        }
+    }
+
     private DataUnavailableException Unavailable(Exception ex)
     {
         logger.LogWarning(DataUnavailable, "Picture data unavailable ({ErrorType})", ex.GetType().Name);
