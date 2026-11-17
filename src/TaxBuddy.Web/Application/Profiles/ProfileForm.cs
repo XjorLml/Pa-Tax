@@ -10,6 +10,7 @@ public sealed class ProfileForm
 {
     private List<ServiceInput> services = [];
     private List<ExperienceInput> experience = [];
+    private List<HighlightInput> highlights = [];
 
     public string? DisplayName { get; set; }
 
@@ -33,6 +34,9 @@ public sealed class ProfileForm
 
     /// <remarks>A new profile posts no experience rows; binding then sets null, which becomes empty.</remarks>
     public List<ExperienceInput> Experience { get => experience; set => experience = value ?? []; }
+
+    /// <summary>Portfolio highlight rows (F08, prototype portfolioFieldset).</summary>
+    public List<HighlightInput> Highlights { get => highlights; set => highlights = value ?? []; }
 
     /// <summary>The version the form was loaded from; a save based on an older one is refused (PE05).</summary>
     public int Version { get; set; }
@@ -61,6 +65,10 @@ public sealed class ProfileForm
                     End = e.End?.ToString(),
                     Current = e.IsCurrent,
                 })
+                .ToList(),
+            Highlights = profile.Highlights
+                .OrderBy(h => h.Position)
+                .Select(h => new HighlightInput { Title = h.Title, ClientType = h.ClientType, Work = h.Work, Result = h.Result })
                 .ToList(),
             Version = profile.Version,
         };
@@ -95,6 +103,23 @@ public sealed class ServiceInput
     public string? Name { get; set; }
 
     public string? Description { get; set; }
+}
+
+public sealed class HighlightInput
+{
+    public string? Title { get; set; }
+
+    /// <summary>The prototype's "Type of client".</summary>
+    public string? ClientType { get; set; }
+
+    /// <summary>"What you did".</summary>
+    public string? Work { get; set; }
+
+    public string? Result { get; set; }
+
+    public bool IsBlank =>
+        string.IsNullOrWhiteSpace(Title) && string.IsNullOrWhiteSpace(ClientType)
+        && string.IsNullOrWhiteSpace(Work) && string.IsNullOrWhiteSpace(Result);
 }
 
 public sealed class ExperienceInput

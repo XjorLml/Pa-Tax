@@ -59,6 +59,7 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                     p.OwnerAccountId,
                     Services = p.Services.OrderBy(s => s.Position).Select(s => s.Name).ToList(),
                     Starts = p.Experience.Select(e => e.Start).ToList(),
+                    Highlights = p.Highlights.Count(),
                 })
                 .ToListAsync(cancellationToken);
 
@@ -76,7 +77,8 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                 rows.Select(r => new CardRow(r.Id, r.DisplayName, r.Title, r.City, r.Summary, r.Services, r.Starts,
                     r.OwnerAccountId is { } owner && pictures.TryGetValue(owner, out var picture)
                         ? ProfilePictureService.AddressFor(owner, picture)
-                        : null)).ToList(),
+                        : null,
+                    r.Highlights)).ToList(),
                 matchCount,
                 page,
                 anyListed);

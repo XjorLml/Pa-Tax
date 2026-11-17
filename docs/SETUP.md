@@ -78,7 +78,7 @@ dotnet run --project src/TaxBuddy.Web --launch-profile http   # http://localhost
 ```
 
 - **Test database:** the data and integration tests read the same `ConnectionStrings:TaxBuddy` secret, or a `ConnectionStrings__TaxBuddy` environment variable. Without it they are reported as skipped, not passed. Each test class creates its own `test_…` schema and drops it afterwards; schemas left by a crashed run are dropped after six hours.
-- **Seed:** `seed-development` replaces all profiles in the development database with the synthetic seed (`src/TaxBuddy.Web/Data/Seed/development-profiles.json`). It refuses to run outside the Development environment.
+- **Seed:** `seed-development` replaces all profiles in the development database with the synthetic seed (`src/TaxBuddy.Web/Data/Seed/development-profiles.json`). That includes profiles made by real accounts, such as your own accountant profile, so recreate yours afterwards. Since F08 (2026-11-17) four seed profiles have sample portfolio highlights. It refuses to run outside the Development environment.
 - **New migrations:** `dotnet ef migrations add <Name> --project src/TaxBuddy.Web --output-dir Data/Migrations`. Where the Tailwind step can't run (no Linux Node), build Release with `-p:SkipTailwind=true` first and add `--configuration Release --no-build`. `AddAccounts` (F04) was applied to the development database on 2026-11-16. Review the SQL with `dotnet ef migrations script --project src/TaxBuddy.Web` before applying it. Don't use `--no-build` straight after adding a migration: it scripts the previous build.
 
 ## Configuration and dependencies

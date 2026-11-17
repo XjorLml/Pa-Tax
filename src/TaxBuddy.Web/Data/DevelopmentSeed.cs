@@ -51,6 +51,7 @@ public static class DevelopmentSeed
                     entry.Role, entry.Organization, YearMonth.Parse(entry.Start), entry.End is null ? null : YearMonth.Parse(entry.End));
             }
 
+            profile.ReplaceHighlights((r.Highlights ?? []).Select(h => (h.Title, h.ClientType, h.Work, h.Result)));
             return profile;
         }).ToList();
     }
@@ -66,9 +67,13 @@ public static class DevelopmentSeed
         string? Website,
         bool ConsentToShowContact,
         List<SeedService> Services,
-        List<SeedExperience> Experience);
+        List<SeedExperience> Experience,
+        List<SeedHighlight>? Highlights = null);
 
     private sealed record SeedService(string Name, string Description);
+
+    /// <summary>F08: the prototype's sample highlights (PORTFOLIO_SEED), invented like the rest of the seed.</summary>
+    private sealed record SeedHighlight(string Title, string? ClientType, string Work, string? Result);
 
     private sealed record SeedExperience(string Role, string Organization, string Start, string? End);
 }

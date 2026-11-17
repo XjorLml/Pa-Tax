@@ -42,6 +42,20 @@
         "start": "2014-01",
         "end": "2016-05"
       }
+    ],
+    "highlights": [
+      {
+        "title": "Cleaned up two years of books for a bakery",
+        "clientType": "Food retail",
+        "work": "Rebuilt the ledgers from receipts and bank statements, then set up a simple monthly routine.",
+        "result": "Books were ready for a bank loan application."
+      },
+      {
+        "title": "Moved a family store to quarterly filing on time",
+        "clientType": "Retail",
+        "work": "Set a filing calendar and prepared each return with the owner.",
+        "result": "Four quarters filed on time in a row."
+      }
     ]
   },
   {
@@ -80,6 +94,14 @@
         "organization": "Visayas Staffing Co.",
         "start": "2013-05",
         "end": "2019-07"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "Payroll set-up for a 40-person team",
+        "clientType": "Staffing",
+        "work": "Designed the payroll process, payslips and employer filings.",
+        "result": "The owner now runs payroll without outside help."
       }
     ]
   },
@@ -151,6 +173,14 @@
         "start": "2015-06",
         "end": "2020-01"
       }
+    ],
+    "highlights": [
+      {
+        "title": "First external audit for a non-profit",
+        "clientType": "Non-profit",
+        "work": "Planned and led the audit, and coached the finance volunteer through it.",
+        "result": "Audited statements delivered before the grant deadline."
+      }
     ]
   },
   {
@@ -189,6 +219,14 @@
         "organization": "Southpoint Business Advisers",
         "start": "2014-06",
         "end": "2018-08"
+      }
+    ],
+    "highlights": [
+      {
+        "title": "Registration and first-year tax plan for a start-up",
+        "clientType": "Online services",
+        "work": "Compared business structures and registered the company.",
+        "result": "The founder knew each filing date for the first year."
       }
     ]
   },

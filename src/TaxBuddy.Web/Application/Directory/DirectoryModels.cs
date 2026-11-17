@@ -24,7 +24,8 @@ public sealed record AccountantCard(
     int? YearsOfExperience,
     IReadOnlyList<string> Services,
     string Summary,
-    string? PictureAddress = null);
+    string? PictureAddress = null,
+    int HighlightCount = 0);
 
 /// <summary>Everything the public profile shows (PRD R03). Contact details are public by the accountant's consent (R11).</summary>
 public sealed record AccountantProfileView(
@@ -44,6 +45,9 @@ public sealed record AccountantProfileView(
     /// <summary>The owner's profile picture (F06), or null for the initials avatar.</summary>
     public string? PictureAddress { get; init; }
 
+    /// <summary>Portfolio highlights (F08), in the accountant's order.</summary>
+    public IReadOnlyList<HighlightView> Highlights { get; init; } = [];
+
     public static AccountantProfileView From(AccountantProfile profile, DateOnly today) => new(
         profile.Id,
         profile.DisplayName,
@@ -60,7 +64,12 @@ public sealed record AccountantProfileView(
         profile.Email,
         profile.Phone,
         profile.Website,
-        WebsiteLink(profile.Website));
+        WebsiteLink(profile.Website))
+    {
+        Highlights = profile.Highlights.OrderBy(h => h.Position)
+            .Select(h => new HighlightView(h.Title, h.ClientType, h.Work, h.Result))
+            .ToList(),
+    };
 
     /// <summary>Only an http(s) address with a host becomes a link; anything else is shown as text.</summary>
     private static string? WebsiteLink(string? website)
@@ -84,6 +93,8 @@ public sealed record ExperienceView(string Role, string Organization, string Fro
 
 public sealed record ServiceView(string Name, string Description);
 
+public sealed record HighlightView(string Title, string? ClientType, string Work, string? Result);
+
 /// <summary>Rows read by the data store for one directory page.</summary>
 public sealed record DirectoryRows(IReadOnlyList<CardRow> Rows, int MatchCount, int Page, bool AnyListed);
 
@@ -95,7 +106,8 @@ public sealed record CardRow(
     string Summary,
     IReadOnlyList<string> Services,
     IReadOnlyList<YearMonth> ExperienceStarts,
-    string? PictureAddress = null);
+    string? PictureAddress = null,
+    int HighlightCount = 0);
 
 /// <summary>Reads listed profiles. Implemented in Data; the Application layer never sees EF Core types.</summary>
 public interface IDirectoryStore

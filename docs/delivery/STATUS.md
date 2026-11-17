@@ -8,7 +8,7 @@ Earlier evidence retains its own exact source identity and the names of its day.
 
 ## Feature state
 
-Application source exists since 2026-11-13 (F01, committed in `af9d3ea`), the F02 theme switch, F04 Google sign-in, F05 profile editing and F06 profile pictures since 2026-11-16 (committed up to `37c5ae7`), and F07 chat since 2026-11-16 (uncommitted). The other rows are at their starting state.
+Application source exists since 2026-11-13 (F01, committed in `af9d3ea`), the F02 theme switch, F04 Google sign-in, F05 profile editing and F06 profile pictures since 2026-11-16 (committed up to `37c5ae7`), F07 chat since 2026-11-16 and F08 portfolio highlights since 2026-11-17 (both uncommitted). The other rows are at their starting state.
 
 | Requirement / feature | Implementation | Automated verification | Build | Browser verification | Acceptance |
 |---|---|---|---|---|---|
@@ -21,7 +21,7 @@ Application source exists since 2026-11-13 (F01, committed in `af9d3ea`), the F0
 | R08 email notifications | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R09 account deletion | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R10, R11 connection loss and privacy | Covered by each feature. R10 on chat built in F07: drafts in the tab, a non-modal connection banner, nothing sent later | Pass for chat (F07) | Pass | Partial: server restart in Edge (F07) | Pending |
-| R12 portfolio highlights | Not started (no spec) | Not run | Not run | Not run | Pending |
+| R12 / [F08 portfolio highlights](../../specs/portfolio-highlights/spec.md) | Implemented 2026-11-17 (uncommitted). D23 provisional: up to 6, working field limits | Pass: 7 new tests; whole suite 197 passed, 0 skipped with `-m:1` ([evidence](evidence/2026-11-17-f08-portfolio-highlights.md)) | Pass: Release, 0 warnings; Tailwind built | Partial: Edge, profile, card and editor at 390 and 1440 px, light and dark (7 of 7). Other browsers and phones not run | Pending |
 | R13, R14 ratings, reviews and replies | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R15 report and block | Not started (no spec) | Not run | Not run | Not run | Pending |
 | R16–R18 legal, information and error pages | Partly: draft `/terms` and `/privacy` with agreement at registration (F04, 2026-11-16); not-found and error pages from F01; about, help and for-accountants not started | Not run | Not run | Not run | Pending |
@@ -61,6 +61,7 @@ Use separate browser rows when outcomes differ. A blocked check requires a concr
 | [F02 prototype alignment](evidence/2026-11-16-f02-prototype-alignment.md) | 2026-11-16 | `af9d3ea` plus staged F02/F04 and unstaged F05 and BD10; per-file SHA-256 in the record | WSL2 Ubuntu 26.04, SDK 11.0.100; development database; headless Edge 157.0.4341.60 | Agent-observed | Pages rebuilt from the prototype. 149 tests pass, 0 skipped; 16 app views with no overflow; screenshots compared with the prototype and gaps fixed. Synthetic accounts deleted. F01 pages compared and aligned too. Acceptance pending |
 | [F05 profile editing](evidence/2026-11-16-f05-profile-editing.md) | 2026-11-16 | `af9d3ea` plus staged F02/F04 and unstaged F05; per-file SHA-256 in the record | WSL2 Ubuntu 26.04, SDK 11.0.100, ICU; development database; headless Edge 157.0.4341.60 | Agent-observed | Release build 0 warnings; 148 tests pass, 0 skipped; migration `AddProfileOwner` applied; 42 browser checks pass on the real app. Two product defects found and fixed. Synthetic browser-check accounts deleted. Real Google accountant, other browsers and acceptance pending |
 | [F07 chat](evidence/2026-11-16-f07-chat.md) | 2026-11-16 | `37c5ae7` plus uncommitted F07; per-file SHA-256 in the record | WSL2 Ubuntu 26.04, SDK 11.0.100; headless Edge 157.0.4341.60; Supabase development database | Agent-observed (Claude Code) | 190 tests and 14 of 14 browser checks pass; real phones, other browsers, two tabs and an expired session not run |
+| [F08 portfolio highlights](evidence/2026-11-17-f08-portfolio-highlights.md) | 2026-11-17 | `37c5ae7` plus uncommitted F07 and F08; per-file SHA-256 in the record | WSL2 Ubuntu 26.04, SDK 11.0.100; headless Edge 157.0.4341.60; Supabase development database | Agent-observed (Claude Code) | 197 tests and 7 of 7 browser checks pass; the seed was not rerun (it would delete the owner's profile) |
 | [F04 Google sign-in](evidence/2026-11-16-f04-google-sign-in.md) | 2026-11-16 | `af9d3ea` plus uncommitted F02 BD09 and F04; per-file SHA-256 in the record | WSL2 Ubuntu 26.04, SDK 11.0.100, ICU; development database; headless Edge 157.0.4341.60 | Agent-observed | Release build 0 warnings; 104 tests pass, 0 skipped; migration `AddAccounts` applied; 152 browser checks pass. Real Google round trip, registration page in a browser, other browsers and acceptance pending |
 | [Name availability survey](evidence/2026-11-16-name-availability.md) | 2026-11-16 | Not applicable (web research) | Web search and page fetches | Agent-observed (subagent) | Conflicting uses found in the Philippines, India and the US; IPOPHL, WIPO and registrars not searched directly. Not clearance; no decision |
 | [F01 browse accountants](evidence/2026-11-13-f01-browse-accountants.md) | 2026-11-13 | `5ceee37` plus uncommitted F01 source; 62 files with combined SHA-256 `eae0d6ae…` | WSL2 Ubuntu 24.04.1, .NET SDK 11.0.100; Supabase development project; headless Edge 157 on Windows | Agent-observed | Release build with 0 warnings; 62 tests pass with 0 skipped; 32 emulated browser views with 0 layout problems after one fix. Two defects found by the tests were fixed. Browser matrix, screen reader and acceptance pending |
@@ -187,4 +188,13 @@ The subsequent F03 expansion added PRD R19–R23, ADR 009, private workspace con
   - the connection notice as the prototype's banner;
   - migration `AddChat`, applied to the development database.
 - Results: 190 tests pass with `-m:1`, and 14 of 14 browser checks pass ([evidence](evidence/2026-11-16-f07-chat.md)). Running both test projects in parallel can exhaust the development database's connections (SETUP troubleshooting). New gate G18: one server instance for live chat.
+- Not staged or committed.
+- 2026-11-17: the user asked for portfolio highlights (R12). D23 was adopted provisionally from the prototype: up to 6, with working field limits.
+- [F08](../../specs/portfolio-highlights/spec.md) built:
+  - the editor fieldset;
+  - the profile section between Services and Experience;
+  - "N highlights" on cards;
+  - sample highlights in the seed;
+  - migration `AddPortfolioHighlights`, applied to the development database.
+- Results: 197 tests pass with `-m:1`, and 7 of 7 browser checks pass ([evidence](evidence/2026-11-17-f08-portfolio-highlights.md)).
 - Not staged or committed.

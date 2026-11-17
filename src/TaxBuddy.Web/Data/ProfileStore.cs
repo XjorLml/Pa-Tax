@@ -54,6 +54,7 @@ public sealed class ProfileStore(IDbContextFactory<TaxBuddyDbContext> contextFac
                 values.ConsentToShowContact);
             profile.ReplaceServices(values.Services);
             profile.ReplaceExperience(values.Experience);
+            profile.ReplaceHighlights(values.Highlights);
             profile.MarkSaved();
 
             await db.SaveChangesAsync(cancellationToken);

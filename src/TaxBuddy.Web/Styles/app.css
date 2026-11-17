@@ -2064,3 +2064,37 @@ main:has(> .panes) {
   padding: 0;
 }
 
+/* F08 portfolio highlights (prototype .pf in profileBodyHTML). */
+@layer components {
+  .pf {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .pf li {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    background: var(--app-bg);
+  }
+
+  .pf-top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px 10px;
+  }
+
+  .pf p {
+    margin: 6px 0 0;
+    font-size: 14px;
+  }
+
+  .pf .pf-result {
+    font-weight: 600;
+  }
+}

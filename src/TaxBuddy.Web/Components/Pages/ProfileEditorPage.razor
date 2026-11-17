@@ -9,7 +9,7 @@
 @inject NavigationManager Navigation
 @* F05 (PRD R05), laid out as the prototype's editorParts (F02 BD10). A static form posted to this page (C04 for this
    page): a failed or invalid save shows the form again with everything typed. The owner is always the signed-in
-   account. Prototype parts not built yet: the portfolio fieldset (R12). *@
+   account. The portfolio fieldset came with R12 (F08). *@
 
 <SeoHead Title="@($"{PageTitle} · Tax Buddy")" Description="Edit your accountant profile." CanonicalPath="/account/profile" />
 <PhoneBar Title="@PageTitle" Back="/account" />
@@ -191,6 +191,36 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                     <p class="muted small mt-2">No prices in release 1. Clients ask about pricing in chat.</p>
                 </fieldset>
 
+                @* F08 (PRD R12; prototype portfolioFieldset). *@
+                <fieldset id="portfolio">
+                    <legend>Portfolio highlights</legend>
+                    @ErrorFor("Highlights")
+                    @for (var i = 0; i < Form.Highlights.Count; i++)
+                    {
+                        var row = Form.Highlights[i];
+                        var n = i + 1;
+                        <div class="row">
+                            <div class="row-head">
+                                <span>Highlight @n</span>
+                                <button type="submit" name="command" value="remove-highlight:@i" formaction="/account/profile#portfolio" class="btn btn-ghost btn-sm">
+                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> highlight @n</span>
+                                </button>
+                            </div>
+                            @Field($"Highlights[{i}].Title", "Title", row.Title, ProfileLimits.HighlightTitle, placeholder: "e.g. Payroll set-up for a 40-person team")
+                            @Field($"Highlights[{i}].ClientType", "Type of client", row.ClientType, ProfileLimits.HighlightClientType, placeholder: "e.g. Food retail")
+                            @Field($"Highlights[{i}].Work", "What you did", row.Work, ProfileLimits.HighlightWork)
+                            @Field($"Highlights[{i}].Result", "Result", row.Result, ProfileLimits.HighlightResult)
+                        </div>
+                    }
+                    @if (Form.Highlights.Count < ProfileLimits.Highlights)
+                    {
+                        <button type="submit" id="add-pf" name="command" value="add-highlight" formaction="/account/profile#portfolio" class="btn btn-sm">
+                            <Icon Name="plus" Size="16" /> Add highlight
+                        </button>
+                    }
+                    <p class="muted small mt-2">Up to @ProfileLimits.Highlights. Don't name clients or share their details without their permission.</p>
+                </fieldset>
+
                 <fieldset>
                     <legend>Contact details</legend>
                     @Field("Email", "Email", Form.Email, ProfileLimits.Email, type: "email", required: true, placeholder: "name@example.com")
@@ -291,6 +321,13 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                 }
 
                 return;
+            case "add-highlight":
+                if (Form.Highlights.Count < ProfileLimits.Highlights)
+                {
+                    Form.Highlights.Add(new HighlightInput());
+                }
+
+                return;
             case "add-service":
                 if (Form.Services.Count < ServiceCatalog.All.Count)
                 {
@@ -300,7 +337,8 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                 return;
         }
 
-        if (RemoveRow("remove-experience:", Form.Experience) || RemoveRow("remove-service:", Form.Services))
+        if (RemoveRow("remove-experience:", Form.Experience) || RemoveRow("remove-service:", Form.Services)
+            || RemoveRow("remove-highlight:", Form.Highlights))
         {
             return;
         }
@@ -354,9 +392,15 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
         "Phone" => "f-phone",
         "Website" => "f-website",
         "Experience" => "add-exp",
+        "Highlights" => "add-pf",
         _ when key.StartsWith("Experience[", StringComparison.Ordinal) => "f-exp-" + RowPart(key, "Experience[") switch
         {
             (var i, "Organization") => $"{i}-org",
+            (var i, var field) => $"{i}-{field.ToLowerInvariant()}",
+        },
+        _ when key.StartsWith("Highlights[", StringComparison.Ordinal) => "f-pf-" + RowPart(key, "Highlights[") switch
+        {
+            (var i, "ClientType") => $"{i}-sector",
             (var i, var field) => $"{i}-{field.ToLowerInvariant()}",
         },
         _ when key.StartsWith("Services[", StringComparison.Ordinal) => "f-svc-" + RowPart(key, "Services[") switch

@@ -258,7 +258,7 @@ A submit button is disabled while its operation runs, so a double click can't ru
 
 **`/chats/new/{accountantId}`:** a static "coming soon" page until chat was built; replaced in F07 (below).
 
-**Tables:** `accountant_profiles`, `accountant_services` and `accountant_experience`, with snake_case names. Services are unique per profile, and both child tables are deleted with their profile. Experience months are stored as the first day of the month in `date` columns.
+**Tables:** `accountant_profiles`, `accountant_services` and `accountant_experience`, with snake_case names (and `accountant_highlights` since F08, 2026-11-17: title, type of client, what was done, result and position; at most 6 per profile, deleted with it). Services are unique per profile, and both child tables are deleted with their profile. Experience months are stored as the first day of the month in `date` columns.
 
 **Development command:** `dotnet run --project src/TaxBuddy.Web -- seed-development` resets the profiles to the synthetic seed. It runs only in the Development environment.
 
@@ -344,7 +344,7 @@ Interactive components read the signed-in user from the authentication state the
 | R08 | Email jobs, background worker, email sender | Tests, Web.Tests; TP13 |
 | R09 | Account deletion use case and page | Tests, Web.Tests; TP14 |
 | R11 | Authorization in Application services; directory projection | Tests, Web.Tests; TP10 |
-| R12 | Portfolio highlights in the profile use cases and editor page | Tests, Web.Tests; TP02 |
+| R12 | Portfolio highlights in the profile use cases and editor page (F08) | Tests, Web.Tests; TP25 |
 | R13, R14 | Review use cases, rating queries, review and profile pages | Tests, Web.Tests; TP16 |
 | R15 | Report and block use cases; report email | Tests, Web.Tests; TP17 |
 | R16–R18 | Static pages, sign-in agreement, not-found and error handling | Web.Tests; TP18 |

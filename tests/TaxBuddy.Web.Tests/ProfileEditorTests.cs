@@ -280,6 +280,71 @@ public sealed partial class ProfileEditorTests(EmptyAppFixture app) : IClassFixt
         Assert.Contains("""value="Kept title" """.Trim(), html);
     }
 
+    [DatabaseFact]
+    public async Task Portfolio_highlights_are_saved_shown_on_the_profile_and_counted_on_the_card()
+    {
+        // F08 PH01, PH04–PH06.
+        var client = await AccountantAsync("Benjie Ramos");
+        var page = await GetEditorAsync(client);
+        Assert.Contains("Up to 6. Don't name clients or share their details without their permission.", page);
+        Assert.DoesNotContain("Form.Highlights[0].Title", page);
+
+        var added = await (await PostAsync(client, page, Complete(title: "CPA"), "add-highlight")).ReadHtmlAsync();
+        Assert.Contains("""id="f-pf-0-title" name="Form.Highlights[0].Title" """.Trim(), added);
+        Assert.Contains("""id="f-pf-0-sector" name="Form.Highlights[0].ClientType" """.Trim(), added);
+        var two = await (await PostAsync(client, added, Complete(title: "CPA"), "add-highlight")).ReadHtmlAsync();
+
+        var fields = Complete(title: "CPA");
+        fields["Form.Highlights[0].Title"] = "Payroll set-up for a 40-person team";
+        fields["Form.Highlights[0].ClientType"] = "Staffing";
+        fields["Form.Highlights[0].Work"] = "Designed the payroll process, payslips and employer filings.";
+        fields["Form.Highlights[0].Result"] = "The owner now runs payroll without outside help.";
+        fields["Form.Highlights[1].Title"] = ""; // the second row is left empty and dropped
+        var saved = await SaveAsync(client, two, fields);
+        Assert.Equal(Editor + "?saved=1", Target(saved));
+
+        var editor = await GetEditorAsync(client, Target(saved)!);
+        Assert.Contains("""value="Payroll set-up for a 40-person team" """.Trim(), editor);
+        Assert.DoesNotContain("Form.Highlights[1].Title", editor);
+        var publicPath = ProfileLink().Match(editor).Groups[1].Value;
+        var profile = await (await client.GetAsync(publicPath)).ReadHtmlAsync();
+        Assert.Contains("Portfolio highlights</h2>", profile);
+        Assert.Contains("<strong>Payroll set-up for a 40-person team</strong>", profile);
+        Assert.Contains("""<span class="tag">Staffing</span>""", profile);
+        Assert.Contains("""<span class="muted small">Result</span> The owner now runs payroll without outside help.""", profile);
+        Assert.Contains("Described by the accountant. Client names are left out.", profile);
+        Assert.True(profile.IndexOf("Portfolio highlights</h2>", StringComparison.Ordinal) < profile.IndexOf("Experience</h2>", StringComparison.Ordinal));
+        Assert.Contains("<span>1 highlight</span>", await (await client.GetAsync("/?q=Benjie")).ReadHtmlAsync());
+
+        // Removing the only highlight and saving leaves no section and no card fact.
+        fields.Remove("Form.Highlights[1].Title"); // the saved editor has one row
+        var removed = await (await PostAsync(client, editor, fields, "remove-highlight:0")).ReadHtmlAsync();
+        Assert.DoesNotContain("Form.Highlights[0].Title", removed);
+        await SaveAsync(client, removed, Complete(title: "CPA"));
+        Assert.DoesNotContain("Portfolio highlights", await (await client.GetAsync(publicPath)).ReadHtmlAsync());
+        Assert.DoesNotContain("highlight</span>", await (await client.GetAsync("/?q=Benjie")).ReadHtmlAsync());
+    }
+
+    [DatabaseFact]
+    public async Task A_half_filled_highlight_saves_nothing_and_keeps_what_was_typed()
+    {
+        // F08 PH02.
+        var client = await AccountantAsync("Carla Mendoza");
+        var page = await (await PostAsync(client, await GetEditorAsync(client), Complete(title: "Bookkeeper"), "add-highlight")).ReadHtmlAsync();
+        var fields = Complete(title: "Bookkeeper");
+        fields["Form.Highlights[0].ClientType"] = "Food retail";
+
+        var response = await SaveAsync(client, page, fields);
+        var html = await response.ReadHtmlAsync();
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Contains("""<a href="#f-pf-0-title">Highlight 1: add a title.</a>""", html);
+        Assert.Contains("""<a href="#f-pf-0-work">Highlight 1: describe what you did.</a>""", html);
+        Assert.Contains("""value="Food retail" """.Trim(), html);
+        await using var db = app.Schema.CreateContext();
+        Assert.False(await db.AccountantProfiles.AnyAsync(p => p.DisplayName == "Carla Mendoza"));
+    }
+
     private static HttpRequestMessage WithCookies(HttpMethod method, string address, params string[] cookies)
     {
         var request = new HttpRequestMessage(method, address);

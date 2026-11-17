@@ -19,7 +19,7 @@ public sealed class DirectoryService(IDirectoryStore store, IClock clock)
         var today = ManilaTime.Today(clock);
         var cards = rows.Rows
             .Select(r => new AccountantCard(
-                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary, r.PictureAddress))
+                r.Id, r.Name, r.Title, r.City, ExperienceYears.Calculate(r.ExperienceStarts, today), r.Services, r.Summary, r.PictureAddress, r.HighlightCount))
             .ToList();
         var pageCount = Math.Max(1, (rows.MatchCount + PageSize - 1) / PageSize);
 

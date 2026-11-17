@@ -486,7 +486,58 @@ namespace TaxBuddy.Web.Data.Migrations
                                 .HasConstraintName("fk_accountant_services_accountant_profile_id");
                         });
 
+                    b.OwnsMany("TaxBuddy.Web.Domain.PortfolioHighlight", "Highlights", b1 =>
+                        {
+                            b1.Property<Guid>("AccountantProfileId")
+                                .HasColumnType("uuid")
+                                .HasColumnName("accountant_profile_id");
+
+                            b1.Property<int>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("integer")
+                                .HasColumnName("id");
+
+                            NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b1.Property<int>("Id"));
+
+                            b1.Property<string>("ClientType")
+                                .HasMaxLength(60)
+                                .HasColumnType("character varying(60)")
+                                .HasColumnName("client_type");
+
+                            b1.Property<int>("Position")
+                                .HasColumnType("integer")
+                                .HasColumnName("position");
+
+                            b1.Property<string>("Result")
+                                .HasMaxLength(300)
+                                .HasColumnType("character varying(300)")
+                                .HasColumnName("result");
+
+                            b1.Property<string>("Title")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)")
+                                .HasColumnName("title");
+
+                            b1.Property<string>("Work")
+                                .IsRequired()
+                                .HasMaxLength(600)
+                                .HasColumnType("character varying(600)")
+                                .HasColumnName("work");
+
+                            b1.HasKey("AccountantProfileId", "Id")
+                                .HasName("pk_accountant_highlights");
+
+                            b1.ToTable("accountant_highlights", (string)null);
+
+                            b1.WithOwner()
+                                .HasForeignKey("AccountantProfileId")
+                                .HasConstraintName("fk_accountant_highlights_accountant_profile_id");
+                        });
+
                     b.Navigation("Experience");
+
+                    b.Navigation("Highlights");
 
                     b.Navigation("Services");
                 });

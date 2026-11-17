@@ -15,7 +15,11 @@ public sealed record ValidatedProfile(
     string? Website,
     bool ConsentToShowContact,
     IReadOnlyList<(string Name, string Description)> Services,
-    IReadOnlyList<(string Role, string Organization, YearMonth Start, YearMonth? End)> Experience);
+    IReadOnlyList<(string Role, string Organization, YearMonth Start, YearMonth? End)> Experience)
+{
+    /// <summary>Portfolio highlights (F08), in the order typed.</summary>
+    public IReadOnlyList<(string Title, string? ClientType, string Work, string? Result)> Highlights { get; init; } = [];
+}
 
 /// <summary>
 /// Checks the editor's input before anything is saved (F05 PE03; PRD D04 limits). Messages follow the prototype's
@@ -92,6 +96,8 @@ public static class ProfileValidator
             }
         }
 
+        var highlights = Highlights(form, errors);
+
         var services = new List<(string, string)>();
         for (var i = 0; i < form.Services.Count; i++)
         {
@@ -127,7 +133,47 @@ public static class ProfileValidator
         }
 
         return (new ValidatedProfile(displayName, title, city, summary, email, phone, website, form.ConsentToShowContact,
-            services, experience), errors);
+            services, experience) { Highlights = highlights }, errors);
+    }
+
+    /// <summary>
+    /// F08 (BR13): rows left completely blank are dropped; any other row needs a title and what was done, as in the
+    /// prototype's validateFormat.
+    /// </summary>
+    private static List<(string, string?, string, string?)> Highlights(ProfileForm form, Dictionary<string, string> errors)
+    {
+        var highlights = new List<(string, string?, string, string?)>();
+        var rows = form.Highlights.Select((row, index) => (row, index)).Where(r => !r.row.IsBlank).ToList();
+        if (rows.Count > ProfileLimits.Highlights)
+        {
+            errors.TryAdd(nameof(ProfileForm.Highlights), $"Keep to {ProfileLimits.Highlights} highlights or fewer.");
+        }
+
+        foreach (var (row, i) in rows)
+        {
+            var n = i + 1;
+            var title = Text(row.Title, ProfileLimits.HighlightTitle, $"Highlights[{i}].Title", $"Highlight {n}: the title", errors);
+            if (title.Length == 0)
+            {
+                errors.TryAdd($"Highlights[{i}].Title", $"Highlight {n}: add a title.");
+            }
+
+            var clientType = Optional(row.ClientType, ProfileLimits.HighlightClientType, $"Highlights[{i}].ClientType",
+                $"Highlight {n}: the type of client", errors);
+            var work = Text(row.Work, ProfileLimits.HighlightWork, $"Highlights[{i}].Work", $"Highlight {n}: what you did", errors);
+            if (work.Length == 0)
+            {
+                errors.TryAdd($"Highlights[{i}].Work", $"Highlight {n}: describe what you did.");
+            }
+
+            var result = Optional(row.Result, ProfileLimits.HighlightResult, $"Highlights[{i}].Result", $"Highlight {n}: the result", errors);
+            if (title.Length > 0 && work.Length > 0)
+            {
+                highlights.Add((title, clientType, work, result));
+            }
+        }
+
+        return highlights;
     }
 
     /// <summary>Text that may be empty; too long is an error.</summary>

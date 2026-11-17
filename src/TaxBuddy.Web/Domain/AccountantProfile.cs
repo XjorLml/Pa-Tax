@@ -18,6 +18,15 @@ public static class ProfileLimits
     public const int Website = 200;
     public const int ServiceDescription = 200;
     public const int ExperienceText = 100;
+
+    /// <summary>At most this many portfolio highlights (PRD BR13, D23: the prototype's proposal, adopted provisionally 2026-11-17).</summary>
+    public const int Highlights = 6;
+
+    // F08 working values (D23, provisional).
+    public const int HighlightTitle = 100;
+    public const int HighlightClientType = 60;
+    public const int HighlightWork = 600;
+    public const int HighlightResult = 300;
 }
 
 /// <summary>An accountant's public profile (PRD R03, R05; fields per D04, adopted provisionally).</summary>
@@ -25,6 +34,7 @@ public sealed class AccountantProfile
 {
     private readonly List<OfferedService> _services = [];
     private readonly List<ExperienceEntry> _experience = [];
+    private readonly List<PortfolioHighlight> _highlights = [];
 
     private AccountantProfile()
     {
@@ -100,6 +110,9 @@ public sealed class AccountantProfile
 
     public IReadOnlyList<ExperienceEntry> Experience => _experience;
 
+    /// <summary>Portfolio highlights (PRD R12), in the accountant's order.</summary>
+    public IReadOnlyList<PortfolioHighlight> Highlights => _highlights;
+
     /// <summary>Whether the profile appears in the directory (PRD BR01).</summary>
     public bool IsListed => ListingRules.IsListedProfile(this);
 
@@ -137,6 +150,41 @@ public sealed class AccountantProfile
         {
             AddExperience(role, organization, start, end);
         }
+    }
+
+    /// <summary>Replaces the portfolio highlights, in the given order; at most <see cref="ProfileLimits.Highlights"/> (BR13).</summary>
+    public void ReplaceHighlights(IEnumerable<(string Title, string? ClientType, string Work, string? Result)> highlights)
+    {
+        var list = highlights.ToList();
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(list.Count, ProfileLimits.Highlights, nameof(highlights));
+        _highlights.Clear();
+        foreach (var (title, clientType, work, result) in list)
+        {
+            AddHighlight(title, clientType, work, result);
+        }
+    }
+
+    /// <summary>A highlight needs a title and a description of the work (BR13).</summary>
+    public void AddHighlight(string title, string? clientType, string work, string? result)
+    {
+        if (_highlights.Count >= ProfileLimits.Highlights)
+        {
+            throw new InvalidOperationException($"A profile has at most {ProfileLimits.Highlights} portfolio highlights.");
+        }
+
+        var highlightTitle = Text(title, ProfileLimits.HighlightTitle, nameof(title));
+        var highlightWork = Text(work, ProfileLimits.HighlightWork, nameof(work));
+        if (highlightTitle.Length == 0 || highlightWork.Length == 0)
+        {
+            throw new ArgumentException("A highlight needs a title and a description of the work.");
+        }
+
+        _highlights.Add(new PortfolioHighlight(
+            highlightTitle,
+            Optional(clientType, ProfileLimits.HighlightClientType, nameof(clientType)),
+            highlightWork,
+            Optional(result, ProfileLimits.HighlightResult, nameof(result)),
+            _highlights.Count));
     }
 
     /// <summary>Called once per successful save.</summary>
@@ -219,6 +267,40 @@ public sealed class OfferedService
     public string Name { get; private set; } = "";
 
     public string Description { get; private set; } = "";
+
+    /// <summary>Display order chosen by the accountant.</summary>
+    public int Position { get; private set; }
+}
+
+/// <summary>
+/// Work the accountant is proud of (PRD R12): a title, the type of client, what they did and the result. Written by the
+/// accountant; client names are left out unless the client agreed (R11).
+/// </summary>
+public sealed class PortfolioHighlight
+{
+    private PortfolioHighlight()
+    {
+        // For EF Core.
+    }
+
+    internal PortfolioHighlight(string title, string? clientType, string work, string? result, int position)
+    {
+        Title = title;
+        ClientType = clientType;
+        Work = work;
+        Result = result;
+        Position = position;
+    }
+
+    public string Title { get; private set; } = "";
+
+    /// <summary>The prototype's "Type of client", for example "Food retail".</summary>
+    public string? ClientType { get; private set; }
+
+    /// <summary>What the accountant did.</summary>
+    public string Work { get; private set; } = "";
+
+    public string? Result { get; private set; }
 
     /// <summary>Display order chosen by the accountant.</summary>
     public int Position { get; private set; }

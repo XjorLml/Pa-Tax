@@ -76,6 +76,16 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
                 entry.Ignore(e => e.IsCurrent);
             });
 
+            // F08: portfolio highlights, deleted with their profile.
+            profile.OwnsMany(p => p.Highlights, highlight =>
+            {
+                highlight.ToTable("accountant_highlights");
+                highlight.WithOwner().HasForeignKey("AccountantProfileId");
+                highlight.Property(h => h.Title).HasMaxLength(ProfileLimits.HighlightTitle);
+                highlight.Property(h => h.ClientType).HasMaxLength(ProfileLimits.HighlightClientType);
+                highlight.Property(h => h.Work).HasMaxLength(ProfileLimits.HighlightWork);
+                highlight.Property(h => h.Result).HasMaxLength(ProfileLimits.HighlightResult);
+            });
         });
 
         ConfigureChat(modelBuilder);

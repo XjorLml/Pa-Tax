@@ -1,5 +1,5 @@
 @* A directory card (PRD R01; prototype cardHTML, F02 BD10). The heading link covers the whole card, so there is one link
-   per card. The prototype's rating line and highlight count join with R13 and R12. *@
+   per card. The highlight count came with R12 (F08); the rating line joins with R13. *@
 <li>
     <article class="card">
         <div class="card-top">
@@ -19,6 +19,10 @@
             @if (Card.YearsOfExperience is { } years)
             {
                 <span>@Display.YearsOfExperience(years)</span>
+            }
+            @if (Card.HighlightCount > 0)
+            {
+                <span>@Display.HighlightCount(Card.HighlightCount)</span>
             }
         </p>
         <ul class="tags" aria-label="Services">

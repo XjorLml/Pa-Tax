@@ -61,6 +61,9 @@ public static class Display
 
     public static string YearsOfExperience(int years) => years == 1 ? "1 year's experience" : $"{years} years' experience";
 
+    /// <summary>The card fact (prototype cardHTML): "1 highlight", "3 highlights".</summary>
+    public static string HighlightCount(int count) => count == 1 ? "1 highlight" : $"{count} highlights";
+
     public static string AccountantCount(int count) => count == 1 ? "1 accountant" : $"{count} accountants";
 
     /// <summary>A <c>tel:</c> address with only digits and a leading plus, or null when nothing dialable remains.</summary>

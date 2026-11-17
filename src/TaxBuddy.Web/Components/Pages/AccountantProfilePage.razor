@@ -18,8 +18,8 @@ else if (profile is not null)
     <SeoHead Title="@($"{profile.Name}, {profile.Title} · Tax Buddy")" Description="@Excerpt(profile.Summary)"
              CanonicalPath="@Display.ProfilePath(profile.Id)" />
 
-    @* The prototype's profile (profileBodyHTML, Tax Buddy look; F02 BD10). Its rating, portfolio highlights, reviews and
-       "Report this profile" join with R13, R12 and R15. *@
+    @* The prototype's profile (profileBodyHTML, Tax Buddy look; F02 BD10). Portfolio highlights came with R12 (F08); its
+       rating, reviews and "Report this profile" join with R13 and R15. *@
     <nav class="crumbs" aria-label="Breadcrumb">
         <a href="/">Accountants</a><span aria-hidden="true">/</span><span>@profile.Name</span>
     </nav>
@@ -64,6 +64,33 @@ else if (profile is not null)
                 </ul>
                 <p class="muted small mt-2">Prices aren't listed. Ask in chat.</p>
             </section>
+            @if (profile.Highlights.Count > 0)
+            {
+                @* F08 (prototype profileBodyHTML): between Services and Experience. *@
+                <section class="section" aria-labelledby="portfolio-heading">
+                    <h2 id="portfolio-heading" class="section-title">Portfolio highlights</h2>
+                    <ul class="pf">
+                        @foreach (var highlight in profile.Highlights)
+                        {
+                            <li>
+                                <div class="pf-top">
+                                    <strong>@highlight.Title</strong>
+                                    @if (highlight.ClientType is not null)
+                                    {
+                                        <span class="tag">@highlight.ClientType</span>
+                                    }
+                                </div>
+                                <p class="whitespace-pre-line">@highlight.Work</p>
+                                @if (highlight.Result is not null)
+                                {
+                                    <p class="pf-result"><span class="muted small">Result</span> @highlight.Result</p>
+                                }
+                            </li>
+                        }
+                    </ul>
+                    <p class="muted small mt-2">Described by the accountant. Client names are left out.</p>
+                </section>
+            }
             <section class="section" aria-labelledby="experience-heading">
                 <h2 id="experience-heading" class="section-title">Experience</h2>
                 @if (profile.Experience.Count > 0)

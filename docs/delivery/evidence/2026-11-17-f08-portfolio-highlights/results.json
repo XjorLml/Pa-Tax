@@ -1,0 +1,131 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-17T04:43:46.309Z",
+  "results": [
+    {
+      "n": "profile at 1440: highlights between Services and Experience, tag and result",
+      "ok": true,
+      "d": {
+        "heads": [
+          "About",
+          "Services",
+          "Portfolio highlights",
+          "Experience"
+        ],
+        "items": [
+          "Cleaned up two years of books for a bakery",
+          "Payroll set-up for a 40-person team"
+        ],
+        "tag": "Food retail",
+        "result": "Result Books were ready for a bank loan application.",
+        "resultCount": 1
+      }
+    },
+    {
+      "n": "profile at 390: highlights between Services and Experience, tag and result",
+      "ok": true,
+      "d": {
+        "heads": [
+          "About",
+          "Services",
+          "Portfolio highlights",
+          "Experience"
+        ],
+        "items": [
+          "Cleaned up two years of books for a bakery",
+          "Payroll set-up for a 40-person team"
+        ],
+        "tag": "Food retail",
+        "result": "Result Books were ready for a bank loan application.",
+        "resultCount": 1
+      }
+    },
+    {
+      "n": "profile at 1440 dark: highlights between Services and Experience, tag and result",
+      "ok": true,
+      "d": {
+        "heads": [
+          "About",
+          "Services",
+          "Portfolio highlights",
+          "Experience"
+        ],
+        "items": [
+          "Cleaned up two years of books for a bakery",
+          "Payroll set-up for a 40-person team"
+        ],
+        "tag": "Food retail",
+        "result": "Result Books were ready for a bank loan application.",
+        "resultCount": 1
+      }
+    },
+    {
+      "n": "profile at 390 dark: highlights between Services and Experience, tag and result",
+      "ok": true,
+      "d": {
+        "heads": [
+          "About",
+          "Services",
+          "Portfolio highlights",
+          "Experience"
+        ],
+        "items": [
+          "Cleaned up two years of books for a bakery",
+          "Payroll set-up for a 40-person team"
+        ],
+        "tag": "Food retail",
+        "result": "Result Books were ready for a bank loan application.",
+        "resultCount": 1
+      }
+    },
+    {
+      "n": "the directory card shows \"2 highlights\"",
+      "ok": true,
+      "d": "Iloilo City\n10 years' experience\n2 highlights"
+    },
+    {
+      "n": "editor at 1440: the portfolio fieldset after Services, with its rows and hint",
+      "ok": true,
+      "d": {
+        "legends": [
+          "About you",
+          "Experience",
+          "Services",
+          "Portfolio highlights",
+          "Contact details"
+        ],
+        "rows": 2,
+        "labels": [
+          "Title",
+          "Type of client",
+          "What you did",
+          "Result"
+        ],
+        "add": true,
+        "hint": "Up to 6. Don't name clients or share their details without their permission."
+      }
+    },
+    {
+      "n": "editor at 390 dark: the portfolio fieldset after Services, with its rows and hint",
+      "ok": true,
+      "d": {
+        "legends": [
+          "About you",
+          "Experience",
+          "Services",
+          "Portfolio highlights",
+          "Contact details"
+        ],
+        "rows": 2,
+        "labels": [
+          "Title",
+          "Type of client",
+          "What you did",
+          "Result"
+        ],
+        "add": true,
+        "hint": "Up to 6. Don't name clients or share their details without their permission."
+      }
+    }
+  ]
+}
