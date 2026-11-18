@@ -108,6 +108,29 @@
                 }
                 else
                 {
+                    @if (Mode == ThreadMode && thread is not null)
+                    {
+                        @* F10 (prototype threadParts thread-tools): Report goes to the static report page; Block asks first. *@
+                        <div class="thread-tools">
+                            @if (blockNotice is not null)
+                            {
+                                @* The prototype's toasts "Blocked. They can't message you." and "Unblocked." as a line. *@
+                                <span class="save-status ok" role="status">@blockNotice</span>
+                            }
+                            @if (Reported)
+                            {
+                                <span class="save-status ok" role="status">Thanks. Your report was sent to the Tax Buddy team.</span>
+                            }
+                            else
+                            {
+                                <a class="linkbtn" href="@($"/report/conversation/{thread.ConversationId:D}")">Report</a>
+                            }
+                            @if (!thread.BlockedByMe)
+                            {
+                                <button type="button" class="linkbtn" data-block @onclick="AskToBlock">Block</button>
+                            }
+                        </div>
+                    }
                     <div class="thread">
                         @if (Messages.Count == 0 && pending.Count == 0)
                         {
@@ -176,6 +199,27 @@
             @if (!threadFailed)
             {
                 <div class="footer">
+                    @if (thread is { BlockedByMe: true })
+                    {
+                        @* F10: the composer's draft stays in the tab and comes back after Unblock. *@
+                        <p class="note blocked-note">
+                            <span>
+                                You blocked @Display.FirstName(PeerName). They can't message you.
+                                <button type="button" class="linkbtn" @onclick="() => SetBlockAsync(false)">Unblock</button>
+                                @if (blockFailed)
+                                {
+                                    <span class="err" role="alert">We couldn't do that. Please try again.</span>
+                                }
+                            </span>
+                        </p>
+                    }
+                    else if (thread is { BlockedByThem: true })
+                    {
+                        @* R15: the blocked person isn't told why. *@
+                        <p class="note blocked-note"><span>You can't send messages in this conversation.</span></p>
+                    }
+                    else
+                    {
                     @* The text, count, hint and errors belong to the script; it enables Send once it is running. *@
                     <form class="composer" data-chat-composer novalidate>
                         <label class="sr-only" for="composer">Message</label>
@@ -186,10 +230,30 @@
                             <span class="count" id="composer-count" data-composer-count>0 / @ChatDisplay.Count(ChatLimits.MessageLength)</span>
                         </div>
                     </form>
+                    }
                 </div>
             }
         }
     </section>
+
+    @if (confirmingBlock && thread is not null)
+    {
+        @* F10 (prototype block dialog): asks before blocking. Escape or Cancel closes it. *@
+        <div class="overlay center" @onkeydown="CloseOnEscape">
+            <div class="sheet" role="alertdialog" aria-modal="true" aria-labelledby="block-title" aria-describedby="block-text">
+                <h2 id="block-title">Block @Display.FirstName(PeerName)?</h2>
+                <p id="block-text">They won't be able to message you, and they aren't told. You can unblock them later.</p>
+                @if (blockFailed)
+                {
+                    <p class="ferr" role="alert">We couldn't block them. Please try again.</p>
+                }
+                <div class="actions">
+                    <button type="button" class="btn" data-dialog-focus @onclick="CancelBlock">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="() => SetBlockAsync(true)">Block</button>
+                </div>
+            </div>
+        </div>
+    }
 
     <p class="sr-only" role="status">@announcement</p>
 </div>
@@ -216,6 +280,9 @@
 
     /// <summary>The accountant's profile for a new chat.</summary>
     [Parameter] public Guid? ProfileId { get; set; }
+
+    /// <summary>Just reported (F10): the thanks line replaces the Report link.</summary>
+    [Parameter] public bool Reported { get; set; }
 
     private enum SendStatus { Sent, Sending, Checking, Failed }
 
@@ -254,6 +321,12 @@
     private IJSObjectReference? module;
     private DotNetObjectReference<ChatPanes>? self;
     private int renderedCount = -1;
+    private bool composerReady;
+    private bool confirmingBlock;
+    private bool focusDialog;
+    private bool focusBlockLink;
+    private bool blockFailed;
+    private string? blockNotice;
 
     private bool IsList => Mode == ListMode;
 
@@ -307,7 +380,23 @@
             {
                 module = await JS.InvokeAsync<IJSObjectReference>("import", $"./{Assets["Components/Chat/ChatPanes.razor.js"]}");
                 self = DotNetObjectReference.Create(this);
+            }
+
+            // The composer is drawn only while the conversation isn't blocked (F10); after Unblock it is a new element.
+            if (thread?.IsBlocked == true)
+            {
+                composerReady = false;
+            }
+            else if (!composerReady)
+            {
                 await module.InvokeVoidAsync("init", root, self, DraftKey, FallbackKey);
+                composerReady = true;
+            }
+
+            if (focusDialog || focusBlockLink)
+            {
+                await module.InvokeVoidAsync("focus", root, focusDialog ? "[data-dialog-focus]" : "[data-block]");
+                focusDialog = focusBlockLink = false;
             }
 
             var count = Messages.Count + pending.Count;
@@ -368,6 +457,54 @@
                 threadFailed = true;
             }
         }
+    }
+
+    private void AskToBlock()
+    {
+        confirmingBlock = true;
+        blockFailed = false;
+        focusDialog = true;
+    }
+
+    private void CancelBlock()
+    {
+        confirmingBlock = false;
+        blockFailed = false;
+        focusBlockLink = true;
+    }
+
+    private void CloseOnEscape(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+        {
+            CancelBlock();
+        }
+    }
+
+    /// <summary>Block or Unblock (R15). The service checks the participant again; both panels reload through the notifier.</summary>
+    private async Task SetBlockAsync(bool blocked)
+    {
+        if (viewer is null || thread is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (await Chat.SetBlockAsync(viewer.AccountId, thread.ConversationId, blocked))
+            {
+                confirmingBlock = false;
+                blockFailed = false;
+                blockNotice = blocked ? "Blocked. They can't message you." : "Unblocked.";
+                await LoadAsync();
+                return;
+            }
+        }
+        catch (Application.Directory.DataUnavailableException)
+        {
+        }
+
+        blockFailed = true;
     }
 
     /// <summary>"Try again": the event handler renders afterwards.</summary>
@@ -471,6 +608,11 @@
             case SendOutcome.Failed:
                 message.Status = SendStatus.Failed;
                 announcement = "Not sent. Your message is shown with a Retry button.";
+                break;
+            case SendOutcome.Blocked:
+                // Blocked meanwhile (F10): the text stays in the tab, and the panel shows the blocked note.
+                pending.Remove(message);
+                await LoadAsync();
                 break;
             default:
                 pending.Remove(message);

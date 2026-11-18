@@ -29,7 +29,7 @@
             <AntiforgeryToken />
             <input type="hidden" name="Form.ReturnUrl" value="@returnUrl" />
 
-            <label class="check">
+            <label class="check agree">
                 <input type="checkbox" name="Form.Agree" value="true" checked="@Form!.Agree"
                        aria-describedby="@(agreeError is null ? null : "agree-error")" />
                 <span>I agree to the <a href="/terms">Terms of use</a> and the <a href="/privacy">Privacy policy</a>.</span>

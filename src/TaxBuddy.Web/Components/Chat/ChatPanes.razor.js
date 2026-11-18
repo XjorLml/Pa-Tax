@@ -127,6 +127,11 @@ export function confirmed(root, sentId) {
     root.querySelector("[data-chat-composer]")?.chatConfirmed?.(sentId);
 }
 
+/** Moves focus into the block dialog, or back to the Block link after Cancel (F10). */
+export function focus(root, selector) {
+    root.querySelector(selector)?.focus();
+}
+
 /** Shows the newest message. */
 export function scrollToEnd(root) {
     const scroller = root.querySelector("[data-chat-scroll]");

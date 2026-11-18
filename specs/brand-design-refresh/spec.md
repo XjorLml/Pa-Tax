@@ -76,13 +76,60 @@ In scope:
 Kept, and recorded as deviations from the prototype:
 1. The theme switch (BD09, asked for by the user) stays, moved from the header to the footer. The prototype has no theme control on the site.
 2. Pages stay static and work without script (SDD; C04 for the editor). Choice buttons can't be disabled until the box is ticked, the end month can't be disabled live, and there is no leave confirmation or "Saving…" spinner; the server checks and messages replace them.
-3. Links to features that aren't built yet are left out: Chats, Clients or My accountants, For accountants, About, Help, email settings, My reviews, Delete account, and the portfolio fieldset (R12).
+3. Links to features that aren't built yet are left out: Chats, Clients or My accountants, For accountants, About, Help, email settings, My reviews, Delete account, and the portfolio fieldset (R12). *Superseded in part:* Chats came with F07, the portfolio fieldset with F08; My reviews was later left out by the user's choice (F09).
 4. Microsoft sign-in is not offered until it is built.
 5. The editor's stale-save warning has no prototype counterpart; it uses the error-summary style.
 
 | ID / requirement | Given / when | Observable result | Verification boundary |
 |---|---|---|---|
 | BD10 / DESIGN, prototype | Open the directory, a profile, sign-in, registration, Account, the profile editor and the legal pages, signed out, as a client and as an accountant, on phone and desktop, light and dark | Each page follows its prototype screen's layout, wording and states, apart from the recorded deviations. The behaviour of F01, F04 and F05 is unchanged, and their tests still pass | Web tests, Edge screenshots compared with the prototype |
+
+## Prototype alignment check, 2026-11-18 (BD11)
+
+The user said "check current implementation against the prototype. follow what's on the prototype then update the documentation".
+- **Audit:** three read-only audits compared every built page (F01, F02, F04–F10) with its prototype render function and styles.
+- **Changes:** the unrecorded differences were changed to match. The list of changes and of the deviations kept is in [DESIGN](../../docs/DESIGN.md#visual-system) ("Checked against the prototype again in BD11").
+- **Kept:** the user's own decisions stay. These are the static editor, review and report pages, the report page instead of a dialog, radio inputs drawn as stars and chips, and status lines instead of toasts.
+- **Evidence:** [2026-11-18 record](../../docs/delivery/evidence/2026-11-18-prototype-alignment.md).
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD11 / DESIGN, prototype | Every built page, signed out, as a client and as an accountant, at 390 and 1440 px, light and dark | Layout, wording and states follow the prototype, apart from the deviations recorded in DESIGN; all tests still pass | Web tests, Edge checks and screenshots |
+
+## Logo replaced, 2026-11-18 (BD12)
+
+The user gave a logo brief, reviewed three proposals ([logo directions](../../prototypes/logo-directions/README.md)) and reworked the third: "improve option c to make it more modern and eye catching", "make the T as one, not two separated lines", and, after a taxi motif was tried, "just remove the taxi related design". The user then said "update the docs then implement this to the entire app".
+
+- **Identity:** a round speech bubble with one square corner, holding a solid T, and a drawn "Tax Buddy" wordmark in title case and two tones. It replaces the ledger with a conversation corner and the lowercase wordmark.
+- **Files:** the five files in [prototypes/assets](../../prototypes/assets/README.md) keep their names and are copied to `src/TaxBuddy.Web/wwwroot/images`. The logo's box changes from 280 × 48 to 258 × 48 units, so it is shown at 161 × 30 CSS px instead of 175 × 30.
+- **Prototype:** the inline copy used by the palette options is redrawn; its second word takes the palette's primary colour. The phone app bar's symbol now follows the theme, as the sign-in symbol already did.
+- **Site:** `BrandLogo` takes the new size. `BrandIcon`, the favicon link and the pages need no change, because the file names are the same.
+- **Not changed:** the palette, the type and every page layout.
+- **Deviation from the brief:** the wordmark is a drawn rounded sans, not a serif.
+- **Follow-up, 2026-11-19** (the user said "do this all" of three items the agent had left open; [evidence](../../docs/delivery/evidence/2026-11-19-f02-logo-outlines-hero.md)):
+  - **Outlines:** the wordmark's letters are now filled outlines. Each stroke of a letter is its own closed shape, so the shapes overlap and are not merged into one contour.
+  - **Directory illustration:** the decorative ledger keeps its open book; its rectangular speech bubble became the logo's bubble with the T, in the prototype and the site.
+  - **Build:** the Tailwind step now also runs in WSL when only the Windows Node is installed ([SETUP](../../docs/SETUP.md#troubleshooting-and-maintenance)).
+  - **Survey:** a preliminary web survey of similar marks and of domain records. It is not clearance.
+- **Not done:** name and domain clearance (D01), a search of IPOPHL or any trademark register for the name or the figurative mark, and a comparison with the two existing TaxBuddy logos.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD12 / D01, DESIGN | Open the prototype and the site: site bar, footer, phone app bar, sign-in, browser tab, light and dark, and a palette option in the prototype | The new symbol and wordmark show everywhere the old logo did; the dark files show on dark surfaces; palette options recolour the inline copy; no old logo remains | Prototype checker, build, tests, and screenshots of the prototype and the running site ([evidence](../../docs/delivery/evidence/2026-11-18-f02-logo.md)) |
+
+## One typeface, 2026-11-19 (BD13)
+
+The user said "i can see that there are different font styles stick to one font style used in the logo it it stays consistent? update the docs then implement for prototype and the site". The agent read this as: one typeface across the prototype and the site, matching the logo.
+
+- **Choice:** the logo's letters are drawn, not set in a font, so no font is identical. Ten open-licence families were rendered beside the logo; Quicksand was the closest (rounded strokes, single-storey "a", round bowls).
+- **Applied:** headings, body and controls all use Quicksand. Weights: body 500, labels and buttons 600, headings 700. Sizes, spacing and layouts are unchanged.
+- **Files:** two font files and the licence, in `prototypes/assets/fonts` and `src/TaxBuddy.Web/wwwroot/fonts`, loaded by `@font-face` with `font-display: swap`. Nothing is requested from another site.
+- **Rule changed:** DESIGN's "system fonts, no downloads" no longer holds. The earlier comparison looks in the prototype keep their own fonts.
+- **Not changed:** the logo, which stays drawn paths.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD13 / DESIGN typography | Open any page of the prototype's Tax Buddy look or of the site, light and dark | Headings, body text, buttons and the phone app bar's name are in one typeface that matches the logo; no serif remains; the font files load from the same site | Prototype checker, build, tests, and screenshots of both ([evidence](../../docs/delivery/evidence/2026-11-19-f02-typeface.md)) |
 
 ## Name availability, 2026-11-16
 

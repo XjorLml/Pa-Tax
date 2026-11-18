@@ -45,4 +45,8 @@ Application aligned to the prototype, 2026-11-16 (BD10):
 4. Update only current identity references; preserve historical decision/evidence records and label older design proposals.
 5. Verify JavaScript syntax, local assets, meaningful flows, responsive layout, color contrast and documentation. Use an isolated browser profile and synthetic data; clean up owned browser processes.
 
-No schema migration or application build applies. Domain selection, external name clearance, real phones, screen readers and application acceptance remain separate work. Authority for visual tokens stays in [DESIGN](../../docs/DESIGN.md); prototype code is a disposable implementation of that contract.
+Logo replaced, 2026-11-18 ([BD12](spec.md#logo-replaced-2026-11-18-bd12)): `prototypes/logo-directions/generate.py` writes the adopted files into `prototypes/assets`; they are copied to the site's `wwwroot/images` under the same names, so only the prototype's inline copy and the `BrandLogo` size change. Verified with the prototype checker, a Release build, the tests and screenshots of both.
+
+One typeface, 2026-11-19 ([BD13](spec.md#one-typeface-2026-11-19-bd13)): fonts were already set through two tokens in each stylesheet, so both now name Quicksand, served from local files; a few weights tuned for a serif were raised. No markup changes.
+
+No schema migration or application build applies to the 2026-11-11 and 2026-11-12 work. Domain selection, external name clearance, real phones, screen readers and application acceptance remain separate work. Authority for visual tokens stays in [DESIGN](../../docs/DESIGN.md); prototype code is a disposable implementation of that contract.

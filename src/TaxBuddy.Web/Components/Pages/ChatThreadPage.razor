@@ -34,13 +34,16 @@ else if (thread is not null)
             }
         </Actions>
     </PhoneBar>
-    <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.ThreadMode" ConversationId="Id" />
+    <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.ThreadMode" ConversationId="Id" Reported="@(Reported == "1")" />
 }
 
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
     [Parameter] public Guid Id { get; set; }
+
+    /// <summary>After a report of this conversation (F10): the panel thanks the reporter.</summary>
+    [SupplyParameterFromQuery(Name = "reported")] public string? Reported { get; set; }
 
     private ChatViewer? viewer;
     private ThreadView? thread;

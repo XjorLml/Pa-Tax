@@ -43,6 +43,16 @@ async function check(name, expression) {
 const click = selector => js(`(() => { const el=document.querySelector(${JSON.stringify(selector)}); if(!el) throw Error('Missing '+${JSON.stringify(selector)}); el.click(); })()`);
 const set = (selector, value, event = 'change') => js(`(() => { const el=document.querySelector(${JSON.stringify(selector)}); if(!el) throw Error('Missing field'); el.value=${JSON.stringify(value)}; el.dispatchEvent(new Event(${JSON.stringify(event)},{bubbles:true})); })()`);
 const textHas = text => `document.querySelector('#app').textContent.includes(${JSON.stringify(text)})`;
+// Choose a file in a file input, as a person would from the device's file chooser.
+async function chooseFile(selector, path) {
+  const r = await cdp('Runtime.evaluate', { expression: `document.querySelector(${JSON.stringify(selector)})` });
+  if (!r.result || !r.result.objectId) throw Error('Missing ' + selector);
+  await cdp('DOM.setFileInputFiles', { files: [path], objectId: r.result.objectId });
+  await delay(400);
+}
+// A synthetic 2 x 2 PNG for the profile picture checks; written to the artifact directory.
+const samplePicture = join(out, 'sample-picture.png');
+await writeFile(samplePicture, Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAFklEQVR4nGNkWPqfgYGBiQEMGBkY/gMACR0CA1rvOfsAAAAASUVORK5CYII=', 'base64'));
 async function route(hash) { await js(`location.hash=${JSON.stringify(hash)}`); await delay(100); }
 async function open(query = '', hash = '#/directory', width = 1440, height = 1100) {
   await cdp('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: false });
@@ -138,6 +148,47 @@ try {
   await click('#net-on');
   await route('#/me'); await click('[data-action="toggle-email"]');
   await check('Email preference toggles', textHas('Email notifications: Off'));
+  // Profile picture (R24; F06 PP10): E is the current design. PP09's panel (A) is what the site shows without script.
+  await check('Picture design control starts on the current design', `document.querySelector('#sel-picture').value==='e' && document.querySelectorAll('#sel-picture option').length===5`);
+  await set('#sel-picture', 'a');
+  await check('Account avatar has a pencil and the picture panel starts closed', `!!document.querySelector('.me-card .avatar-edit .pencil') && document.querySelector('.me-card .avatar-edit').getAttribute('aria-label')==='Change profile picture' && !document.querySelector('#picture')`);
+  await click('[data-action="pic-open"]');
+  await check('Pencil opens the picture panel', `!!document.querySelector('#picture #picture-file') && ${textHas('Upload picture')} && !document.querySelector('[data-action="pic-remove"]')`);
+  await click('[data-action="pic-upload"]');
+  await check('Upload without a file asks for a photo', `${textHas('Choose a photo first.')} && document.querySelector('#picture .banner').getAttribute('role')==='alert'`);
+  await screenshot('account-picture-panel');
+  await click('[data-action="pic-close"]');
+  await check('Close hides the picture panel', `!document.querySelector('#picture') && !!document.querySelector('.me-card .avatar-edit')`);
+  // The designs not chosen (B, C, D), kept for comparison, and the current design E with a real file.
+  await set('#sel-picture', 'c'); await click('[data-action="pic-open"]');
+  await check('Option C: the pencil opens a small menu', `!!document.querySelector('.me-card .pic-menu [data-action="pic-pick"]') && document.querySelector('.avatar-edit').getAttribute('aria-expanded')==='true' && !document.querySelector('#picture')`);
+  await screenshot('account-picture-option-c');
+  await set('#sel-picture', 'd'); await click('[data-action="pic-open"]'); await delay(150);
+  await check('Option D: the pencil opens a separate picture page', `location.hash==='#/me/picture' && !!document.querySelector('.picture-page .avatar.xl') && ${textHas('Save picture')}`);
+  await screenshot('account-picture-option-d');
+  await set('#sel-picture', 'e');
+  await check('Option E: back on Account, with the hidden picker and no panel', `location.hash==='#/me' && !!document.querySelector('#pic-direct') && !document.querySelector('#picture') && !document.querySelector('.pic-menu')`);
+  await chooseFile('#pic-direct', samplePicture);
+  await check('Option E: a chosen photo is previewed and waits for Save', `!!document.querySelector('.me-card .avatar.has-picture img') && ${textHas('Preview. Not saved yet.')} && !!document.querySelector('[data-action="pic-save"]') && !document.querySelector('.sitebar .avatar.has-picture, .userlink .avatar.has-picture')`);
+  await screenshot('account-picture-option-e');
+  await click('[data-action="pic-save"]');
+  await check('Option E: Save keeps the picture and offers Remove', `${textHas('Picture updated.')} && !!document.querySelector('.me-card [data-action="pic-remove"]') && !document.querySelector('[data-action="pic-save"]')`);
+  await click('[data-action="pic-remove"]');
+  await check('Option E: Remove brings back the initials', `${textHas('Picture removed. Your initials are shown instead.')} && !document.querySelector('.me-card .avatar.has-picture')`);
+  await set('#sel-picture', 'b');
+  await check('Option B: the pencil with the hidden picker', `!!document.querySelector('#pic-direct') && !!document.querySelector('.me-card .avatar-edit')`);
+  await chooseFile('#pic-direct', samplePicture);
+  await check('Option B: a chosen photo is saved at once', `${textHas('Picture updated.')} && !!document.querySelector('.me-card .avatar.has-picture img') && !!document.querySelector('.me-card [data-action="pic-remove"]')`);
+  await screenshot('account-picture-option-b');
+  await click('[data-action="pic-remove"]');
+  await set('#sel-picture', 'a');
+  await check('Design A, the panel used without script, is still selectable', `document.querySelector('#sel-picture').value==='a' && !document.querySelector('#pic-direct') && !document.querySelector('#picture')`);
+  await click('[data-action="pic-open"]'); await chooseFile('#picture-file', samplePicture); await click('[data-action="pic-upload"]'); await delay(400);
+  await check('Current design A: upload shows the picture, the result and Remove', `${textHas('Picture updated.')} && !!document.querySelector('.me-card .avatar.has-picture img') && !!document.querySelector('#picture [data-action="pic-remove"]')`);
+  await screenshot('account-picture-option-a');
+  await click('[data-action="pic-remove"]'); await click('[data-action="pic-close"]');
+  await set('#sel-picture', 'e');
+  await check('Picture design returns to the current design E', `document.querySelector('#sel-picture').value==='e' && !!document.querySelector('#pic-direct') && !document.querySelector('#picture')`);
 
   await open('device=desktop&role=client&theme=light&notes=0');
   await check('C03 directory cards carry no per-user tag', `document.querySelectorAll('.results .card').length===6 && !document.querySelector('.results .tag.strong') && !document.querySelector('.results').textContent.includes('Chatting')`);

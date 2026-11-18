@@ -100,11 +100,13 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                     <legend>About you</legend>
                     @* F06: the picture is managed on Account, for every kind of account. *@
                     <div class="picture-row">
-                        <Avatar Name="@(Form.DisplayName ?? "")" Picture="@picture" Size="lg" />
+                        <a class="avatar-edit" href="/account#picture" aria-label="Change profile picture">
+                            <Avatar Name="@(Form.DisplayName ?? "")" Picture="@picture" Size="lg" />
+                            <span class="pencil"><Icon Name="edit" Size="14" /></span>
+                        </a>
                         <div>
-                            <p class="font-semibold">Profile picture</p>
-                            <a href="/account#picture">@(picture is null ? "Add a picture" : "Change picture")</a>
-                            <span class="hint block">Optional. Without one, your initials are shown.</span>
+                            <p class="picture-row-title">Profile picture</p>
+                            <span class="hint">Optional. Without one, your initials are shown. Use the pencil to add or change it on your Account page.</span>
                         </div>
                     </div>
                     @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
@@ -233,7 +235,7 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                 </fieldset>
 
                 <p class="save-status @SaveStatusClass" role="status">@SaveStatusText</p>
-                <div class="desk-footer">
+                <div class="desk-footer save-bar">
                     <button type="submit" name="command" value="save" class="btn btn-primary btn-block">Save profile</button>
                 </div>
             </form>

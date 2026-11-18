@@ -24,7 +24,7 @@ A signed-in client starts a text chat with an accountant from the accountant's p
 
 **Exclusions:**
 - Email (R08).
-- Report and block (R15), which the prototype shows as "Report" and "Block".
+- Report and block (R15), which the prototype shows as "Report" and "Block". *Built later in [F10](../report-block/spec.md), 2026-11-18.*
 - What happens when an account is deleted (D07).
 - Attachments (excluded by the PRD).
 - Editing or deleting messages.
@@ -54,7 +54,7 @@ A signed-in client starts a text chat with an accountant from the accountant's p
 
 **Live updates:** an in-process notifier tells the open chat panels of both participants to reload from the database (SDD: one server instance).
 
-**Still open:** R08 email and D18; R15 report and block; D07 deletion; scaling beyond one instance (shared notifier).
+**Still open:** R08 email and D18; D07 deletion; (R15 report and block was built in F10); scaling beyond one instance (shared notifier).
 
 ## Deviations from the prototype (recorded in DESIGN)
 
@@ -62,7 +62,7 @@ A signed-in client starts a text chat with an accountant from the accountant's p
 - On wide screens the panes fill the window below the site bar; the site footer (Privacy, Terms: R16) stays below them instead of being left out.
 - The connection notice is the prototype's offline banner, fixed to the top of the window.
 - New state, not in the prototype: a listed profile with no account behind it (the development seed) says "This accountant can't receive messages yet".
-- Left out until their features exist: the accountant's email note in the list (R08), "Report" and "Block" (R15), the deleted-accountant note (D07).
+- Left out until their features exist: the accountant's email note in the list (R08), the deleted-accountant note (D07). "Report" and "Block" came with F10 (R15).
 
 ## Evidence limits
 

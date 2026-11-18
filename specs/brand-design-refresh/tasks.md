@@ -48,3 +48,26 @@ Application aligned to the prototype, 2026-11-16 (BD10):
 - [x] Record the deviations in DESIGN, the SDD, and the F04 and F05 specs.
 - [x] Side-by-side check of F01's directory and profile pages against the prototype, and alignment, on 2026-11-16 ([evidence](../../docs/delivery/evidence/2026-11-16-f02-prototype-alignment.md#f01-pages-compared-and-aligned-later-the-same-day)).
 - [ ] Owner walkthrough of the aligned pages (G9).
+
+Logo replaced, 2026-11-18 (BD12):
+
+- [x] Draw three directions from the user's brief; rework direction C three times at the user's request ([logo directions](../../prototypes/logo-directions/README.md)).
+- [x] Generate the adopted files into `prototypes/assets` and copy them to `src/TaxBuddy.Web/wwwroot/images`.
+- [x] Redraw the prototype's inline logo for the palette options; resize the logo in the prototype and in `BrandLogo`; make the phone app bar's symbol follow the theme.
+- [x] Update DESIGN, PRD D01, STATUS, the documentation index, and the asset and prototype READMEs.
+- [x] Run the prototype checker, a Release build and the tests; review screenshots of the prototype and the running site ([evidence](../../docs/delivery/evidence/2026-11-18-f02-logo.md)).
+- [x] Rerun the web tests when the development database has free connections: 70 of 104 could not connect on 2026-11-18. Rerun 2026-11-19: 104 and 154 passed, 0 skipped ([evidence](../../docs/delivery/evidence/2026-11-19-f02-logo-outlines-hero.md)).
+- [x] Expand the wordmark's strokes to outlines (2026-11-19; overlapping shapes, not one merged contour).
+- [x] Redraw the directory's decorative illustration with the new bubble, in the prototype and the site (2026-11-19).
+- [x] Make the Release build run the Tailwind step in WSL without `-p:SkipTailwind=true` (2026-11-19).
+- [x] Preliminary web survey of similar marks and of domain records (2026-11-19). Not clearance.
+- [ ] Before any filing or print use: search IPOPHL and the WIPO Global Brand Database for the name and the figurative mark, compare with the TaxBuddy PH and TaxBuddy India logos, and have a designer merge the wordmark's shapes into single contours.
+- [ ] Owner walkthrough of the new logo on the site (G9).
+
+One typeface, 2026-11-19 (BD13):
+
+- [x] Compare ten open-licence families with the logo; choose Quicksand.
+- [x] Add the font files and licence to the prototype and the site; point both font tokens at it; set body 500 and headings 700.
+- [x] Update DESIGN, SETUP, STATUS, the documentation index and the prototype and asset READMEs.
+- [x] Run the prototype checker, a Release build and the tests; review screenshots of both ([evidence](../../docs/delivery/evidence/2026-11-19-f02-typeface.md)).
+- [ ] Owner walkthrough of the typeface, including whether body text reads well at 15 px on a phone (G9).

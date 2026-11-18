@@ -1,0 +1,214 @@
+@page "/report/{Kind}/{Id}"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Chat
+@using TaxBuddy.Web.Application.Reports
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Domain
+@inject ReportService Reports
+@inject NavigationManager Navigation
+@* F10 report page (PRD R15, BR12; prototype report dialog in overlaysHTML). One static page for profiles, reviews and
+   conversations instead of the prototype's dialog (the user's choice, 2026-11-18): it works without script, and a failed
+   send shows the form again with the reason and text kept. The service checks the reporter on every request. *@
+
+<SeoHead Title="Report · Tax Buddy" Description="Report a profile, a review or a conversation to the Tax Buddy team." CanonicalPath="@Path" />
+<PhoneBar Title="Report" Back="@BackPath" />
+
+@if (loadFailed)
+{
+    <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't open the report form" Text="That's a problem on our side, not yours. Please try again.">
+        <a class="btn btn-primary" href="@Path">Try again</a>
+    </StateMessage>
+}
+else if (view is not null)
+{
+    <div class="narrow">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="@BackPath">Back</a></nav>
+        @switch (access)
+        {
+            case ReportAccess.SignIn:
+                @* The prototype sends a visitor to sign in with the toast "Sign in to send a report."; here it is the state. *@
+                <StateMessage IconName="user" HeadingLevel="1" Title="Sign in to send a report">
+                    <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(Path)">Sign in</a>
+                </StateMessage>
+                break;
+            case ReportAccess.OwnContent:
+                <StateMessage IconName="alert" HeadingLevel="1" Title="@($"You can't report your own {What}")">
+                    <a class="btn" href="@BackPath">Back</a>
+                </StateMessage>
+                break;
+            case ReportAccess.AlreadyReported:
+                <StateMessage IconName="check" HeadingLevel="1" Title="You've already reported this" Text="The Tax Buddy team has your report.">
+                    <a class="btn" href="@BackPath">Back</a>
+                </StateMessage>
+                break;
+            default:
+                <div class="panel">
+                    <h1 id="page-title" tabindex="-1">Report this @What</h1>
+                    <p class="muted small">Reports go to the Tax Buddy team, who review them by hand. The other person isn't told who reported them.</p>
+                    <p class="report-about">@view.Target!.Description</p>
+                    <form method="post" @formname="report" @onsubmit="HandleAsync" class="form" novalidate>
+                        <AntiforgeryToken />
+                        <fieldset aria-describedby="@(ReasonError is null ? null : "reason-error")">
+                            <legend class="sr-only">Reason</legend>
+                            @* Real radio inputs drawn as the prototype's reason chips: they work without script. *@
+                            <div class="reasons">
+                                @foreach (var reason in ReportLimits.Reasons)
+                                {
+                                    var value = reason.ToString();
+                                    <label class="chip reason">
+                                        <input type="radio" name="Form.Reason" value="@value" checked="@(Form!.Reason == value)" />
+                                        <span>@ReportLimits.Text(reason)</span>
+                                    </label>
+                                }
+                            </div>
+                            @if (ReasonError is { } reasonError)
+                            {
+                                <span class="ferr" id="reason-error" role="alert">@reasonError</span>
+                            }
+                        </fieldset>
+
+                        <div class="field">
+                            <label for="rep-d">Anything to add? <span class="req">(optional)</span></label>
+                            <textarea id="rep-d" name="Form.Details" rows="3" maxlength="@ReportLimits.Details"
+                                      aria-invalid="@(DetailsError is null ? null : "true")"
+                                      aria-describedby="@(DetailsError is null ? null : "rep-d-error")">@Form!.Details</textarea>
+                            @if (DetailsError is { } detailsError)
+                            {
+                                <span class="ferr" id="rep-d-error" role="alert">@detailsError</span>
+                            }
+                        </div>
+
+                        <p class="save-status @(failure is null ? "" : "fail")" role="status">@failure</p>
+                        <div class="actions">
+                            <a class="btn" href="@BackPath">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Send report</button>
+                        </div>
+                    </form>
+                </div>
+                break;
+        }
+    </div>
+}
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [Parameter] public string? Kind { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+
+    [SupplyParameterFromForm(FormName = "report")] private ReportForm? Form { get; set; }
+
+    private ReportKind kind;
+    private Guid targetId;
+    private ChatViewer? viewer;
+    private ReportFormView? view;
+    private ReportAccess access;
+    private IReadOnlyDictionary<string, string> errors = new Dictionary<string, string>();
+    private string? failure;
+    private bool loadFailed;
+
+    private string Path => $"/report/{Kind}/{Id}";
+
+    private string BackPath => view?.Target?.ReturnPath ?? (kind == ReportKind.Conversation ? "/chats" : "/");
+
+    private string What => kind switch
+    {
+        ReportKind.Profile => "profile",
+        ReportKind.Review => "review",
+        _ => "conversation",
+    };
+
+    private string? ReasonError => errors.GetValueOrDefault(ReportService.ReasonKey);
+
+    private string? DetailsError => errors.GetValueOrDefault(ReportService.DetailsKey);
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (ParseKind(Kind) is not { } parsed || !Guid.TryParse(Id, out targetId))
+        {
+            Navigation.NotFound();
+            return;
+        }
+
+        kind = parsed;
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        try
+        {
+            view = await Reports.OpenAsync(viewer, kind, targetId);
+        }
+        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        {
+            if (Form is null)
+            {
+                loadFailed = true;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+                return;
+            }
+
+            // A post while the database is down: keep what was typed; the send below reports the failure.
+            view = new ReportFormView(new ReportTarget(kind, targetId, null, "", kind == ReportKind.Conversation ? "/chats" : "/"), ReportAccess.Allowed);
+        }
+
+        if (view is null)
+        {
+            Navigation.NotFound(); // Gone, unlisted, or a conversation the viewer isn't part of.
+            return;
+        }
+
+        access = view.Access;
+        if (access == ReportAccess.OwnContent)
+        {
+            ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden);
+        }
+
+        Form ??= new ReportForm();
+    }
+
+    private async Task HandleAsync()
+    {
+        if (view is null || Form is null || access != ReportAccess.Allowed)
+        {
+            return;
+        }
+
+        var result = await Reports.SendAsync(viewer, kind, targetId, Form);
+        switch (result.Outcome)
+        {
+            case ReportOutcome.Sent:
+                // SDD forms: redirect, so a reload doesn't send again. The page returned to thanks the reporter.
+                Navigation.NavigateTo(result.ReturnPath!);
+                break;
+            case ReportOutcome.Invalid:
+                errors = result.Errors!;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status422UnprocessableEntity);
+                break;
+            case ReportOutcome.AlreadyReported:
+                access = ReportAccess.AlreadyReported;
+                ResponseStatus.Set(HttpContext, StatusCodes.Status409Conflict);
+                break;
+            case ReportOutcome.TooMany:
+                failure = "You've sent a lot of reports today. Your report is still here; try again tomorrow.";
+                ResponseStatus.Set(HttpContext, StatusCodes.Status429TooManyRequests);
+                break;
+            case ReportOutcome.NotAllowed:
+                ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden);
+                break;
+            case ReportOutcome.Gone:
+                Navigation.NotFound();
+                break;
+            default:
+                failure = "Not sent: we couldn't reach the server. Your report is still here. Please try again.";
+                ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+                break;
+        }
+    }
+
+    private static ReportKind? ParseKind(string? kind) => kind switch
+    {
+        "profile" => ReportKind.Profile,
+        "review" => ReportKind.Review,
+        "conversation" => ReportKind.Conversation,
+        _ => null,
+    };
+}

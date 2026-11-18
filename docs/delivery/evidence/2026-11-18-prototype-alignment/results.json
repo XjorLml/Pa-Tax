@@ -1,0 +1,99 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-18T15:24:25.099Z",
+  "results": [
+    {
+      "n": "visitor directory 1440: eyebrow, How it works after results, no overflow",
+      "ok": true,
+      "d": {
+        "o": false,
+        "e": "INDEPENDENT ACCOUNTANTS. DIRECT CONNECTIONS."
+      }
+    },
+    {
+      "n": "visitor directory 390: brand in the app bar, How it works toggle, no form panel",
+      "ok": true,
+      "d": {
+        "o": false,
+        "b": "Tax Buddy"
+      }
+    },
+    {
+      "n": "visitor profile 390: no card, bar with Message and hint",
+      "ok": true,
+      "d": "Message Nina It's free to send a message. You'll sign in with Google before it's sent."
+    },
+    {
+      "n": "visitor profile 1440: \"Find an accountant\" current, Message with visitor hint",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "not found 1440: panel \"Page not found\", state \"We couldn't find that page\"",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "not found 390: no panel frame, title for screen readers only",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "missing profile: prototype text and plain button",
+      "ok": true,
+      "d": "This profile is no longer available The accountant may have removed their profile, or the link is wrong. Back to directory"
+    },
+    {
+      "n": "privacy 390: 24 px section headings, no draft icon",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "chats visitor 1440: two panes, sign in in the list, detail note",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "signed-in directory 1440: \"Find an accountant\", no eyebrow, art, trustline or How it works",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "client with a chat: \"Open chat\" and no hint",
+      "ok": true,
+      "d": "Open chat"
+    },
+    {
+      "n": "review page 390: one visible title (app bar), frameless panel",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "block dialog 390: a centred box, not a bottom sheet",
+      "ok": true,
+      "d": {
+        "w": 338,
+        "top": 355,
+        "bottom": 355
+      }
+    },
+    {
+      "n": "owner profile: \"This is your public profile. Edit profile\", no report link",
+      "ok": true,
+      "d": "This is your public profile. Edit profile"
+    },
+    {
+      "n": "editor 390: Save in a bar at the bottom",
+      "ok": true,
+      "d": {
+        "bottom": 0,
+        "pos": "sticky"
+      }
+    },
+    {
+      "n": "account: \"My profile and portfolio\"",
+      "ok": true,
+      "d": null
+    }
+  ]
+}

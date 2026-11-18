@@ -10,27 +10,38 @@
          Description="Browse accountants' experience and services, then contact the one you choose. Free to browse, no account needed."
          CanonicalPath="@Display.DirectoryPath(query)" />
 
-@* The prototype's hero (heroHTML, Tax Buddy look; F02 BD10). minmax(0, …) columns: without them the column grows to the
-   search box's default width and the form overflows at 320 px. *@
-<section class="hero" aria-labelledby="page-title">
+@* The prototype's hero (heroHTML, Tax Buddy look; F02 BD10). Visitors get the eyebrow, heading, art and trustline;
+   signed-in users only "Find an accountant" (on phones that title is in the app bar, so it is for screen readers).
+   minmax(0, …) columns: without them the column grows to the search box's default width and the form overflows at 320 px. *@
+<section class="hero @(Visitor ? null : "signed-in")" aria-labelledby="page-title">
     <div class="min-w-0">
-        <span class="eyebrow">Independent accountants. Direct connections.</span>
-        <h1 id="page-title">Good numbers start with the right person.</h1>
-        <p class="hero-sub">Find an accountant who understands your business. Explore their work, compare services, and start a conversation.</p>
+        @if (Visitor)
+        {
+            <span class="eyebrow">Independent accountants. Direct connections.</span>
+            <h1 id="page-title">Good numbers start with the right person.</h1>
+            <p class="hero-sub">Find an accountant who understands your business. Explore their work, compare services, and start a conversation.</p>
+        }
+        else
+        {
+            <h1 id="page-title" class="max-md:sr-only">Find an accountant</h1>
+        }
     </div>
-    <div class="hero-art" aria-hidden="true">
-        <svg viewBox="0 0 100 100" fill="none">
-            <path d="M18 20h29c9 0 13 5 13 12v43c-5-4-10-6-17-6H18z" stroke="currentColor" stroke-width="2" />
-            <path d="M60 32c8-9 17-12 27-12v49c-10 0-19 2-27 6M27 33h17m-17 9h17m-17 9h17M70 37l9-4m-9 13 9-4m-9 13 9-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-            <path d="M9 63h30v17H23l-8 7v-7H9z" fill="currentColor" />
-            <path d="M17 71h14" stroke="var(--hero)" stroke-width="2" stroke-linecap="round" />
-        </svg>
-        <p>A little clarity.<br />A good conversation.</p>
-        <span>People behind the numbers</span>
-    </div>
+    @if (Visitor)
+    {
+        <div class="hero-art" aria-hidden="true">
+            <svg viewBox="0 0 100 100" fill="none">
+                <path d="M18 20h29c9 0 13 5 13 12v43c-5-4-10-6-17-6H18z" stroke="currentColor" stroke-width="2" />
+                <path d="M60 32c8-9 17-12 27-12v49c-10 0-19 2-27 6M27 33h17m-17 9h17m-17 9h17M70 37l9-4m-9 13 9-4m-9 13 9-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                <path d="M26 56A15 15 0 0 1 26 86H13A2 2 0 0 1 11 84V71A15 15 0 0 1 26 56Z" fill="currentColor" stroke="var(--hero-art)" stroke-width="3" />
+                <path d="M19.5 63.5h13a1 1 0 0 1 1 1v2.5a1 1 0 0 1-1 1h-4.25v10.5a1 1 0 0 1-1 1h-2.5a1 1 0 0 1-1-1V68H19.5a1 1 0 0 1-1-1v-2.5a1 1 0 0 1 1-1z" fill="var(--hero-art)" />
+            </svg>
+            <p>A little clarity.<br />A good conversation.</p>
+            <span>People behind the numbers</span>
+        </div>
+    }
 
     @* SDD render modes / C03: a plain GET form. See the .dir-form notes in Styles/app.css for why source order matters. *@
-    <form method="get" action="/" role="search" class="dir-form rounded-xl border border-border bg-surface p-4" aria-label="Find an accountant">
+    <form method="get" action="/" role="search" class="dir-form md:rounded-xl md:border md:border-border md:bg-surface md:p-4" aria-label="Find an accountant">
         @if (query.Sort == DirectorySort.Rating)
         {
             @* A new search keeps the chosen order. *@
@@ -64,14 +75,24 @@
             }
         </div>
     </form>
-    <p class="trustline"><Icon Name="lock" Size="14" /><span>Free to browse. You only sign in when you send a message.</span></p>
+    @if (Visitor)
+    {
+        <p class="trustline"><Icon Name="lock" Size="14" /><span>Free to browse. You only sign in when you send a message.</span></p>
+        @* Phones (prototype hero-actions "How it works" toggle): details/summary, so it works without script. *@
+        <details class="how-toggle md:hidden">
+            <summary class="btn btn-sm">How it works</summary>
+            <HowItWorksSteps />
+        </details>
+    }
 </section>
 
-<section class="mt-10" aria-labelledby="results-heading">
-    <h2 id="results-heading" class="text-[26px] md:text-[30px]">Meet your next accountant</h2>
-    <p class="mt-1 text-muted">Explore the experience, services and people behind each profile.</p>
+<section aria-labelledby="results-heading">
+    <div class="directory-heading">
+        <h2 id="results-heading">Meet your next accountant</h2>
+        <p>Explore the experience, services and people behind each profile.</p>
+    </div>
 
-    <div class="mt-5">
+    <div>
         @if (failed)
         {
             <StateMessage IconName="alert" Title="We couldn't load the accountants" Text="That's a problem on our side, not yours. Please try again.">
@@ -120,6 +141,16 @@
     </div>
 </section>
 
+@if (Visitor)
+{
+    @* Prototype howHTML on wide screens, after the results, for visitors. "Are you an accountant? See how listing works"
+       joins when the For accountants page (R17) is built. *@
+    <section class="how max-md:hidden" aria-labelledby="how-heading">
+        <h2 id="how-heading">How it works</h2>
+        <HowItWorksSteps Row="true" />
+    </section>
+}
+
 @code {
     [SupplyParameterFromQuery(Name = "q")] public string? SearchText { get; set; }
 
@@ -132,6 +163,8 @@
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
     private DirectoryQuery query = DirectoryQuery.Default;
+
+    private bool Visitor => HttpContext?.User.Identity?.IsAuthenticated != true;
     private DirectoryResult? result;
     private bool failed;
 

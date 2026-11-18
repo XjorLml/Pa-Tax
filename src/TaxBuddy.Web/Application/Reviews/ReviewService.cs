@@ -25,6 +25,13 @@ public sealed class ReviewService(IReviewStore store, IClock clock)
         }
 
         var access = await AccessAsync(viewer, target, cancellationToken);
+        if (access == ReviewAccess.Blocked)
+        {
+            // Blocked by the accountant (F10): no form, but the client can still delete a review they wrote.
+            var existing = await store.FindAsync(profileId, viewer!.AccountId, cancellationToken);
+            return new ReviewFormPage(target, access, null, existing is null ? null : new ReviewForm());
+        }
+
         if (access != ReviewAccess.Allowed)
         {
             return new ReviewFormPage(target, access, null, null);
@@ -157,7 +164,7 @@ public sealed class ReviewService(IReviewStore store, IClock clock)
             viewer is { IsClient: false } && target.OwnerAccountId == viewer.AccountId);
     }
 
-    /// <summary>BR09: a signed-in client whose conversation with this accountant has at least one message from the accountant.</summary>
+    /// <summary>BR09: a signed-in client whose conversation with this accountant has at least one message from the accountant, and (F10) whom the accountant hasn't blocked.</summary>
     private async Task<ReviewAccess> AccessAsync(ChatViewer? viewer, ReviewTarget target, CancellationToken cancellationToken)
     {
         if (viewer is null)
@@ -170,10 +177,14 @@ public sealed class ReviewService(IReviewStore store, IClock clock)
             return ReviewAccess.NotAClient;
         }
 
-        return target.OwnerAccountId is { } accountant
-               && await store.HasAccountantRepliedAsync(viewer.AccountId, accountant, cancellationToken)
-            ? ReviewAccess.Allowed
-            : ReviewAccess.NoReplyYet;
+        if (target.OwnerAccountId is not { } accountant)
+        {
+            return ReviewAccess.NoReplyYet;
+        }
+
+        // F10: a client the accountant has blocked can't write or edit a review (the user's choice); deleting stays possible.
+        var (replied, blocked) = await store.ConversationStateAsync(viewer.AccountId, accountant, cancellationToken);
+        return blocked ? ReviewAccess.Blocked : replied ? ReviewAccess.Allowed : ReviewAccess.NoReplyYet;
     }
 
     /// <summary>D23 (provisional): stars 1–5 required; text optional, no minimum, at most 1,000 characters. The prototype's words.</summary>

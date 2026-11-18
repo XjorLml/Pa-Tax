@@ -1,6 +1,6 @@
 # Tax Buddy design prototype
 
-**Interactive design artifact; product acceptance remains pending.** [index.html](index.html) shows release 1 pages in a phone or desktop browser. The user's design brief of 2026-11-11 delegates choosing the new name, logo and visual direction. That refresh replaced AccApp with Kuwenta and added original SVG branding, a paper/forest palette, editorial typography, clearer directory hierarchy and responsive refinements. On 2026-11-12 the user instructed renaming the app to Tax Buddy; the look is unchanged and the logo wordmark was redrawn ([F02](../specs/brand-design-refresh/spec.md)). [DESIGN](../docs/DESIGN.md#visual-system) owns the current visual contract.
+**Interactive design artifact; product acceptance remains pending.** [index.html](index.html) shows release 1 pages in a phone or desktop browser. The user's design brief of 2026-11-11 delegates choosing the new name, logo and visual direction. That refresh replaced AccApp with Kuwenta and added original SVG branding, a paper/forest palette, editorial typography, clearer directory hierarchy and responsive refinements. On 2026-11-12 the user instructed renaming the app to Tax Buddy; the look is unchanged and the logo wordmark was redrawn ([F02](../specs/brand-design-refresh/spec.md)). On 2026-11-18 the user chose a new logo, a speech bubble holding a T, which replaced the ledger symbol and that wordmark ([BD12](../specs/brand-design-refresh/spec.md#logo-replaced-2026-11-18-bd12)). On 2026-11-19 the Tax Buddy look took one typeface, Quicksand, in place of serif headings and a system sans body ([BD13](../specs/brand-design-refresh/spec.md#one-typeface-2026-11-19-bd13)); its font files are in `assets/fonts`, so the prototype still needs no network. [DESIGN](../docs/DESIGN.md#visual-system) owns the current visual contract.
 
 The prototype was created on 2026-11-10 for the MAUI plan, then reworked for the web on 2026-11-11 ([ADR 005](../docs/adr/005-web-platform-blazor.md)). Earlier passes and their four visual directions remain in [DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md) as history. Tax Buddy is now the default; the earlier looks are comparison options.
 
@@ -14,7 +14,7 @@ What it is not:
 
 All people, companies and contact details in it are synthetic.
 
-[brand-options.html](brand-options.html) preserves fourteen earlier name sketches. The current Tax Buddy logo, compact icons and favicon are in [assets](assets/README.md). Tax Buddy is not one of the fourteen sketches; the closest is Buwis Buddy. Name/domain availability has not been checked; domain selection remains PRD D01.
+[brand-options.html](brand-options.html) preserves fourteen earlier name sketches. The current Tax Buddy logo, compact icons and favicon are in [assets](assets/README.md); the three logo proposals of 2026-11-18, one of which was adopted, are in [logo-directions](logo-directions/README.md). Tax Buddy is not one of the fourteen sketches; the closest is Buwis Buddy. Name/domain availability has not been checked; domain selection remains PRD D01.
 
 ## Open it
 
@@ -23,6 +23,7 @@ Double-click `index.html`, keeping `taxbuddy.css`, `service-workspace.js` and th
 - the look (Tax Buddy, or the earlier Modern, Ledger, Neighbourly and Clear directions);
 - the palette of the Tax Buddy look: Paper & Forest, chosen by the user on 2026-11-13, or four proposals added on 2026-11-12 for comparison, kept as history ([DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md#palette-options));
 - who is signed in (visitor, client, accountant, or a new accountant);
+- the picture design: how the pencil on the Account avatar changes the profile picture. E (pick, preview, save) is the current design, chosen by the owner on 2026-11-19; A is what the site shows without script; B, C and D were not chosen and are kept for comparison ([F06](../specs/profile-pictures/spec.md#picture-design-options-2026-11-19));
 - online or offline;
 - the theme;
 - simulated failures;
@@ -39,6 +40,7 @@ Optional URL settings, useful for sharing a specific state:
 | `look` | `taxbuddy` (default), `modern`, `ledger`, `neighbourly`, `clear` |
 | `palette` | `forest` (default, current), `ink`, `lagoon`, `plum`, `marigold`; applies to the `taxbuddy` look only |
 | `role` | `client`, `accountant`, `newAccountant` (default is a visitor) |
+| `picture` | `e` (default, current), `a` (used without script), `b`, `c`, `d` (not chosen) |
 | `theme` | `light`, `dark` (default follows the system) |
 | `offline` | `1` |
 | `email` | `off` to start with email notifications turned off |
@@ -57,6 +59,7 @@ Example: `index.html?device=desktop&look=taxbuddy&theme=dark&role=accountant#/ch
 | Accountant chats with unread marks; a simulated notification email; turning emails off | R07, R08, BR08 |
 | Accountant profile editor: listing checklist, listed or not listed, format errors, unsaved-changes guard | R05, BR01, R11 |
 | Account page and two-step account deletion | R04, R08, R09, BR06 |
+| Profile picture: a pencil on the Account and editor avatars; on Account it opens the file chooser, previews the photo and saves it on Save; the picture is kept only in the page | R24; [F06](../specs/profile-pictures/spec.md) PP09, PP10 |
 | Portfolio highlights on profiles and in the editor | R12, BR13 |
 | Ratings on cards and profiles, a "Highest rated" sort, the review form, and the accountant's reply | R13, R14, BR09–BR11 |
 | Report on profiles, reviews and chats; block and unblock in a chat | R15, BR12 |

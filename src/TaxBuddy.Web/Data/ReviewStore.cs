@@ -20,11 +20,20 @@ public sealed class ReviewStore(IDbContextFactory<TaxBuddyDbContext> contextFact
             .Select(p => new ReviewTarget(p.Id, p.OwnerAccountId, p.DisplayName))
             .FirstOrDefaultAsync(cancellationToken), cancellationToken);
 
-    public Task<bool> HasAccountantRepliedAsync(Guid clientAccountId, Guid accountantAccountId, CancellationToken cancellationToken) =>
-        Run(db => db.Conversations.AsNoTracking()
-            .Where(c => c.ClientAccountId == clientAccountId && c.AccountantAccountId == accountantAccountId)
-            .AnyAsync(c => db.Messages.Any(m => m.ConversationId == c.Id && m.SenderAccountId == accountantAccountId), cancellationToken),
-            cancellationToken);
+    public Task<(bool Replied, bool BlockedByAccountant)> ConversationStateAsync(
+        Guid clientAccountId, Guid accountantAccountId, CancellationToken cancellationToken) =>
+        Run(async db =>
+        {
+            var state = await db.Conversations.AsNoTracking()
+                .Where(c => c.ClientAccountId == clientAccountId && c.AccountantAccountId == accountantAccountId)
+                .Select(c => new
+                {
+                    Replied = db.Messages.Any(m => m.ConversationId == c.Id && m.SenderAccountId == accountantAccountId),
+                    Blocked = c.AccountantBlockedAt != null,
+                })
+                .FirstOrDefaultAsync(cancellationToken);
+            return (state?.Replied ?? false, state?.Blocked ?? false);
+        }, cancellationToken);
 
     public Task<Review?> FindAsync(AccountantId profileId, Guid clientAccountId, CancellationToken cancellationToken) =>
         Run(db => db.Reviews.AsNoTracking()

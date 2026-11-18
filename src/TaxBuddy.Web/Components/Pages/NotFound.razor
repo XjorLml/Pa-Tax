@@ -4,7 +4,7 @@
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
    message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
 
-<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
+<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", Kind.Report => "Report", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
 
 @if (kind == Kind.Chat)
 {
@@ -22,26 +22,41 @@ else if (kind is Kind.NewChat or Kind.Review)
         <a class="btn" href="/">Back to directory</a>
     </StateMessage>
 }
+else if (kind == Kind.Report)
+{
+    @* F10: the reported item is gone, unlisted, or a conversation the viewer isn't part of; nothing about it is shown. *@
+    <SeoHead Title="Not available · Tax Buddy" Description="This item isn't available to report." CanonicalPath="/" />
+    <StateMessage IconName="alert" HeadingLevel="1" Title="This isn't available" Text="It may have been removed, or the link is wrong.">
+        <a class="btn" href="/">Back to directory</a>
+    </StateMessage>
+}
 else if (kind == Kind.Profile)
 {
+    @* Prototype profileBodyHTML's unavailable state. *@
     <SeoHead Title="Profile no longer available · Tax Buddy" Description="This accountant profile is no longer available." CanonicalPath="/" />
-    <StateMessage IconName="list" HeadingLevel="1" Title="This profile is no longer available"
-                  Text="It may have been removed, or the link may be wrong.">
-        <a class="btn btn-primary" href="/">Back to the directory</a>
+    <StateMessage IconName="alert" HeadingLevel="1" Title="This profile is no longer available"
+                  Text="The accountant may have removed their profile, or the link is wrong.">
+        <a class="btn" href="/">Back to directory</a>
     </StateMessage>
 }
 else
 {
+    @* The prototype's infoPage default case: a narrow panel titled "Page not found" holding the state. *@
     <SeoHead Title="Page not found · Tax Buddy" Description="This page does not exist." CanonicalPath="/" />
-    <StateMessage IconName="search" HeadingLevel="1" Title="Page not found" Text="The address may be mistyped, or the page may have moved.">
-        <a class="btn btn-primary" href="/">Go to the directory</a>
-    </StateMessage>
+    <div class="narrow">
+        <article class="panel prose info-state" aria-labelledby="page-title">
+            <h1 id="page-title" tabindex="-1">Page not found</h1>
+            <StateMessage IconName="search" Title="We couldn't find that page" Text="The link may be old or mistyped.">
+                <a class="btn btn-primary" href="/">Go to the directory</a>
+            </StateMessage>
+        </article>
+    </div>
 }
 
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    private enum Kind { Page, Profile, Review, Chat, NewChat }
+    private enum Kind { Page, Profile, Review, Chat, NewChat, Report }
 
     private Kind kind;
 
@@ -55,6 +70,7 @@ else
                           && path.TrimEnd('/').EndsWith("/review", StringComparison.OrdinalIgnoreCase) => Kind.Review,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) => Kind.Profile,
             { } path when path.StartsWith("/chats/new/", StringComparison.OrdinalIgnoreCase) => Kind.NewChat,
+            { } path when path.StartsWith("/report/", StringComparison.OrdinalIgnoreCase) => Kind.Report,
             { } path when path.StartsWith("/chats/", StringComparison.OrdinalIgnoreCase) => Kind.Chat,
             _ => Kind.Page,
         };

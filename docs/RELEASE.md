@@ -67,6 +67,22 @@ Internal testing: testers report problems directly to lumabanls. Reports carry t
 - **Lost data-protection keys:** everyone is signed out and must sign in again. No data is lost.
 - **Leaked secret:** rotate it at the provider and in the host's secret store, then redeploy.
 
+### Reading user reports (R15, D22)
+
+Since F10 (2026-11-18), "Report" on a profile, a review or a chat stores a row in the `reports` table. There is no admin page and no email yet; the email follows with R08 once Brevo is set up (G11).
+
+To read them:
+1. Open the Supabase project, then Table Editor → `reports`. Sort by `created_at`, newest first.
+2. Each row has the following columns:
+   - `kind`: `Profile`, `Review` or `Conversation`.
+   - `target_id`: the item.
+   - `profile_id`: the accountant profile it belongs to, if any.
+   - `reason` and `details`.
+   - `reporter_account_id` and `created_at`.
+3. Look up the item by its ID in `accountant_profiles`, `reviews` or `conversations`. For a conversation, its messages are in `messages` by `conversation_id`. Reading a private conversation is only for handling the report; keep it within the privacy terms (D10).
+
+Reported content stays visible until you act (BR12). How quickly to act, and how to remove content or close an account, are still open in D22. Until they are decided, record any action you take by hand.
+
 Preserve released migration scripts and deployment evidence.
 
 ## Private service documents gate

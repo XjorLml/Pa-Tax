@@ -1,0 +1,117 @@
+{
+  "edge": "Edg/157.0.4341.60",
+  "date": "2026-11-18T14:41:34.191Z",
+  "results": [
+    {
+      "n": "visitor: \"Report this profile\" on the profile",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "visitor: the report page asks to sign in",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "390: five reason chips; picking \"Spam or a scam\" marks it",
+      "ok": true,
+      "d": {
+        "chips": [
+          "Fake or misleading",
+          "Abusive or harassing",
+          "Spam or a scam",
+          "Shares private information",
+          "Something else"
+        ],
+        "unpicked": "rgb(255, 255, 255)",
+        "picked": {
+          "bg": "rgb(36, 92, 70)",
+          "checked": true
+        }
+      }
+    },
+    {
+      "n": "no reason: \"Choose a reason.\" and the text kept",
+      "ok": true,
+      "d": {
+        "err": "Choose a reason.",
+        "text": "The profile copies another firm's text."
+      }
+    },
+    {
+      "n": "sent: back on the profile with the thanks line",
+      "ok": true,
+      "d": "http://localhost:5240/accountants/c2d4270b-0e3b-4dbb-9f2c-99d3f9135adb?reported=profile"
+    },
+    {
+      "n": "both sides see Report and Block above the messages",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "390: Report and Block line up",
+      "ok": true,
+      "d": [
+        [
+          69,
+          44
+        ],
+        [
+          69,
+          44
+        ]
+      ]
+    },
+    {
+      "n": "Block asks first: \"Block Liza?\" with focus on Cancel",
+      "ok": true,
+      "d": {
+        "title": "Block Liza?",
+        "focused": "Cancel"
+      }
+    },
+    {
+      "n": "Escape closes the dialog and nothing changes",
+      "ok": true,
+      "d": null
+    },
+    {
+      "n": "blocker: \"You blocked Liza. They can't message you.\" with Unblock, no composer",
+      "ok": true,
+      "d": {
+        "note": "You blocked Liza. They can't message you. Unblock",
+        "composer": false,
+        "block": false
+      }
+    },
+    {
+      "n": "blocked side: the note arrives live, the composer goes, no reason given",
+      "ok": true,
+      "d": "You can't send messages in this conversation."
+    },
+    {
+      "n": "review page: \"You can't review Nina\", a delete button, no form",
+      "ok": true,
+      "d": {
+        "text": "Skip to main content\nFind an accountant\nChats\nLF\nLiza Fernandez\nBack to profile\nYou can't review Nina\nDelete your review\nBack to profile\nAccountants write their own profiles. Tax Buddy doesn't check licences or qualifications.\nPrivacy\nTerms\nTheme\nLight\nDark\nSystem",
+        "del": true,
+        "stars": false
+      }
+    },
+    {
+      "n": "Unblock: the client's composer returns live with the draft",
+      "ok": true,
+      "d": "Message\nSend\nEnter to send · Shift+Enter for a new line\n27 / 2,000"
+    },
+    {
+      "n": "conversation report: back in the chat with the thanks line",
+      "ok": true,
+      "d": "http://localhost:5240/chats/8805bb7b-78b8-4f79-a337-a222c3376192?reported=1"
+    },
+    {
+      "n": "without script: the review report is sent and thanked under Reviews",
+      "ok": true,
+      "d": "http://localhost:5240/accountants/c2d4270b-0e3b-4dbb-9f2c-99d3f9135adb?reported=review#review-0821e9a7-d506-4116-a1d1-31a371fef4f4"
+    }
+  ]
+}

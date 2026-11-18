@@ -1,9 +1,15 @@
 /* Tax Buddy: semantic tokens map to Tailwind's theme at the Blazor scaffold step.
-   No CDN, framework runtime, component library or web font is required here. */
+   No CDN, framework runtime or component library is required here. The one web font is a local file. */
+/* Quicksand (SIL Open Font License 1.1, assets/fonts/OFL.txt): the one typeface, chosen to match the logo's letters. */
+@font-face { font-family:"Quicksand"; font-style:normal; font-weight:300 700; font-display:swap; src:url("assets/fonts/quicksand-latin.woff2") format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family:"Quicksand"; font-style:normal; font-weight:300 700; font-display:swap; src:url("assets/fonts/quicksand-latin-ext.woff2") format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF; }
 .device[data-look="taxbuddy"] {
-  --font-head:Georgia,"Times New Roman",serif;
-  --font-body:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
-  --head-weight:400; --head-track:-.035em;
+  --font-head:"Quicksand","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --font-body:"Quicksand","Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+  --head-weight:700; --head-track:-.02em;
+  font-weight:500;
   --r-sm:6px; --r-md:10px; --r-lg:18px; --r-pill:999px;
   --r-avatar:14px; --r-btn:8px; --bubble-r:16px;
   --elev:0 2px 4px rgba(25,48,41,.025); --elev-hover:0 6px 20px rgba(25,48,41,.09); --dur:140ms;
@@ -96,9 +102,9 @@
   --hero:#2A2718; --hero-art:#3B3520; --rule:#6B6030;
 }
 /* Token-coloured copy of the logo, used only while a palette option is selected; the SVG files keep the current colours. */
-.brand-inline .lg-bg, .brand-inline .lg-bub { fill:var(--primary); }
-.brand-inline .lg-ink { fill:none; stroke:var(--on-primary); }
-.brand-inline .lg-wm { fill:none; stroke:var(--text); }
+.brand-inline .lg-bg { fill:var(--primary); }
+.brand-inline .lg-wm { fill:var(--text); }
+.brand-inline .lg-wm2 { fill:var(--primary); }
 
 /* Layout refinements shared by the retained comparison directions. */
 .device { container-type:inline-size; container-name:website; }
@@ -135,7 +141,7 @@
 .device.phone .infolinks a { display:inline-flex; align-items:center; min-height:44px; }
 
 /* A quieter editorial identity: hierarchy comes from type, space and rules. */
-.device[data-look="taxbuddy"] .brand { font-family:var(--font-head); font-size:26px; font-weight:600; letter-spacing:-.05em; }
+.device[data-look="taxbuddy"] .brand { font-family:var(--font-head); font-size:26px; font-weight:700; letter-spacing:-.02em; }
 .device[data-look="taxbuddy"] .sitebar { min-height:76px; gap:32px; padding-inline:32px; }
 .device[data-look="taxbuddy"] .sitenav a { font-size:13px; border-bottom-width:2px; }
 .device[data-look="taxbuddy"] .container { max-width:1040px; padding-inline:32px; }
@@ -156,19 +162,19 @@
 .device[data-look="taxbuddy"] .hero.wide .trustline { grid-column:1/-1; justify-content:start; margin:14px 0 0; color:var(--muted); font-size:12px; }
 .device[data-look="taxbuddy"] .hero-art { position:relative; display:flex; flex-direction:column; justify-content:center; align-self:center; padding:18px; border:1px solid var(--rule); border-radius:60px 60px 12px 12px; background:var(--hero-art); text-align:center; }
 .device[data-look="taxbuddy"] .hero-art svg { width:64px; height:64px; margin:0 auto 10px; color:var(--primary); }
-.device[data-look="taxbuddy"] .hero-art p { margin:0; font:400 20px/1.2 var(--font-head); letter-spacing:-.02em; }
+.device[data-look="taxbuddy"] .hero-art p { margin:0; font:600 20px/1.2 var(--font-head); letter-spacing:-.02em; }
 .device[data-look="taxbuddy"] .hero-art span { display:block; margin-top:10px; font:600 9px/1.5 var(--font-body); letter-spacing:.1em; text-transform:uppercase; color:var(--muted); }
 .device[data-look="taxbuddy"] .cards { gap:16px; }
 .device[data-look="taxbuddy"] .card { padding:20px; border-radius:12px; }
 .device[data-look="taxbuddy"] .card h3 { font-family:var(--font-body); font-weight:600; font-size:17px; letter-spacing:-.025em; }
 .device[data-look="taxbuddy"] .card .sub { margin-top:4px; font-size:12px; }
-.device[data-look="taxbuddy"] .card .avatar { width:48px; height:52px; font-family:var(--font-head); font-weight:400; font-size:21px; }
+.device[data-look="taxbuddy"] .card .avatar { width:48px; height:52px; font-family:var(--font-head); font-weight:600; font-size:21px; }
 .device[data-look="taxbuddy"] .card .rating { padding-top:12px; margin-top:12px; border-top:1px solid var(--border); }
 .device[data-look="taxbuddy"] .card .facts { color:var(--muted); font-size:12px; }
 .device[data-look="taxbuddy"] .card .tag { padding:4px 8px; border-radius:4px; font-size:11px; }
 .device[data-look="taxbuddy"] .card .clamp { margin-top:12px; font-size:13px; line-height:1.65; }
 .device[data-look="taxbuddy"] .card-foot { justify-content:space-between; margin-top:16px; }
-.device[data-look="taxbuddy"] .card-foot::before { content:"Read their story"; font:400 12px/1.5 var(--font-head); color:var(--muted); }
+.device[data-look="taxbuddy"] .card-foot::before { content:"Read their story"; font:500 12px/1.5 var(--font-head); color:var(--muted); }
 .device[data-look="taxbuddy"] .card-link { font-size:12px; }
 .device[data-look="taxbuddy"] .how { margin:36px 0 12px; padding-top:24px; border-top:1px solid var(--border); }
 .device[data-look="taxbuddy"] .how h2 { font-size:30px; }
@@ -251,7 +257,7 @@
 .work-stats { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:24px 0; }
 .work-stat { padding:20px; background:var(--primary-soft); color:var(--on-soft); border-radius:var(--r-md); }
 .work-stat>span { display:block; font-size:12px; font-weight:600; }
-.work-stat strong { display:block; margin:10px 0 4px; font:400 36px/1 var(--font-head); }
+.work-stat strong { display:block; margin:10px 0 4px; font:600 36px/1 var(--font-head); }
 .work-stat small { display:block; font-size:11px; }
 .work-people,.work-services,.work-files,.work-tasks,.work-timeline { margin:0; padding:0; list-style:none; }
 .work-people { display:grid; gap:12px; }

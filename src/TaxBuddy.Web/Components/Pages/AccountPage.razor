@@ -28,45 +28,84 @@
     }
     else
     {
+        @* F06 PP10 (prototype option E, meCardHTML): with script, the pencil opens the device's file chooser, the chosen
+           photo is previewed in the avatar, and Save posts the upload form below (wwwroot/TaxBuddy.Web.lib.module.js).
+           Without script the pencil is a plain link to #picture and the panel shows while it is the page's target (PP09). *@
+        <div class="picture-area" data-picture="@(Pictures.IsAvailable ? "on" : null)">
         <div class="me-card">
-            <Avatar Name="@name" Picture="@picture" Size="lg" />
+            @if (Pictures.IsAvailable)
+            {
+                <a class="avatar-edit" href="#picture" aria-label="Change profile picture" data-picture-pencil>
+                    <Avatar Name="@name" Picture="@picture" Size="lg" />
+                    <span class="pencil"><Icon Name="edit" Size="14" /></span>
+                </a>
+            }
+            else
+            {
+                <Avatar Name="@name" Picture="@picture" Size="lg" />
+            }
             <div>
                 <h2>@name</h2>
                 <p class="sub">@(isAccountant ? "Accountant" : "Client") · Signed in with @provider</p>
+                @if (Pictures.IsAvailable)
+                {
+                    @* Shown by the script only: without it, Save and Remove are in the panel. *@
+                    <div class="pic-confirm" data-picture-confirm hidden>
+                        <p class="sub pic-pending">Preview. Not saved yet.</p>
+                        <div class="pic-confirm-actions">
+                            <button type="submit" form="picture-upload" class="btn btn-primary btn-sm" data-picture-save>Save</button>
+                            <button type="button" class="btn btn-sm" data-picture-cancel>Cancel</button>
+                        </div>
+                    </div>
+                    @if (picture is not null)
+                    {
+                        <button type="submit" form="picture-remove" class="linkbtn pic-inline" data-picture-remove hidden>Remove picture</button>
+                    }
+                }
             </div>
         </div>
-        @* F06: profile picture, in the prototype's Account card style. *@
-        <section class="picture-card" id="picture" aria-labelledby="picture-heading">
+        @* The result of an upload or removal, under the name card; the script also writes its own checks here. *@
+        @if (ResultMessage is { } message)
+        {
+            <div class="banner @(PictureResult is "saved" or "removed" ? "ok" : "danger")" role="@(PictureResult is "saved" or "removed" ? "status" : "alert")" data-picture-result>
+                <Icon Name="@(PictureResult is "saved" or "removed" ? "check" : "alert")" Size="18" />
+                <div>@message</div>
+            </div>
+        }
+        <div class="banner danger" role="alert" data-picture-error hidden>
+            <Icon Name="alert" Size="18" />
+            <div data-picture-error-text></div>
+        </div>
+        @* F06: the picture panel (prototype picturePanelHTML), used when script is off. Hidden until the pencil's link
+           targets it, which the redirect after a post also does; always shown when upload isn't set up. *@
+        <section class="picture-card @(Pictures.IsAvailable ? "" : "is-open")" id="picture" aria-labelledby="picture-heading">
             <h2 id="picture-heading">Profile picture</h2>
-            @if (ResultMessage is { } message)
-            {
-                <div class="banner @(PictureResult is "saved" or "removed" ? "ok" : "danger")" role="@(PictureResult is "saved" or "removed" ? "status" : "alert")">
-                    <Icon Name="@(PictureResult is "saved" or "removed" ? "check" : "alert")" Size="18" />
-                    <div>@message</div>
-                </div>
-            }
             @if (Pictures.IsAvailable)
             {
-                <form method="post" action="@PictureEndpoints.UploadPath" enctype="multipart/form-data" class="picture-form">
+                <form method="post" action="@PictureEndpoints.UploadPath" enctype="multipart/form-data" class="picture-form" id="picture-upload">
                     <AntiforgeryToken />
                     <label for="picture-file" class="font-semibold">@(picture is null ? "Add a picture" : "Choose a new picture")</label>
                     <input id="picture-file" name="picture" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="picture-hint" />
                     <button type="submit" class="btn btn-primary btn-sm">Upload picture</button>
                 </form>
                 <p id="picture-hint" class="hint">JPEG, PNG or WebP, up to 5 MB. It's cropped to a square, and location and camera details are removed. @(isAccountant ? "Shown on your public profile and in the directory." : "Only you and the accountants you chat with see it.")</p>
-                @if (picture is not null)
-                {
-                    <form method="post" action="@PictureEndpoints.RemovePath">
-                        <AntiforgeryToken />
-                        <button type="submit" class="btn btn-ghost btn-sm"><Icon Name="trash" Size="16" /> Remove picture</button>
-                    </form>
-                }
+                <div class="picture-actions">
+                    @if (picture is not null)
+                    {
+                        <form method="post" action="@PictureEndpoints.RemovePath" id="picture-remove">
+                            <AntiforgeryToken />
+                            <button type="submit" class="btn btn-ghost btn-sm"><Icon Name="trash" Size="16" /> Remove picture</button>
+                        </form>
+                    }
+                    <a class="linkbtn" href="/account">Close</a>
+                </div>
             }
             else
             {
                 <p class="hint">Picture upload isn't set up on this site yet. Your initials are shown instead.</p>
             }
         </section>
+        </div>
 
         <ul class="menu">
             @if (isAccountant)
@@ -74,7 +113,7 @@
                 <li>
                     <a class="mi" href="/account/profile">
                         <Icon Name="edit" />
-                        <span class="mi-main">My profile<small>@ProfileStatusText</small></span>
+                        <span class="mi-main">My profile and portfolio<small>@ProfileStatusText</small></span>
                         <Icon Name="chevron" />
                     </a>
                 </li>

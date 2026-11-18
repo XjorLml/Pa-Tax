@@ -15,6 +15,9 @@ public enum ReviewAccess
 
     /// <summary>A client the accountant hasn't sent a message to yet, including profiles without an account.</summary>
     NoReplyYet,
+
+    /// <summary>The accountant has blocked this client (R15, F10: the user's choice). Shown without saying why.</summary>
+    Blocked,
 }
 
 /// <summary>
@@ -116,8 +119,11 @@ public interface IReviewStore
     /// <summary>The accountant when the profile is listed (BR01); otherwise null.</summary>
     Task<ReviewTarget?> FindListedAsync(AccountantId profileId, CancellationToken cancellationToken);
 
-    /// <summary>Whether the accountant has sent at least one message in their conversation with the client (BR09).</summary>
-    Task<bool> HasAccountantRepliedAsync(Guid clientAccountId, Guid accountantAccountId, CancellationToken cancellationToken);
+    /// <summary>
+    /// Whether the accountant has sent at least one message in their conversation with the client (BR09), and whether the
+    /// accountant has blocked the client there (R15, F10).
+    /// </summary>
+    Task<(bool Replied, bool BlockedByAccountant)> ConversationStateAsync(Guid clientAccountId, Guid accountantAccountId, CancellationToken cancellationToken);
 
     Task<Review?> FindAsync(AccountantId profileId, Guid clientAccountId, CancellationToken cancellationToken);
 

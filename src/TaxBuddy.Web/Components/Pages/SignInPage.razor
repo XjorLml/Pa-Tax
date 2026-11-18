@@ -1,6 +1,7 @@
 @page "/signin"
 @using TaxBuddy.Web.Account
 @inject AccountService Accounts
+@inject DirectoryService Directory
 @* F04 sign-in, laid out as the prototype's signinHTML (F02 BD10). Static: a plain form posted to the account endpoint.
    Microsoft joins when it is built. *@
 
@@ -11,7 +12,7 @@
 @if (signedInAs is not null)
 {
     <StateMessage IconName="check" Title="@($"You're signed in as {signedInAs}")">
-        <a class="btn" href="@returnUrl">Continue</a>
+        <a class="btn" href="/">Go to directory</a>
     </StateMessage>
 }
 else
@@ -23,7 +24,7 @@ else
 
         @if (Error == "failed")
         {
-            <div class="banner danger" role="alert">
+            <div class="banner danger inline" role="alert">
                 <Icon Name="alert" Size="18" />
                 <div>We couldn't sign you in with Google. Please try again.</div>
             </div>
@@ -61,9 +62,13 @@ else
     private string? signedInAs;
     private bool googleAvailable;
 
+    /// <summary>The accountant's first name when the visitor came from writing to them (prototype signinHTML).</summary>
+    private string? messageTo;
+
     /// <summary>The prototype's lead varies with where the visitor is going.</summary>
     private string Lead =>
-        returnUrl.StartsWith("/chats/new/", StringComparison.Ordinal) ? "Sign in to send your message to this accountant."
+        messageTo is { } name ? $"Sign in to send your message to {name}."
+        : returnUrl.StartsWith("/chats/new/", StringComparison.Ordinal) ? "Sign in to send your message to this accountant."
         : returnUrl == "/account/profile" ? "Sign in to create your accountant profile. You'll choose “I'm an accountant” on the next step."
         : "Sign in to message accountants, or to publish your profile as an accountant.";
 
@@ -77,5 +82,17 @@ else
         }
 
         googleAvailable = await Accounts.IsGoogleAvailableAsync();
+        if (returnUrl.StartsWith("/chats/new/", StringComparison.Ordinal))
+        {
+            try
+            {
+                // The draft itself stays in the tab's session storage, so the page can't quote it (DESIGN deviation).
+                messageTo = await Directory.GetProfileAsync(returnUrl["/chats/new/".Length..]) is { } profile ? Display.FirstName(profile.Name) : null;
+            }
+            catch (DataUnavailableException)
+            {
+                // "this accountant" then.
+            }
+        }
     }
 }

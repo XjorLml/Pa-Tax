@@ -54,3 +54,7 @@ Supabase setup, once by the owner:
 | Decoding untrusted images | Memory exhaustion, or library bugs | 5 MB request limit; dimensions read before decoding; 40 MP cap; SkiaSharp kept current |
 | Inappropriate public pictures | Harm before moderation exists | Reporting arrives with R15; the owner can remove a picture (D22) |
 | Storage outage | Uploads fail | The old picture is kept; avatars fall back to initials if a read fails |
+
+Pencil on the picture, 2026-11-19 ([PP09](spec.md#pencil-on-the-picture-2026-11-19-pp09)): presentation only. The prototype gets the control first; the site keeps its two plain forms and wraps them in a panel shown by the `:target` selector or an `is-open` class the page sets when there is a result. No endpoint, data or storage change.
+
+Pick, preview, save, 2026-11-19 ([PP10](spec.md#pick-preview-save-2026-11-19-pp10)): one script file, a Blazor JavaScript initializer, since Account is a static page and moves between pages replace its content. It finds the picture area, turns the pencil's link into a press on the page's file input, previews the chosen file with an object URL, and reveals submit buttons that belong to the page's two forms. The server side is untouched.

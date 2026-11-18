@@ -329,6 +329,10 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("accountant_account_id");
 
+                    b.Property<DateTimeOffset?>("AccountantBlockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accountant_blocked_at");
+
                     b.Property<DateTimeOffset?>("AccountantReadAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("accountant_read_at");
@@ -336,6 +340,10 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.Property<Guid>("ClientAccountId")
                         .HasColumnType("uuid")
                         .HasColumnName("client_account_id");
+
+                    b.Property<DateTimeOffset?>("ClientBlockedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("client_blocked_at");
 
                     b.Property<DateTimeOffset?>("ClientReadAt")
                         .HasColumnType("timestamp with time zone")
@@ -360,6 +368,61 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasDatabaseName("ix_conversations_client_account_id_accountant_account_id");
 
                     b.ToTable("conversations", (string)null);
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Report", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Details")
+                        .HasMaxLength(600)
+                        .HasColumnType("character varying(600)")
+                        .HasColumnName("details");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("kind");
+
+                    b.Property<Guid?>("ProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_id");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("reason");
+
+                    b.Property<Guid>("ReporterAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("reporter_account_id");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("target_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_reports");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_reports_created_at");
+
+                    b.HasIndex("ReporterAccountId", "CreatedAt")
+                        .HasDatabaseName("ix_reports_reporter_account_id_created_at");
+
+                    b.HasIndex("ReporterAccountId", "Kind", "TargetId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_reports_reporter_account_id_kind_target_id");
+
+                    b.ToTable("reports", (string)null);
                 });
 
             modelBuilder.Entity("TaxBuddy.Web.Domain.Review", b =>
@@ -630,6 +693,16 @@ namespace TaxBuddy.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_conversations_client_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.Report", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("ReporterAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_reports_reporter_account_id");
                 });
 
             modelBuilder.Entity("TaxBuddy.Web.Domain.Review", b =>

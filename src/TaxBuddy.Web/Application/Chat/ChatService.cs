@@ -78,7 +78,28 @@ public sealed class ChatService(IChatStore store, IChatNotifier notifier, IClock
             data.PeerName,
             ProfilePictureService.AddressFor(peerId, data.PeerPictureObject),
             data.PeerListedProfileId,
-            data.Messages.Select(m => View(m, accountId)).ToList());
+            data.Messages.Select(m => View(m, accountId)).ToList())
+        {
+            BlockedByMe = data.Conversation.IsBlockedBy(accountId),
+            BlockedByThem = data.Conversation.IsBlockedBy(peerId),
+        };
+    }
+
+    /// <summary>
+    /// Blocks or unblocks the other participant (R15): while either side has blocked, neither can send in the conversation.
+    /// Only a participant can, and only their own block. False when the account isn't part of the conversation. Both open
+    /// panels update through the notifier; the blocked person is not told why.
+    /// </summary>
+    /// <exception cref="DataUnavailableException">The database could not be reached.</exception>
+    public async Task<bool> SetBlockAsync(Guid accountId, Guid conversationId, bool blocked, CancellationToken cancellationToken = default)
+    {
+        if (await store.SetBlockAsync(conversationId, accountId, blocked, clock.UtcNow, cancellationToken) is not { } conversation)
+        {
+            return false;
+        }
+
+        notifier.Changed(conversation);
+        return true;
     }
 
     /// <summary>
@@ -117,6 +138,11 @@ public sealed class ChatService(IChatStore store, IChatNotifier notifier, IClock
                     return new SendResult(SendOutcome.NotAllowed);
                 }
 
+                if (conversation.IsBlocked)
+                {
+                    return new SendResult(SendOutcome.Blocked, id);
+                }
+
                 targetConversation = id;
             }
             else if (newChatWith is { } profileId)
@@ -146,6 +172,12 @@ public sealed class ChatService(IChatStore store, IChatNotifier notifier, IClock
             if (stored.Outcome == StoreMessageOutcome.AlreadyStored && stored.Message.SenderAccountId != viewer.AccountId)
             {
                 return new SendResult(SendOutcome.NotAllowed);
+            }
+
+            if (stored.Outcome == StoreMessageOutcome.Blocked)
+            {
+                // A new chat to an accountant who already blocked this client lands here, as does a send racing a block.
+                return new SendResult(SendOutcome.Blocked, stored.Conversation.Id);
             }
 
             notifier.Changed(stored.Conversation);

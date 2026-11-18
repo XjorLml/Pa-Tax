@@ -125,23 +125,35 @@ public sealed class ChatStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
             try
             {
                 await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+                // The conversation row is locked until the message is stored, so a block set at the same moment (R15) either
+                // comes after this message or makes this send refused; never a message after the block.
+                await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
                 Conversation conversation;
                 if (newPair is { } pair)
                 {
-                    conversation = await db.Conversations.FirstOrDefaultAsync(
-                                       c => c.ClientAccountId == pair.ClientAccountId && c.AccountantAccountId == pair.AccountantAccountId,
-                                       cancellationToken)
+                    conversation = (await db.Conversations
+                                       .FromSql($"SELECT * FROM conversations WHERE client_account_id = {pair.ClientAccountId} AND accountant_account_id = {pair.AccountantAccountId} FOR UPDATE")
+                                       .ToListAsync(cancellationToken)).FirstOrDefault()
                                    ?? db.Conversations.Add(new Conversation(Guid.NewGuid(), pair.ClientAccountId, pair.AccountantAccountId, message.SentAt)).Entity;
                 }
                 else
                 {
-                    conversation = await db.Conversations.FirstAsync(c => c.Id == message.ConversationId, cancellationToken);
+                    conversation = (await db.Conversations
+                                       .FromSql($"SELECT * FROM conversations WHERE id = {message.ConversationId} FOR UPDATE")
+                                       .ToListAsync(cancellationToken)).FirstOrDefault()
+                                   ?? throw new InvalidOperationException("The conversation doesn't exist.");
                 }
 
                 var stored = new ChatMessage(message.Id, conversation.Id, message.SenderAccountId, message.Text, message.SentAt);
+                if (conversation.IsBlocked)
+                {
+                    return new StoredMessage(StoreMessageOutcome.Blocked, stored, conversation);
+                }
+
                 db.Messages.Add(stored);
                 conversation.RecordMessage(message.SenderAccountId, message.SentAt);
                 await db.SaveChangesAsync(cancellationToken); // One statement batch: the conversation and the message together.
+                await transaction.CommitAsync(cancellationToken);
                 return new StoredMessage(StoreMessageOutcome.Stored, stored, conversation);
             }
             catch (DbUpdateException ex) when (ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
@@ -164,6 +176,32 @@ public sealed class ChatStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
             }
         }
     }
+
+    public Task<Conversation?> SetBlockAsync(Guid conversationId, Guid accountId, bool blocked, DateTimeOffset at, CancellationToken cancellationToken) =>
+        Run(async db =>
+        {
+            await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+            var conversation = (await db.Conversations
+                .FromSql($"SELECT * FROM conversations WHERE id = {conversationId} FOR UPDATE")
+                .ToListAsync(cancellationToken)).FirstOrDefault();
+            if (conversation is null || !conversation.Includes(accountId))
+            {
+                return null;
+            }
+
+            if (blocked)
+            {
+                conversation.Block(accountId, at);
+            }
+            else
+            {
+                conversation.Unblock(accountId);
+            }
+
+            await db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+            return conversation;
+        }, cancellationToken);
 
     public Task<int> CountSentSinceAsync(Guid senderAccountId, DateTimeOffset since, CancellationToken cancellationToken) =>
         Run(db => db.Messages.CountAsync(m => m.SenderAccountId == senderAccountId && m.SentAt > since, cancellationToken), cancellationToken);

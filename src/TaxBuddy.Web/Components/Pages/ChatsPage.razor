@@ -10,9 +10,20 @@
 
 @if (ChatDisplay.ViewerOf(HttpContext?.User) is null)
 {
-    <StateMessage IconName="chat" HeadingLevel="1" Title="Sign in to see your chats" Text="Clients message accountants here, and accountants reply here.">
-        <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/chats")">Sign in</a>
-    </StateMessage>
+    @* Prototype desktopMain chats for a visitor: the two panes, the list asking to sign in. Static: no server connection. *@
+    <div class="panes is-list">
+        <section class="pane-list" aria-label="Conversations">
+            <div class="pane-head"><h1 tabindex="-1">Chats</h1></div>
+            <div class="pane-scroll">
+                <StateMessage IconName="chat" Title="Sign in to see your chats" Text="Clients message accountants here, and accountants reply here.">
+                    <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/chats")">Sign in</a>
+                </StateMessage>
+            </div>
+        </section>
+        <section class="pane-detail" aria-label="Conversation">
+            <div class="empty-detail"><div><Icon Name="chat" Size="40" /><p>Sign in to see your chats.</p></div></div>
+        </section>
+    </div>
 }
 else
 {

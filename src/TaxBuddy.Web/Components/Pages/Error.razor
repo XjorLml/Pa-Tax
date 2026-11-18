@@ -5,15 +5,24 @@
 <PhoneBar Title="Something went wrong" Back="/" />
 <SeoHead Title="Something went wrong · Tax Buddy" Description="An error occurred." CanonicalPath="/" />
 
-<StateMessage IconName="alert" HeadingLevel="1" Title="Something went wrong" Text="That's a problem on our side, not yours. Please try again.">
-    <a class="btn btn-primary" href="@retryPath">Try again</a>
-    <a class="btn" href="/">Go to the directory</a>
-</StateMessage>
-
-@if (!string.IsNullOrEmpty(RequestId))
-{
-    <p class="mt-4 text-center text-[13px] text-muted">If it keeps happening, tell us this support code: <code class="select-all">@RequestId</code></p>
-}
+@* The prototype's infoPage "error" case: a narrow panel titled "Something went wrong" holding the state. On phones the
+   title is in the app bar. *@
+<div class="narrow">
+    <article class="panel prose info-state" aria-labelledby="page-title">
+        <h1 id="page-title" tabindex="-1">Something went wrong</h1>
+        <StateMessage IconName="alert" Title="Something went wrong on our side">
+            <Description>
+                Your work isn't lost. Try again in a moment.@if (!string.IsNullOrEmpty(RequestId))
+                {
+                    @(" If it keeps happening, contact us with this support code: ")<strong class="select-all">@RequestId</strong>@(".")
+                }
+            </Description>
+            <ChildContent>
+                <a class="btn btn-primary" href="/">Back to the directory</a>
+            </ChildContent>
+        </StateMessage>
+    </article>
+</div>
 
 @code {
     [CascadingParameter]
@@ -22,12 +31,8 @@
     [PersistentState]
     public string? RequestId { get; set; }
 
-    private string retryPath = "/";
-
     protected override void OnInitialized()
     {
         RequestId ??= Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
-        var original = HttpContext?.Features.Get<Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature>()?.Path;
-        retryPath = original is { Length: > 0 } path && path.StartsWith('/') ? path : "/";
     }
 }

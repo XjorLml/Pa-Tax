@@ -1,16 +1,19 @@
 ﻿@inherits LayoutComponentBase
 @using Microsoft.AspNetCore.Components.Sections
+@inject NavigationManager Navigation
 @* Site shell from the prototype (F02 BD10): desktopShell from 760 px, phoneShell below it. Pages fill the phone app bar
    (PhoneBar) and, on top-level screens, the phone tab bar (PhoneTabs). *@
 
 <a href="#main" class="skip-link">Skip to main content</a>
 
 <header class="sitebar">
-    <div class="page-container sitebar-inner">
+    @* The prototype's bar runs the full width with 32 px sides (taxbuddy.css .sitebar); the content below keeps 1040 px. *@
+    <div class="sitebar-inner">
         <a href="/" aria-label="Tax Buddy home"><BrandLogo /></a>
         <nav class="sitenav" aria-label="Main">
             @* Clients / My accountants joins this list when service work (F03) is built. *@
-            <NavLink href="/" Match="NavLinkMatch.All">Find an accountant</NavLink>
+            @* Current on the directory and on profiles, as the prototype's desktopShell maps profile to directory. *@
+            <a href="/" class="@(InDirectory ? "active" : null)" aria-current="@(InDirectory ? "page" : null)">Find an accountant</a>
             <NavLink href="/chats">Chats<UnreadBadge /></NavLink>
         </nav>
         <SiteUser />
@@ -26,7 +29,7 @@
 
 <footer class="sitefoot">
     <div class="page-container sitefoot-inner">
-        <BrandLogo Width="120" />
+        <BrandLogo />
         @* PRD D09 proposal: Tax Buddy does not verify accountants. Wording still needs review. *@
         <span class="sitefoot-note">Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</span>
         @* PRD R16: the terms and privacy policy are reachable from every page. About, Help and For accountants join when built. *@
@@ -46,3 +49,14 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+@code {
+    private bool InDirectory
+    {
+        get
+        {
+            var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
+            return path == "/" || path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase);
+        }
+    }
+}

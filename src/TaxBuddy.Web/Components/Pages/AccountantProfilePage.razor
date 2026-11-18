@@ -6,6 +6,7 @@
 @using TaxBuddy.Web.Components.Chat
 @inject DirectoryService Directory
 @inject ReviewService ReviewService
+@inject ChatService Chat
 @inject TaxBuddy.Web.Domain.IClock Clock
 @inject NavigationManager Navigation
 
@@ -16,7 +17,7 @@
     <SeoHead Title="Profile unavailable · Tax Buddy" Description="This profile could not be loaded." CanonicalPath="@($"/accountants/{Id}")" />
     <StateMessage IconName="alert" HeadingLevel="1" Title="We couldn't load this profile" Text="That's a problem on our side, not yours. Please try again.">
         <a class="btn btn-primary" href="@($"/accountants/{Uri.EscapeDataString(Id ?? "")}")">Try again</a>
-        <a class="btn" href="/">Back to the directory</a>
+        <a class="btn" href="/">Back to directory</a>
     </StateMessage>
 }
 else if (profile is not null)
@@ -25,7 +26,7 @@ else if (profile is not null)
              CanonicalPath="@Display.ProfilePath(profile.Id)" />
 
     @* The prototype's profile (profileBodyHTML, Tax Buddy look; F02 BD10). Portfolio highlights came with R12 (F08), the
-       rating and reviews with R13 and R14 (F09); "Report this profile" joins with R15. *@
+       rating and reviews with R13 and R14 (F09), the report links with R15 (F10). *@
     <nav class="crumbs" aria-label="Breadcrumb">
         <a href="/">Accountants</a><span aria-hidden="true">/</span><span>@profile.Name</span>
     </nav>
@@ -129,6 +130,10 @@ else if (profile is not null)
                 {
                     <p class="save-status ok" role="status">@saved</p>
                 }
+                else if (Reported == "review")
+                {
+                    <p class="save-status ok" role="status">@ReportThanks</p>
+                }
                 <div class="rev-head">
                     <div class="rev-sum">
                         @if (reviews.Rating.Average is { } summaryAverage)
@@ -160,6 +165,16 @@ else if (profile is not null)
                             break;
                         case ReviewAccess.NotAClient:
                             <p class="muted small">Only clients can write reviews.</p>
+                            break;
+                        case ReviewAccess.Blocked:
+                            @* F10: blocked by the accountant; not told why. Their own review can still be deleted. *@
+                            <p class="muted small">
+                                You can't review @first.
+                                @if (reviews.HasReview)
+                                {
+                                    <a href="@Display.ReviewPath(profile.Id)">Delete your review</a>
+                                }
+                            </p>
                             break;
                     }
                 }
@@ -212,6 +227,11 @@ else if (profile is not null)
                                 {
                                     <a class="btn btn-sm rev-reply-btn" href="@ReplyEditPath(review.Id)">Reply</a>
                                 }
+                                @if (viewer is not null && !review.IsMine)
+                                {
+                                    @* F10 (prototype reviewsHTML): signed-in users other than the author. *@
+                                    <a class="linkbtn rev-report" href="@($"/report/review/{review.Id:D}")">Report this review</a>
+                                }
                             </li>
                         }
                     </ul>
@@ -223,10 +243,7 @@ else if (profile is not null)
         <aside class="profile-aside" aria-label="Contact">
             <div class="aside-card">
                 @* F07: Message opens a new chat, or the existing conversation (D06: one per client and accountant). *@
-                <div class="aside-cta">
-                    <a class="btn btn-primary btn-block" href="@($"/chats/new/{profile.Id}")"><Icon Name="chat" Size="18" />Message @Display.FirstName(profile.Name)</a>
-                    <p class="cta-hint">It's free to send a message. You'll sign in with Google before it's sent.</p>
-                </div>
+                <div class="aside-cta">@ProfileAction</div>
                 <h2>Contact</h2>
                 <ul class="contact">
                     <li>
@@ -268,13 +285,25 @@ else if (profile is not null)
                 <p class="muted small mt-2">Shown publicly by the accountant.</p>
             </div>
             <p class="note"><Icon Name="info" Size="18" /><span>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>
+            @if (!reviews.IsOwner)
+            {
+                @* F10 (prototype profileBodyHTML report-row): everyone but the owner; a visitor signs in on the report page. *@
+                <p class="report-row">
+                    @if (Reported == "profile")
+                    {
+                        <span class="save-status ok" role="status">@ReportThanks</span>
+                    }
+                    else
+                    {
+                        <a class="linkbtn" href="@($"/report/profile/{profile.Id}")">Report this profile</a>
+                    }
+                </p>
+            }
         </aside>
     </div>
 
     @* Phones: the Message action stays in a bar under the content, as in the prototype. *@
-    <div class="phone-cta">
-        <a class="btn btn-primary btn-block" href="@($"/chats/new/{profile.Id}")"><Icon Name="chat" Size="18" />Message @Display.FirstName(profile.Name)</a>
-    </div>
+    <div class="phone-cta">@ProfileAction</div>
 }
 
 @code {
@@ -290,9 +319,40 @@ else if (profile is not null)
     /// <summary>What was just saved, after the redirect: the prototype's toast as a status line.</summary>
     [SupplyParameterFromQuery(Name = "saved")] public string? Saved { get; set; }
 
+    /// <summary>After a report (F10): "profile" or "review", for the thanks line.</summary>
+    [SupplyParameterFromQuery(Name = "reported")] public string? Reported { get; set; }
+
+    private const string ReportThanks = "Thanks. Your report was sent to the Tax Buddy team.";
+
     private AccountantProfileView? profile;
     private ProfileReviews reviews = ProfileReviews.Empty;
     private ChatViewer? viewer;
+    private Guid? existingChat;
+
+    /// <summary>
+    /// The prototype's profileAction for this viewer: the owner and other accountants get a note; a client with a chat gets
+    /// "Open chat"; everyone else "Message {first}" with its hint. Shown in the contact card and, on phones, in the bar.
+    /// </summary>
+    private RenderFragment ProfileAction => __builder =>
+    {
+        if (reviews.IsOwner)
+        {
+            <p class="note"><span>This is your public profile. <a href="/account/profile">Edit profile</a></span></p>
+        }
+        else if (viewer is { IsClient: false })
+        {
+            <p class="note"><span>You're signed in as an accountant. Only clients can start chats.</span></p>
+        }
+        else if (existingChat is { } chat)
+        {
+            <a class="btn btn-primary btn-block" href="@ChatDisplay.ThreadPath(chat)"><Icon Name="chat" Size="18" />Open chat</a>
+        }
+        else
+        {
+            <a class="btn btn-primary btn-block" href="@($"/chats/new/{profile!.Id}")"><Icon Name="chat" Size="18" />Message @Display.FirstName(profile.Name)</a>
+            <p class="cta-hint">@(viewer is null ? "It's free to send a message. You'll sign in with Google before it's sent." : "It's free to send a message. Ask about pricing in the chat.")</p>
+        }
+    };
     private Guid? editingReply;
     private string? replyError;
     private bool failed;
@@ -320,6 +380,11 @@ else if (profile is not null)
             }
 
             reviews = await ReviewService.ForProfileAsync(viewer, profile.Id);
+            if (viewer is { IsClient: true })
+            {
+                // Prototype profileAction: a client who already has a chat gets "Open chat" (D06: one per pair).
+                existingChat = (await Chat.PrepareNewChatAsync(viewer, profile.Id)).ConversationId;
+            }
         }
         catch (DataUnavailableException)
         {

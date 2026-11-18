@@ -51,14 +51,15 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 | Profile `/accountants/{id}`, including portfolio highlights, reviews, review replies and the average rating | Static server rendering | Public and meant to be found; reviews are part of the page itself |
 | Sign-in, registration (role choice and agreement), information, not-found and error pages | Static server rendering | Plain links and forms that work before any script loads |
 | Theme switch in the site header, on every page | Static server rendering: a plain form posted to the endpoint `POST /preferences/theme`, which redirects back to the page | Added 2026-11-16 (F02 BD09). A choice shared by all pages, so it is posted to an endpoint rather than to each page as a named form. Antiforgery applies as for any form; no script and no server connection |
-| Signed-in actions on static pages: add to or remove from my accountants, report a profile or a review, the accountant's reply to a review | Static server rendering, as named forms posted to the same page | Visitors never open a server connection. Shown only to signed-in users who may take the action; see the form rules below |
+| Signed-in actions on static pages: add to or remove from my accountants, the accountant's reply to a review | Static server rendering, as named forms posted to the same page | Visitors never open a server connection. Shown only to signed-in users who may take the action; see the form rules below |
 | Review page `/accountants/{id}/review` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-17 by the user's choice ([F09](../specs/reviews/spec.md)), as for the profile editor: a failed or invalid save shows the form again with the stars and text, and it works without script. This closes C04 for reviews |
+| Report page `/report/{kind}/{id}` (kind `profile`, `review` or `conversation`) | Static server rendering: a named form posted to the same page | F10, 2026-11-18, the user's choice instead of the prototype's dialog: one page for all three kinds, working without script; a failed send keeps the reason and text. A successful send redirects back with `reported=…` |
 | Conversation list and chat thread `/chats`, `/chats/{id}` | Static pages holding one Interactive Server chat panel | Private, with live updates over SignalR. Built in F07 (2026-11-16): the static page checks sign-in and access and sets the title and status; only the panel inside is interactive, so a visitor or an outsider never opens a connection |
 | New chat `/chats/new/{accountantId}` | Interactive Server; open to visitors | The one interactive page a visitor can open. It shows no private data. A visitor can type before signing in (R06); sending requires sign-in, and the draft survives sign-in in the tab's session storage. Built in F07 like the other chat pages: static, with the interactive panel |
 | My accountants (the client's shortlist) and the accountant's client list `/workspace`, `/clients/{id}` | Interactive Server | Private to one user |
 | Service request, checklist, progress and documents `/accountants/{id}/request-service`, `/work/{id}` | Interactive Server | State shared by the two participants. File bytes go through endpoints, not the page connection ([private service workspaces](#private-service-workspaces)) |
 | Profile editor `/account/profile` | Static server rendering: a named form posted to the same page | Changed from Interactive Server on 2026-11-16 by the owner's choice (C04 for this page, [F05](../specs/profile-editing/spec.md)). A failed or invalid save shows the form again with everything typed. There's no connection to lose, and it works without script. Adding or removing an experience row redraws the form. A stale save is refused through the profile's version |
-| Account `/account` | Static server rendering | Built 2026-11-16 (F02 BD10, prototype `meHTML`): menu links and the sign-out form only. Visitors see the visitor card, not a sign-in redirect |
+| Account `/account` | Static server rendering | Built 2026-11-16 (F02 BD10, prototype `meHTML`): menu links and the sign-out form only. Visitors see the visitor card, not a sign-in redirect. Since 2026-11-19 ([F06 PP10](../specs/profile-pictures/spec.md#pick-preview-save-2026-11-19-pp10)) a small script adds the picture preview on top: `wwwroot/TaxBuddy.Web.lib.module.js`, a Blazor JavaScript initializer that `blazor.web.js` loads on every page and runs again after a move between pages. It holds no state and calls no address; Save posts the page's own form. With script off, the page's link and forms do the same job |
 | Picture forms on Account: `POST /account/picture` (multipart) and `POST /account/picture/remove` | Static: plain forms posted to endpoints, which redirect back to `/account?picture=…#picture` | F06, 2026-11-16. The antiforgery token is checked after a 5 MB request limit is set, so an oversized upload is refused before it is read |
 | Account deletion `/account/delete` | Interactive Server | Rich forms (not built yet) |
 
@@ -121,7 +122,7 @@ The server database is the only store of record.
 | Schema evolution | EF Core migrations kept with the source. Production changes go through a migration bundle or a reviewed SQL script ([RELEASE](RELEASE.md#deployment)), not automatic migration at startup |
 | Failure/downgrade | Each migration step is atomic where the provider allows. A rollback plan is recorded with each release that changes the schema |
 | Ratings | One review per client and accountant, enforced by a unique constraint. The average and count are computed from the reviews, never stored by hand. The reviewer's short name is produced when the page is rendered |
-| Reports and blocks | A report stores who reported, what was reported, the reason and the time, and emails the site owner (D22). A block is stored per conversation with who set it |
+| Reports and blocks | A report stores who reported, what was reported (kind and ID, plus the profile it belongs to), the reason, optional details and the time; one per reporter and item (unique index). Since F10 (2026-11-18) the owner reads the `reports` table in Supabase (D22, partly decided); the email to the owner follows with R08. A block is stored on the conversation as each side's block time (`client_blocked_at`, `accountant_blocked_at`) |
 | Retention and backup | Account deletion removes the profile, external sign-in links and email preference (BR06). Chat/service retention per D07/D14; private files and relationship termination per D27. Backup policy belongs to D11 |
 
 For SQL: parameterized queries only, constraints for the rules the database can enforce, and tests that run against the real provider rather than an in-memory substitute.
@@ -151,7 +152,8 @@ Authorization rules, enforced in Application services on the server:
 - Only a client can start a conversation, and only with a listed accountant (BR03).
 - A client can write a review only for an accountant who has sent a message in their conversation, once, and only that client can change or delete it (BR09).
 - Only the reviewed accountant can reply to a review. Nobody can edit another person's review (BR11).
-- Reporting and blocking need a signed-in user. A blocked person cannot add messages to that conversation (R15).
+- Reporting and blocking need a signed-in user. Nobody reports their own profile or review, and only a participant reports a conversation (an outsider gets 404). One report per person per item, 10 a day.
+- While either participant has blocked the other, neither can add messages to that conversation (R15). Only a participant sets or lifts their own block. A client whom the accountant has blocked cannot write or edit a review of them, but can delete their own (BR19).
 - Saved-accountant lists belong to their authenticated client. A private client list is scoped to its accountant; saving alone never exposes a client's account in the confirmed save/request/accept model.
 - Service tasks, updates and files inherit both participant IDs from their engagement. Every read/write/download/removal resolves the parent relationship and current actor, including asynchronous completion. Proposed editor/removal permissions follow the private-workspace table below; UI guards do not enforce security.
 
@@ -223,7 +225,8 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | Address | Input contract | Retained state | Back, reload, shared-link behavior |
 |---|---|---|---|
 | `/` | Query: `q` (search text), `service`, `sort` (`rating`; absent or any other value means name A–Z; built in F09), `page`. The search form carries `sort` in a hidden field, so a new search keeps the order. Search and service are submitted with a plain GET form; on wide screens each service button submits it. Sort and page are links that carry the current search and filter. No live filtering in the page ([C03](README.md#history-and-unresolved-conflicts), resolved) | All in the address, so Back, reload and shared links show the same list | Unknown or malformed query values are ignored |
-| `/accountants/{id}` | GUID. Query, F09: `reply` (a review ID; opens the owner's reply box) and `saved` (`review-posted`, `review-updated`, `review-deleted` or `reply`, the status after a redirect) | None | Unknown, deleted or unlisted ID shows "no longer available" with HTTP 404 (R03). Unknown query values are ignored |
+| `/accountants/{id}` | GUID. Query, F09: `reply` (a review ID; opens the owner's reply box) and `saved` (`review-posted`, `review-updated`, `review-deleted` or `reply`, the status after a redirect) and, F10, `reported` (`profile` or `review`, the thanks line) | None | Unknown, deleted or unlisted ID shows "no longer available" with HTTP 404 (R03). Unknown query values are ignored |
+| `/report/{kind}/{id}` | `profile`, `review` or `conversation`, and a GUID; a signed-in user (F10) | Reason and details kept through a failed send | A visitor is asked to sign in. Unknown items, unlisted profiles and other people's conversations: "This isn't available" with HTTP 404. Own content: 403. Already reported: a message instead of the form |
 | `/accountants/{id}/review` | GUID; the user must be an eligible client | Stars and text kept through a failed save | An ineligible user sees why, and no form (BR09). An unlisted or unknown accountant: "This accountant is no longer available" with HTTP 404 |
 | `/privacy`, `/terms`, `/about`, `/help`, `/for-accountants` | None | None | Static pages, public (R16, R17) |
 | `/email/off` | The signed-in user, or a signed link from an email | None | Turns notification emails off and offers to turn them back on (R08) |
@@ -323,6 +326,32 @@ The profile and client pair is unique (BR09). Reviews are deleted with the profi
 - After a save, the page redirects to the profile with `saved=…`.
 - "Highest rated" is ordered in SQL: accountants with reviews first, then the average and count descending, then name and ID.
 
+### As built in F10 (2026-11-18)
+
+[Evidence](delivery/evidence/2026-11-18-f10-report-block.md); scenarios in [F10](../specs/report-block/spec.md).
+
+**Tables (migration `AddReportsAndBlocks`):**
+- `reports` holds:
+  - the reporter;
+  - the kind, stored as text: `Profile`, `Review` or `Conversation`;
+  - the item ID and the profile it belongs to;
+  - the reason, stored as text: one of the prototype's five;
+  - the details (600 characters at most) and the time.
+
+  It is unique per reporter, kind and item, with no foreign key to the item. Its foreign key to `users` refuses deletion until D07.
+- `conversations` gains `client_blocked_at` and `accountant_blocked_at`.
+
+**Rules:**
+- **The report service:** checks the reporter on every request. It logs only "Report received" with the kind (event 1301), never names, IDs, reasons or text.
+- **Blocking:** happens in the chat panel through `ChatService.SetBlockAsync`, which tells both panels through the notifier.
+- **Row lock:** storing a message and storing a block both lock the conversation row (`SELECT … FOR UPDATE`), so no message is stored after a block. A send refused that way returns `Blocked`, and the draft stays in the tab.
+- **Reviews:** `ReviewService` returns `Blocked` for a client whom the accountant has blocked (BR19).
+
+**Pages:**
+- The report page is static.
+- **Profile page:** "Report this profile" for everyone except the owner (a visitor signs in on the report page), and "Report this review" for signed-in users other than its author.
+- **Chat panel:** shows Report and Block above the messages, and asks before blocking in a sheet that Escape closes. It replaces the composer with the blocked notes, and re-attaches the composer script after Unblock.
+
 ## DI, startup, async work, and lifecycle
 
 | Service / page | Lifetime | Owner and concurrency/disposal contract |
@@ -369,7 +398,7 @@ Interactive components read the signed-in user from the authentication state the
 | R11 | Authorization in Application services; directory projection | Tests, Web.Tests; TP10 |
 | R12 | Portfolio highlights in the profile use cases and editor page (F08) | Tests, Web.Tests; TP25 |
 | R13, R14 | Review use cases, rating queries, review and profile pages | Tests, Web.Tests; TP16 |
-| R15 | Report and block use cases; report email | Tests, Web.Tests; TP17 |
+| R15 | Report and block use cases (F10); report email with R08 | Tests, Web.Tests; TP17, TP27 |
 | R16–R18 | Static pages, sign-in agreement, not-found and error handling | Web.Tests; TP18 |
 | R19–R23 / F03 CS01–CS10 | Private relationship/engagement/progress/document use cases, EF metadata and private byte-store boundary | TP19–TP22 application checks; CS prototype checks recorded separately |
 

@@ -1,21 +1,27 @@
-@* Empty, no-match, unavailable and error states (DESIGN: screen and component states). *@
-<div class="mx-auto flex max-w-xl flex-col items-center gap-3 rounded-xl border border-border bg-surface px-6 py-10 text-center">
-    <Icon Name="@IconName" Size="36" Class="text-muted" />
+@* Empty, no-match, unavailable and error states (DESIGN: screen and component states), as the prototype's stateHTML: a
+   plain centred block with the icon in a circle. A page whose only content is the state gives it the page's h1
+   (HeadingLevel 1); it is drawn the same as the prototype's h2. *@
+<div class="state">
+    <Icon Name="@IconName" Size="36" Class="ic" />
     @if (HeadingLevel == 1)
     {
-        <h1 class="text-[26px]" tabindex="-1">@Title</h1>
+        <h1 tabindex="-1">@Title</h1>
     }
     else
     {
-        <h2 class="text-[24px]">@Title</h2>
+        <h2>@Title</h2>
     }
     @if (Text is not null)
     {
-        <p class="text-muted">@Text</p>
+        <p>@Text</p>
+    }
+    else if (Description is not null)
+    {
+        <p>@Description</p>
     }
     @if (ChildContent is not null)
     {
-        <div class="mt-2 flex flex-wrap justify-center gap-3">@ChildContent</div>
+        <div class="state-actions">@ChildContent</div>
     }
 </div>
 
@@ -25,6 +31,9 @@
     [Parameter, EditorRequired] public string Title { get; set; } = "";
 
     [Parameter] public string? Text { get; set; }
+
+    /// <summary>The text with markup, such as the error page's bold support code; used when <see cref="Text"/> is null.</summary>
+    [Parameter] public RenderFragment? Description { get; set; }
 
     [Parameter] public int HeadingLevel { get; set; } = 2;
 

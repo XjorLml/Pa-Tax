@@ -26,6 +26,8 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
 
     public DbSet<Review> Reviews => Set<Review>();
 
+    public DbSet<Report> Reports => Set<Report>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<AccountantId>().HaveConversion<AccountantIdConverter>();
@@ -92,6 +94,7 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
 
         ConfigureChat(modelBuilder);
         ConfigureReviews(modelBuilder);
+        ConfigureReports(modelBuilder);
         ApplySnakeCaseNames(modelBuilder);
     }
 
@@ -143,6 +146,27 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             review.HasIndex(r => r.ClientAccountId);
             review.HasOne<AccountantProfile>().WithMany().HasForeignKey(r => r.AccountantId).OnDelete(DeleteBehavior.Cascade);
             review.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(r => r.ClientAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    /// <summary>
+    /// F10: reports to the site owner, read in the database (D22). One per reporter and item. No foreign key to the item:
+    /// a report outlives the content it is about. Deleting the reporter's account is refused until D07, as for chat.
+    /// </summary>
+    private static void ConfigureReports(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<Report>(report =>
+        {
+            report.ToTable("reports");
+            report.HasKey(r => r.Id);
+            report.Property(r => r.Id).ValueGeneratedNever();
+            report.Property(r => r.Kind).HasConversion<string>().HasMaxLength(20);
+            report.Property(r => r.Reason).HasConversion<string>().HasMaxLength(40);
+            report.Property(r => r.Details).HasMaxLength(ReportLimits.Details);
+            report.HasIndex(r => new { r.ReporterAccountId, r.Kind, r.TargetId }).IsUnique();
+            report.HasIndex(r => new { r.ReporterAccountId, r.CreatedAt });
+            report.HasIndex(r => r.CreatedAt);
+            report.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(r => r.ReporterAccountId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 

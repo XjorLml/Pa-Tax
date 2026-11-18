@@ -7,8 +7,8 @@
 The earlier prototype already covered the important flows, but retained a placeholder identity, four competing palettes, an oversized centered introduction, and controls whose hierarchy competed with profile comparison. The refresh adds:
 
 - A name. The 2026-11-11 refresh chose Kuwenta as broad enough for bookkeeping, payroll, portfolio work and messaging, rather than a tax-only label. The user replaced it with Tax Buddy on 2026-11-12. Recorded tension: the new name is tax-specific while the product scope in the PRD is unchanged and still covers the other services. No external name clearance is claimed for either name.
-- An original ledger/conversation mark and geometric wordmark, with light/dark SVG variants and favicon ([assets](assets/README.md)).
-- Serif headlines, readable system sans controls, forest actions and warm paper surfaces. The chosen values are centralized in `taxbuddy.css` and map to the approved Tailwind/Blazor stack.
+- An original ledger/conversation mark and geometric wordmark, with light/dark SVG variants and favicon ([assets](assets/README.md)). Replaced on 2026-11-18 by the user's choice of a speech bubble holding a T, with a two-tone wordmark ([logo directions](logo-directions/README.md)).
+- Serif headlines and readable system sans controls until 2026-11-19, then one rounded sans, Quicksand, matching the logo; forest actions and warm paper surfaces. The chosen values are centralized in `taxbuddy.css` and map to the approved Tailwind/Blazor stack.
 - An asymmetric desktop introduction with a small ledger illustration, labelled search and quiet service filters; results lead into comparable cards rather than promotional statistics.
 - Clearer card structure, contact-panel emphasis, responsive container breakpoints, compact phone layouts and information links on additional mobile screens.
 

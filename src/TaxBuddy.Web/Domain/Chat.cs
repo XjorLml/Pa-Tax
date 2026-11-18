@@ -68,7 +68,54 @@ public sealed class Conversation
 
     public DateTimeOffset? AccountantReadAt { get; private set; }
 
+    /// <summary>When the client blocked the accountant (R15, F10); null when not blocked.</summary>
+    public DateTimeOffset? ClientBlockedAt { get; private set; }
+
+    /// <summary>When the accountant blocked the client (R15, F10); null when not blocked.</summary>
+    public DateTimeOffset? AccountantBlockedAt { get; private set; }
+
+    /// <summary>While either side has blocked the other, neither can send here (R15).</summary>
+    public bool IsBlocked => ClientBlockedAt is not null || AccountantBlockedAt is not null;
+
+    /// <summary>Whether <paramref name="accountId"/> has blocked the other participant.</summary>
+    public bool IsBlockedBy(Guid accountId) =>
+        accountId == ClientAccountId ? ClientBlockedAt is not null : accountId == AccountantAccountId && AccountantBlockedAt is not null;
+
     public bool Includes(Guid accountId) => accountId == ClientAccountId || accountId == AccountantAccountId;
+
+    /// <summary>The participant blocks the other. Blocking again keeps the first time.</summary>
+    public void Block(Guid accountId, DateTimeOffset at)
+    {
+        if (accountId == ClientAccountId)
+        {
+            ClientBlockedAt ??= at;
+        }
+        else if (accountId == AccountantAccountId)
+        {
+            AccountantBlockedAt ??= at;
+        }
+        else
+        {
+            throw new InvalidOperationException("Only a participant can block.");
+        }
+    }
+
+    /// <summary>The participant undoes their own block; the other side's block, if any, stays.</summary>
+    public void Unblock(Guid accountId)
+    {
+        if (accountId == ClientAccountId)
+        {
+            ClientBlockedAt = null;
+        }
+        else if (accountId == AccountantAccountId)
+        {
+            AccountantBlockedAt = null;
+        }
+        else
+        {
+            throw new InvalidOperationException("Only a participant can unblock.");
+        }
+    }
 
     public Guid OtherThan(Guid accountId) => accountId == ClientAccountId ? AccountantAccountId : ClientAccountId;
 

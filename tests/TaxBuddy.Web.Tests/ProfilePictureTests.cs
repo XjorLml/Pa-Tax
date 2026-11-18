@@ -39,6 +39,33 @@ public sealed partial class ProfilePictureTests(EmptyAppFixture app) : IClassFix
     }
 
     [DatabaseFact]
+    public async Task The_pencil_on_the_avatar_opens_the_picture_panel_without_script()
+    {
+        // PP09: a plain link to #picture; the panel is hidden until targeted. PP10: script hooks on the same markup.
+        var (client, _) = await SignedInAsync(AccountRole.Accountant, "Tessa Uy");
+
+        var account = await (await client.GetAsync("/account")).ReadHtmlAsync();
+        Assert.Contains("<a class=\"avatar-edit\" href=\"#picture\" aria-label=\"Change profile picture\" data-picture-pencil>", account);
+        Assert.Contains("<section class=\"picture-card \" id=\"picture\"", account);
+        Assert.Contains("<a class=\"linkbtn\" href=\"/account\">Close</a>", account);
+        Assert.DoesNotContain("Remove picture", account);
+
+        await UploadAsync(client, TestImages.Png());
+        var saved = await (await client.GetAsync("/account?picture=saved")).ReadHtmlAsync();
+        // The redirect after a post targets #picture, so the panel needs no class to show the result without script.
+        Assert.Contains("<section class=\"picture-card \" id=\"picture\"", saved);
+        Assert.Contains("data-picture-result", saved);
+        // PP10: the controls the script reveals submit the page's own forms.
+        Assert.Contains("<button type=\"submit\" form=\"picture-upload\" class=\"btn btn-primary btn-sm\" data-picture-save>Save</button>", saved);
+        Assert.Contains("<button type=\"submit\" form=\"picture-remove\" class=\"linkbtn pic-inline\" data-picture-remove hidden>Remove picture</button>", saved);
+        Assert.Contains("id=\"picture-upload\"", saved);
+        Assert.Contains("id=\"picture-remove\"", saved);
+
+        var editor = await (await client.GetAsync("/account/profile")).ReadHtmlAsync();
+        Assert.Contains("<a class=\"avatar-edit\" href=\"/account#picture\" aria-label=\"Change profile picture\">", editor);
+    }
+
+    [DatabaseFact]
     public async Task A_clients_picture_is_shown_to_that_client_only()
     {
         var (owner, accountId) = await SignedInAsync(AccountRole.Client, "Olive Reyes");

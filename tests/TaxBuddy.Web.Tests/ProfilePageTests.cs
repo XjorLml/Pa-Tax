@@ -51,7 +51,7 @@ public sealed class ProfilePageTests(SeededAppFixture app) : IClassFixture<Seede
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         Assert.Contains("This profile is no longer available", html);
-        Assert.Contains("Back to the directory", html);
+        Assert.Contains(">Back to directory</a>", html);
         Assert.DoesNotContain("Sam Aquino", html);
     }
 

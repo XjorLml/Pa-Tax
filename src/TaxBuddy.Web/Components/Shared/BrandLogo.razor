@@ -4,7 +4,7 @@
 <img src="@Assets["images/taxbuddy-logo-dark.svg"]" width="@Width" height="@Height" alt="Tax Buddy" class="logo-dark" />
 
 @code {
-    [Parameter] public int Width { get; set; } = 175;
+    [Parameter] public int Width { get; set; } = 161;
 
-    private int Height => Width * 30 / 175;
+    private int Height => (Width * 48 + 129) / 258;
 }

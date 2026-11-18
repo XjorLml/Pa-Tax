@@ -24,23 +24,38 @@ else if (view is not null)
     var first = Display.FirstName(view.Accountant.Name);
     <div class="narrow">
         <nav class="crumbs" aria-label="Breadcrumb"><a href="@ProfilePath">Back to profile</a></nav>
+        @* Prototype d-review: one panel titled "Write a review" holds the form or the reason there's no form. On phones
+           the title is in the app bar. *@
+        <div class="panel titled">
+        <h1 id="page-title" tabindex="-1">Write a review</h1>
         @switch (access)
         {
             case ReviewAccess.SignIn:
-                <StateMessage IconName="user" HeadingLevel="1" Title="Sign in to write a review" Text="@($"Reviews come from clients {first} has chatted with.")">
+                <StateMessage IconName="user" Title="Sign in to write a review" Text="@($"Reviews come from clients {first} has chatted with.")">
                     <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(Path)">Sign in</a>
                 </StateMessage>
                 break;
             case ReviewAccess.NotAClient:
             case ReviewAccess.NoReplyYet:
-                <StateMessage IconName="chat" HeadingLevel="1" Title="@($"You can't review {first} yet")"
+                <StateMessage IconName="chat" Title="@($"You can't review {first} yet")"
                               Text="@(access == ReviewAccess.NoReplyYet ? $"You can leave a review after {first} replies to a message from you." : "Only clients can write reviews.")">
                     <a class="btn" href="@ProfilePath">Back to profile</a>
                 </StateMessage>
                 break;
+            case ReviewAccess.Blocked:
+                @* F10: the accountant blocked this client. Not told why; an existing review can still be deleted. *@
+                <StateMessage IconName="chat" Title="@($"You can't review {first}")">
+                    @if (view.Saved is not null)
+                    {
+                        <form method="post" @formname="review" @onsubmit="HandleAsync" novalidate>
+                            <AntiforgeryToken />
+                            <button type="submit" name="command" value="delete" class="btn">Delete your review</button>
+                        </form>
+                    }
+                    <a class="btn" href="@ProfilePath">Back to profile</a>
+                </StateMessage>
+                break;
             default:
-                <div class="panel">
-                    <h1 id="page-title" tabindex="-1">Write a review</h1>
                     <form method="post" @formname="review" @onsubmit="HandleAsync" class="form" novalidate>
                         <AntiforgeryToken />
                         @* Enter in the text field presses the first submit button: make that the save, not "Delete". *@
@@ -87,9 +102,9 @@ else if (view is not null)
                             <a class="btn btn-ghost" href="@ProfilePath">Cancel</a>
                         </div>
                     </form>
-                </div>
                 break;
         }
+        </div>
     </div>
 }
 
@@ -154,7 +169,7 @@ else if (view is not null)
         }
 
         access = view.Access;
-        if (access is ReviewAccess.NotAClient or ReviewAccess.NoReplyYet)
+        if (access is ReviewAccess.NotAClient or ReviewAccess.NoReplyYet or ReviewAccess.Blocked)
         {
             ResponseStatus.Set(HttpContext, StatusCodes.Status403Forbidden); // A visitor gets the sign-in state, as on /chats.
         }

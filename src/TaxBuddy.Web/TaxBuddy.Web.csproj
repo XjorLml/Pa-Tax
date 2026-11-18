@@ -47,7 +47,9 @@
           Inputs="@(TailwindInputs);package-lock.json" Outputs="wwwroot/app.css">
     <Message Importance="high" Text="Tailwind: node_modules is missing; run 'npm ci' in src/TaxBuddy.Web to build the styles."
              Condition="!Exists('node_modules/.bin/tailwindcss')" />
-    <Exec Command="node_modules/.bin/tailwindcss -i Styles/app.css -o wwwroot/app.css --minify"
+    <!-- Linux and macOS use their own Node. In WSL without a Linux Node, node_modules holds the Windows binaries
+         (installed by Windows npm), so the Windows node.exe on the WSL path runs the same command-line tool. -->
+    <Exec Command="if command -v node &gt;/dev/null 2&gt;&amp;1; then node_modules/.bin/tailwindcss -i Styles/app.css -o wwwroot/app.css --minify; elif command -v node.exe &gt;/dev/null 2&gt;&amp;1; then node.exe node_modules/@tailwindcss/cli/dist/index.mjs -i Styles/app.css -o wwwroot/app.css --minify; else echo 'Tailwind: Node was not found. Install Node 22 or later, or build with -p:SkipTailwind=true.' &gt;&amp;2; exit 127; fi"
           Condition="Exists('node_modules/.bin/tailwindcss') And '$(OS)' != 'Windows_NT'" />
     <Exec Command="node_modules\.bin\tailwindcss.cmd -i Styles\app.css -o wwwroot\app.css --minify"
           Condition="Exists('node_modules\.bin\tailwindcss.cmd') And '$(OS)' == 'Windows_NT'" />

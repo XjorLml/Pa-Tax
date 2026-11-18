@@ -27,7 +27,16 @@ public sealed record ThreadView(
     string PeerName,
     string? PeerPicture,
     AccountantId? PeerProfileId,
-    IReadOnlyList<MessageView> Messages);
+    IReadOnlyList<MessageView> Messages)
+{
+    /// <summary>The viewer has blocked the other participant (R15): "You blocked …" with Unblock instead of the composer.</summary>
+    public bool BlockedByMe { get; init; }
+
+    /// <summary>The other participant has blocked the viewer: "You can't send messages in this conversation." Not told why.</summary>
+    public bool BlockedByThem { get; init; }
+
+    public bool IsBlocked => BlockedByMe || BlockedByThem;
+}
 
 /// <summary>The accountant a new chat goes to.</summary>
 public sealed record ChatRecipient(AccountantId ProfileId, Guid AccountId, string Name, string? Picture);
@@ -58,6 +67,9 @@ public enum SendOutcome
     Invalid,
     TooFast,
     NotAllowed,
+
+    /// <summary>One of the participants has blocked the other (R15); nothing was stored.</summary>
+    Blocked,
     Failed,
 }
 
@@ -87,6 +99,9 @@ public enum StoreMessageOutcome
 
     /// <summary>A message with this ID was already stored (a repeated send).</summary>
     AlreadyStored,
+
+    /// <summary>The conversation is blocked (R15); nothing was stored.</summary>
+    Blocked,
 }
 
 public sealed record StoredMessage(StoreMessageOutcome Outcome, ChatMessage Message, Conversation Conversation);
@@ -120,6 +135,12 @@ public interface IChatStore
     Task MarkReadAsync(Guid conversationId, Guid readerId, DateTimeOffset upTo, CancellationToken cancellationToken);
 
     Task<int> UnreadTotalAsync(Guid accountId, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Sets or clears the participant's own block (R15) under a row lock, so a message being stored at the same moment either
+    /// lands before the block or is refused. Null when the conversation doesn't exist or the account isn't in it.
+    /// </summary>
+    Task<Conversation?> SetBlockAsync(Guid conversationId, Guid accountId, bool blocked, DateTimeOffset at, CancellationToken cancellationToken);
 }
 
 /// <summary>
