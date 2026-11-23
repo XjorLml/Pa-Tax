@@ -1,0 +1,111 @@
+@page "/account/agree"
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@inject AccountService Accounts
+@inject NavigationManager Navigation
+@* F11 (PRD R16, decided 2026-11-21): a signed-in person whose agreed version is older agrees again before continuing.
+   Prototype agreeHTML. A named form posted to this page, like registration, so it works without script. *@
+
+<SeoHead Title="Updated terms · Tax Buddy" Description="The Terms of use and the Privacy policy have changed." CanonicalPath="/account/agree" />
+<PhoneBar Title="Updated terms" />
+<h1 class="sr-only" tabindex="-1">Updated terms</h1>
+
+<div class="center-col">
+    <h2>We've updated our terms</h2>
+    <p class="muted">The Terms of use and the Privacy policy changed on @LegalText.UpdatedOn. Please read them, then agree to keep using your account.</p>
+
+    @if (failed)
+    {
+        <div class="banner danger" role="alert">
+            <Icon Name="alert" Size="18" />
+            <div>We couldn't save that. Please try again.</div>
+        </div>
+    }
+
+    <form method="post" @formname="agree" @onsubmit="AgreeAsync" novalidate>
+        <AntiforgeryToken />
+        <input type="hidden" name="Form.ReturnUrl" value="@returnUrl" />
+        <label class="check agree">
+            <input type="checkbox" name="Form.Agree" value="true" checked="@Form!.Agree"
+                   aria-describedby="@(agreeError is null ? null : "agree-error")" />
+            <span>I agree to the <a href="/terms">Terms of use</a> and have read the <a href="/privacy">Privacy policy</a>.</span>
+        </label>
+        @if (agreeError is not null)
+        {
+            <p id="agree-error" class="ferr mt-2 text-left" role="alert">@agreeError</p>
+        }
+        <div class="actions agree-actions">
+            <button type="submit" class="btn btn-primary">Continue</button>
+        </div>
+    </form>
+    <form method="post" action="@AccountEndpoints.SignOutPath" class="agree-signout">
+        <AntiforgeryToken />
+        <button type="submit" class="btn btn-ghost">Sign out</button>
+    </form>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? ReturnUrl { get; set; }
+
+    [SupplyParameterFromForm(FormName = "agree")] private AgreeForm? Form { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState>? Authentication { get; set; }
+
+    private string returnUrl = "/";
+    private string? agreeError;
+    private bool failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Form ??= new AgreeForm { ReturnUrl = ReturnUrl };
+        returnUrl = LocalAddress.OrHome(Form.ReturnUrl);
+        if (returnUrl.StartsWith(TermsAgreement.AgreePath, StringComparison.Ordinal))
+        {
+            returnUrl = "/";
+        }
+
+        var user = Authentication is null ? null : (await Authentication).User;
+        if (user?.Identity?.IsAuthenticated != true)
+        {
+            Navigation.NavigateTo(AccountEndpoints.SignInPageAddress(TermsAgreement.AgreePageAddress(returnUrl)));
+            return;
+        }
+
+        // Agreed in another browser: renew this session and carry on.
+        if (!TermsAgreement.HasAgreedToCurrent(user) && await Accounts.HasAgreedToCurrentAsync())
+        {
+            await Accounts.AgreeToCurrentAsync();
+            Navigation.NavigateTo(returnUrl);
+        }
+    }
+
+    private async Task AgreeAsync()
+    {
+        agreeError = Form!.Agree ? null : "Tick the box to agree to the Terms of use.";
+        if (!Form.Agree)
+        {
+            return;
+        }
+
+        switch (await Accounts.AgreeToCurrentAsync())
+        {
+            case AgreementOutcome.Agreed:
+                Navigation.NavigateTo(returnUrl);
+                break;
+            case AgreementOutcome.NotSignedIn:
+                Navigation.NavigateTo(AccountEndpoints.SignInPageAddress(TermsAgreement.AgreePageAddress(returnUrl)));
+                break;
+            default:
+                failed = true;
+                break;
+        }
+    }
+
+    private sealed class AgreeForm
+    {
+        public bool Agree { get; set; }
+
+        public string? ReturnUrl { get; set; }
+    }
+}

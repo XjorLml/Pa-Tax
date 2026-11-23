@@ -24,6 +24,9 @@ public sealed partial class ProfileEditorTests(EmptyAppFixture app) : IClassFixt
         Assert.Contains("Not listed yet", page);
         Assert.Contains("1 of 6</strong>", page); // only the display name, from Google
         Assert.Contains("""value="Andrea Villanueva" """.Trim(), page); // name from Google
+        // F11 LP10: licence numbers are discouraged, next to the title field.
+        Assert.Contains("""<span class="hint" id="f-title-hint">Use only titles you hold. Don't add your PRC licence number or other ID numbers anywhere on your profile; give them privately if a client asks.</span>""", page);
+        Assert.Matches("""<input id="f-title"[^>]*aria-describedby="f-title-hint" """.Trim(), page);
 
         var saved = await SaveAsync(client, page, Complete(title: "Certified Public Accountant"));
 
@@ -42,6 +45,7 @@ public sealed partial class ProfileEditorTests(EmptyAppFixture app) : IClassFixt
         Assert.Contains("Monthly books for small firms.", profile);
         Assert.Contains("Senior Accountant", profile);
         Assert.Contains("andrea.contact@example.test", profile);
+        Assert.Contains("ask about credentials in your chat, and check a CPA's licence with the PRC.", profile); // F11 LP11
     }
 
     [DatabaseFact]

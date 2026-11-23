@@ -1,11 +1,13 @@
 @page "/signin"
+@attribute [TermsNotRequired]
 @using TaxBuddy.Web.Account
 @inject AccountService Accounts
 @inject DirectoryService Directory
-@* F04 sign-in, laid out as the prototype's signinHTML (F02 BD10). Static: a plain form posted to the account endpoint.
-   Microsoft joins when it is built. *@
+@* F04 sign-in, laid out as the prototype's signinHTML (F02 BD10). Static: a plain form per provider, posted to the account
+   endpoint. F15 (2026-11-23): Microsoft beside Google, shown only when the site has its keys and the switch is on; archived
+   the same day by the owner, so it stays off. *@
 
-<SeoHead Title="Sign in · Tax Buddy" Description="Sign in to Tax Buddy with your Google account." CanonicalPath="/signin" />
+<SeoHead Title="Sign in · Tax Buddy" Description="@($"Sign in to Tax Buddy with your {Providers} account.")" CanonicalPath="/signin" />
 <PhoneBar Title="Sign in" Back="@returnUrl" />
 <h1 class="sr-only" tabindex="-1">Sign in</h1>
 
@@ -26,18 +28,32 @@ else
         {
             <div class="banner danger inline" role="alert">
                 <Icon Name="alert" Size="18" />
-                <div>We couldn't sign you in with Google. Please try again.</div>
+                <div>We couldn't sign you in with @Providers. Please try again.</div>
             </div>
         }
 
-        @if (googleAvailable)
+        @if (googleAvailable || microsoftAvailable)
         {
-            <form method="post" action="@AccountEndpoints.ExternalSignInPath" class="stack">
-                <AntiforgeryToken />
-                <input type="hidden" name="provider" value="@AccountSetup.GoogleScheme" />
-                <input type="hidden" name="returnUrl" value="@returnUrl" />
-                <button type="submit" class="btn btn-block">Continue with Google</button>
-            </form>
+            <div class="stack">
+                @if (googleAvailable)
+                {
+                    <form method="post" action="@AccountEndpoints.ExternalSignInPath">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="provider" value="@AccountSetup.GoogleScheme" />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <button type="submit" class="btn btn-block">Continue with Google</button>
+                    </form>
+                }
+                @if (microsoftAvailable)
+                {
+                    <form method="post" action="@AccountEndpoints.ExternalSignInPath">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="provider" value="@AccountSetup.MicrosoftScheme" />
+                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                        <button type="submit" class="btn btn-block">Continue with Microsoft</button>
+                    </form>
+                }
+            </div>
         }
         else
         {
@@ -47,7 +63,7 @@ else
             </div>
         }
 
-        <p class="muted small">Tax Buddy never sees your Google password.</p>
+        <p class="muted small">Tax Buddy never sees your @Providers password.</p>
     </div>
 }
 
@@ -61,6 +77,10 @@ else
     private string returnUrl = "/";
     private string? signedInAs;
     private bool googleAvailable;
+    private bool microsoftAvailable;
+
+    /// <summary>"Google", "Microsoft" or "Google or Microsoft", for the lines that name them.</summary>
+    private string Providers => microsoftAvailable && googleAvailable ? "Google or Microsoft" : microsoftAvailable ? "Microsoft" : "Google";
 
     /// <summary>The accountant's first name when the visitor came from writing to them (prototype signinHTML).</summary>
     private string? messageTo;
@@ -82,6 +102,7 @@ else
         }
 
         googleAvailable = await Accounts.IsGoogleAvailableAsync();
+        microsoftAvailable = await Accounts.IsMicrosoftAvailableAsync();
         if (returnUrl.StartsWith("/chats/new/", StringComparison.Ordinal))
         {
             try

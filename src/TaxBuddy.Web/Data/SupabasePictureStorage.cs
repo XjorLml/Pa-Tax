@@ -1,4 +1,3 @@
-using System.Net;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Caching.Memory;
 using TaxBuddy.Web.Application.Pictures;
@@ -14,9 +13,7 @@ public sealed class SupabasePictureStorage(HttpClient http, IConfiguration confi
 {
     public const string DefaultBucket = "profile-pictures";
 
-    public static bool IsConfigured(IConfiguration configuration) =>
-        Uri.TryCreate(configuration["Supabase:Url"], UriKind.Absolute, out _)
-        && !string.IsNullOrWhiteSpace(configuration["Supabase:SecretKey"]);
+    public static bool IsConfigured(IConfiguration configuration) => SupabaseStorageApi.IsConfigured(configuration);
 
     public bool IsAvailable => true;
 
@@ -58,48 +55,10 @@ public sealed class SupabasePictureStorage(HttpClient http, IConfiguration confi
         using var _ = await SendAsync(request, cancellationToken, okWhenMissing: true);
     }
 
-    private HttpRequestMessage Request(HttpMethod method, string path)
-    {
-        var baseUrl = new Uri(configuration["Supabase:Url"]!.TrimEnd('/') + "/");
-        var key = configuration["Supabase:SecretKey"]!;
-        var request = new HttpRequestMessage(method, new Uri(baseUrl, path));
-        request.Headers.Add("apikey", key);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", key);
-        return request;
-    }
+    private HttpRequestMessage Request(HttpMethod method, string path) => SupabaseStorageApi.Request(configuration, method, path);
 
-    /// <summary>The response when successful; null when the object is missing and that's acceptable.</summary>
-    private async Task<HttpResponseMessage?> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken, bool okWhenMissing)
-    {
-        HttpResponseMessage response;
-        try
-        {
-            response = await http.SendAsync(request, cancellationToken);
-        }
-        catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException && !cancellationToken.IsCancellationRequested)
-        {
-            throw new PictureStorageException("Storage could not be reached.", ex);
-        }
-
-        if (response.IsSuccessStatusCode)
-        {
-            return response;
-        }
-
-        // Storage reports a missing object as 404, or as 400 with a not-found body.
-        var missing = response.StatusCode == HttpStatusCode.NotFound
-                      || (response.StatusCode == HttpStatusCode.BadRequest
-                          && (await response.Content.ReadAsStringAsync(cancellationToken)).Contains("not_found", StringComparison.OrdinalIgnoreCase));
-        var status = (int)response.StatusCode;
-        response.Dispose();
-        if (missing && okWhenMissing)
-        {
-            return null;
-        }
-
-        // The status only: response bodies can echo request details.
-        throw new PictureStorageException($"Storage answered {status}.");
-    }
+    private Task<HttpResponseMessage?> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken, bool okWhenMissing) =>
+        SupabaseStorageApi.SendAsync(http, request, okWhenMissing, (message, inner) => new PictureStorageException(message, inner), cancellationToken);
 }
 
 /// <summary>Used when Supabase Storage isn't configured: uploads are switched off and avatars show initials (PP07).</summary>

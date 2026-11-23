@@ -45,6 +45,10 @@ public sealed class ChatPageTests(EmptyAppFixture app) : IClassFixture<EmptyAppF
         Assert.Contains("Sign in to send", html);
         Assert.Contains("data-chat-composer", html);
         Assert.Contains("Hi! Can you help me file my taxes?", html); // Message ideas.
+        // F11 LP09: the hint about sensitive documents, read with the message box.
+        Assert.Contains("""<p class="composer-note" id="composer-note">""", html);
+        Assert.Contains("Don't share TINs, tax returns or ID numbers in chat.", html);
+        Assert.Contains("""aria-describedby="composer-note composer-status composer-count" """.Trim(), html);
     }
 
     [DatabaseFact]

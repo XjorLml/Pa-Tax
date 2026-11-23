@@ -131,6 +131,20 @@ The user said "i can see that there are different font styles stick to one font 
 |---|---|---|---|
 | BD13 / DESIGN typography | Open any page of the prototype's Tax Buddy look or of the site, light and dark | Headings, body text, buttons and the phone app bar's name are in one typeface that matches the logo; no serif remains; the font files load from the same site | Prototype checker, build, tests, and screenshots of both ([evidence](../../docs/delivery/evidence/2026-11-19-f02-typeface.md)) |
 
+## Theme toggle in the header, 2026-11-23 (BD14)
+
+The user sent screenshots of the footer's Light/Dark/System switch and of "Sign in" with a moon icon beside it, and said: "in the prototype and the app move these beside the sign in the theme change icon should always be in the header". This replaces BD09's footer switch and the "no theme control in the prototype" deviation.
+
+- **Where:** at the end of the site bar, after Sign in or the account link, and at the end of the phone app bar, after a page's own actions. Every page has it, signed in or not.
+- **What:** one icon button. A moon ("Switch to dark theme") shows in a light theme and a sun ("Switch to light theme") in a dark one, the same choice the logo makes, so it is right for System too. Pressing it stores light or dark (the same cookie and address as BD09) and returns to the page.
+- **System:** there's no System button any more. A visitor follows the device until they press the icon; after that the choice stays for a year. The address still accepts `system`, in case a "use the device setting" link is wanted later.
+- **Site:** `ThemeToggle.razor` replaces `ThemeSwitch.razor`, in `SiteUser` and `PhoneBar`. Both buttons are in the page, and the stylesheet hides one, so it works without script. The footer no longer has a theme control.
+- **Prototype:** `themeToggleHTML` in `desktopShell` and `phoneShell`. It changes the prototype's theme, and the "Theme" simulation control follows.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD14 / DESIGN theme | Open any page at phone and desktop widths, with the device light and dark; press the icon, then press it again | One icon in the header: a moon on light, a sun on dark. Pressing switches to dark, then back to light, on the same page; nothing in the footer; no horizontal scroll at 320 px | Web tests, prototype checker, and Edge on the running site and the prototype ([evidence](../../docs/delivery/evidence/2026-11-23-f02-theme-toggle.md)) |
+
 ## Name availability, 2026-11-16
 
 This was a preliminary web survey for D01 and the open rename task ([record](../../docs/delivery/evidence/2026-11-16-name-availability.md)), not clearance. It found active "TaxBuddy" tax products in the Philippines (taxbuddyph.com) and India (taxbuddy.com), and a live US TAXBUDDIES mark for tax services. IPOPHL, WIPO and domain registrars were not searched directly. Nothing was decided; D01 stays with the owner.

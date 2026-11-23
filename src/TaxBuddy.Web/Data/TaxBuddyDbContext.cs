@@ -28,6 +28,18 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
 
     public DbSet<Report> Reports => Set<Report>();
 
+    public DbSet<EmailJob> EmailJobs => Set<EmailJob>();
+
+    public DbSet<SavedAccountant> SavedAccountants => Set<SavedAccountant>();
+
+    public DbSet<ServiceEngagement> ServiceEngagements => Set<ServiceEngagement>();
+
+    public DbSet<ServiceTask> ServiceTasks => Set<ServiceTask>();
+
+    public DbSet<ServiceUpdate> ServiceUpdates => Set<ServiceUpdate>();
+
+    public DbSet<ServiceFile> ServiceFiles => Set<ServiceFile>();
+
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
         configurationBuilder.Properties<AccountantId>().HaveConversion<AccountantIdConverter>();
@@ -95,6 +107,8 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
         ConfigureChat(modelBuilder);
         ConfigureReviews(modelBuilder);
         ConfigureReports(modelBuilder);
+        ConfigureEmailJobs(modelBuilder);
+        ConfigureWork(modelBuilder);
         ApplySnakeCaseNames(modelBuilder);
     }
 
@@ -167,6 +181,97 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             report.HasIndex(r => new { r.ReporterAccountId, r.CreatedAt });
             report.HasIndex(r => r.CreatedAt);
             report.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(r => r.ReporterAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    /// <summary>
+    /// F14: notification emails waiting to be sent (SDD email contract). They go with their conversation; the recipient's
+    /// account row is never deleted (F12), so its link refuses deletion as the other tables do.
+    /// </summary>
+    private static void ConfigureEmailJobs(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<EmailJob>(job =>
+        {
+            job.ToTable("email_jobs");
+            job.HasKey(j => j.Id);
+            job.Property(j => j.Id).ValueGeneratedNever();
+            job.Property(j => j.Status).HasConversion<string>().HasMaxLength(20);
+            job.HasIndex(j => new { j.Status, j.DueAt });
+            job.HasIndex(j => new { j.RecipientAccountId, j.ConversationId, j.CreatedAt });
+            job.HasOne<Conversation>().WithMany().HasForeignKey(j => j.ConversationId).OnDelete(DeleteBehavior.Cascade);
+            job.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(j => j.RecipientAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+    }
+
+    /// <summary>
+    /// F03 service work (SDD private service workspaces). A saved entry goes with its profile. A service, its tasks and
+    /// updates stay with their two accounts, whose rows are never deleted (F12). One active or requested service per
+    /// client, accountant and service name (D24 proposal: no duplicates); declined ones don't count.
+    /// </summary>
+    private static void ConfigureWork(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<SavedAccountant>(saved =>
+        {
+            saved.ToTable("saved_accountants");
+            saved.HasKey(s => new { s.ClientAccountId, s.ProfileId });
+            saved.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(s => s.ClientAccountId).OnDelete(DeleteBehavior.Restrict);
+            saved.HasOne<AccountantProfile>().WithMany().HasForeignKey(s => s.ProfileId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ServiceEngagement>(engagement =>
+        {
+            engagement.ToTable("service_engagements");
+            engagement.HasKey(e => e.Id);
+            engagement.Property(e => e.Id).ValueGeneratedNever();
+            engagement.Property(e => e.ServiceName).HasMaxLength(ServiceNameLength);
+            engagement.Property(e => e.Phase).HasConversion<string>().HasMaxLength(20);
+            engagement.Property(e => e.Version).IsConcurrencyToken();
+            engagement.HasIndex(e => new { e.ClientAccountId, e.AccountantAccountId, e.ServiceName })
+                .IsUnique().HasFilter("phase <> 'Declined'");
+            engagement.HasIndex(e => e.AccountantAccountId);
+            engagement.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(e => e.ClientAccountId).OnDelete(DeleteBehavior.Restrict);
+            engagement.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(e => e.AccountantAccountId).OnDelete(DeleteBehavior.Restrict);
+            engagement.HasMany(e => e.Tasks).WithOne().HasForeignKey(t => t.EngagementId).OnDelete(DeleteBehavior.Cascade);
+            engagement.Navigation(e => e.Tasks).HasField("tasks").UsePropertyAccessMode(PropertyAccessMode.Field);
+        });
+
+        modelBuilder.Entity<ServiceTask>(task =>
+        {
+            task.ToTable("service_tasks");
+            task.HasKey(t => t.Id);
+            task.Property(t => t.Id).ValueGeneratedNever();
+            task.Property(t => t.Title).HasMaxLength(WorkRules.TaskTitle);
+            task.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
+        });
+
+        modelBuilder.Entity<ServiceUpdate>(update =>
+        {
+            update.ToTable("service_updates");
+            update.HasKey(u => u.Id);
+            update.Property(u => u.Id).ValueGeneratedNever();
+            update.Property(u => u.Text).HasMaxLength(WorkRules.Note);
+            update.HasIndex(u => new { u.EngagementId, u.CreatedAt });
+            update.HasOne<ServiceEngagement>().WithMany().HasForeignKey(u => u.EngagementId).OnDelete(DeleteBehavior.Cascade);
+            update.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(u => u.AuthorAccountId).OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // F03 stage 2 (R23): documents go with their service; a task link is cleared if the task ever goes. The uploader's
+        // account row is never deleted (F12): their documents are deleted with the account instead (D27, partly).
+        modelBuilder.Entity<ServiceFile>(file =>
+        {
+            file.ToTable("service_files", table => table.HasCheckConstraint(
+                "ck_service_files_length", $"length BETWEEN 1 AND {DocumentRules.MaxBytes}"));
+            file.HasKey(f => f.Id);
+            file.Property(f => f.Id).ValueGeneratedNever();
+            file.Property(f => f.ObjectName).HasMaxLength(200);
+            file.Property(f => f.DisplayName).HasMaxLength(DocumentRules.DisplayName);
+            file.Property(f => f.ContentType).HasMaxLength(40);
+            file.HasIndex(f => f.ObjectName).IsUnique();
+            file.HasIndex(f => new { f.UploaderAccountId, f.OperationId }).IsUnique();
+            file.HasIndex(f => new { f.EngagementId, f.CreatedAt });
+            file.HasOne<ServiceEngagement>().WithMany().HasForeignKey(f => f.EngagementId).OnDelete(DeleteBehavior.Cascade);
+            file.HasOne<ServiceTask>().WithMany().HasForeignKey(f => f.TaskId).OnDelete(DeleteBehavior.SetNull);
+            file.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(f => f.UploaderAccountId).OnDelete(DeleteBehavior.Restrict);
         });
     }
 

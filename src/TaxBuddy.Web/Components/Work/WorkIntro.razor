@@ -1,0 +1,12 @@
+@* F03: the prototype's workspace heading (service-workspace.js heading): eyebrow, title and one line. *@
+<div class="work-intro">
+    <span class="eyebrow">Your private workspace</span>
+    <h2>@Title</h2>
+    <p>@Text</p>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter] public string? Text { get; set; }
+}

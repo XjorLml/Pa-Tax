@@ -110,7 +110,9 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                         </div>
                     </div>
                     @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
-                    @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant")
+                    @* F11 (D10, 2026-11-21): licence numbers are sensitive personal information (prototype editorParts). *@
+                    @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant",
+                           hint: "Use only titles you hold. Don't add your PRC licence number or other ID numbers anywhere on your profile; give them privately if a client asks.")
                     @Field("City", "City", Form.City, ProfileLimits.City, placeholder: "e.g. Makati City")
                     <div class="field">
                         <label for="f-summary">Career summary <span class="req">(needed to be listed)</span></label>
@@ -437,12 +439,17 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
         }
     };
 
-    private RenderFragment Field(string key, string label, string? value, int? max, string type = "text", bool required = false, string? placeholder = null) => __builder =>
+    private RenderFragment Field(string key, string label, string? value, int? max, string type = "text", bool required = false, string? placeholder = null, string? hint = null) => __builder =>
     {
+        var hintId = hint is null ? null : IdFor(key) + "-hint";
         <div class="field">
             <label for="@IdFor(key)">@label@(required ? " " : "")@if (required) {<span class="req">(needed to be listed)</span>}</label>
             <input id="@IdFor(key)" name="Form.@key" type="@type" value="@value" maxlength="@max" placeholder="@placeholder"
-                   aria-invalid="@Invalid(key)" aria-describedby="@DescribedBy(key)" />
+                   aria-invalid="@Invalid(key)" aria-describedby="@DescribedBy(key, hintId)" />
+            @if (hint is not null)
+            {
+                <span class="hint" id="@hintId">@hint</span>
+            }
             @ErrorFor(key)
         </div>
     };

@@ -1,0 +1,11 @@
+@* F03 (BR16): progress is completed tasks out of all tasks, shown as text too; no tasks is never "complete" (prototype meter). *@
+<div class="work-progress">
+    <progress max="@Math.Max(Total, 1)" value="@Done" aria-label="Completed service tasks"></progress>
+    <span>@Done of @Total tasks complete · @(Total > 0 ? $"{Math.Round(Done * 100.0 / Total)}%" : "checklist not set")</span>
+</div>
+
+@code {
+    [Parameter] public int Done { get; set; }
+
+    [Parameter] public int Total { get; set; }
+}

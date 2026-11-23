@@ -42,7 +42,8 @@ public static partial class FormPosts
     [GeneratedRegex("""name="__RequestVerificationToken" value="([^"]+)" """)]
     private static partial Regex TokenPattern();
 
-    [GeneratedRegex("""<input type="hidden" name="([^"]+)" value="([^"]*)" """)]
+    // Blazor ends a literal attribute value with ">" and a rendered one with " />"; both count (F14).
+    [GeneratedRegex("""<input type="hidden" name="([^"]+)" value="([^"]*)"(?=[ />])""")]
     private static partial Regex HiddenPattern();
 }
 
@@ -53,10 +54,10 @@ public static class TestAccounts
     /// Registers a new account with <paramref name="role"/>; the client is signed in afterwards. Returns the session
     /// cookie as a <c>name=value</c> pair, for tests that reuse the session on another host.
     /// </summary>
-    public static async Task<string> RegisterAsync(HttpClient client, AccountRole role, string name, string email)
+    public static async Task<string> RegisterAsync(HttpClient client, AccountRole role, string name, string email, string provider = "Google")
     {
         var key = Guid.NewGuid().ToString("N");
-        Assert.Equal(HttpStatusCode.NoContent, (await client.GetAsync(TestExternalSignIn.Address(key, email, name))).StatusCode);
+        Assert.Equal(HttpStatusCode.NoContent, (await client.GetAsync(TestExternalSignIn.Address(key, email, name, provider))).StatusCode);
         await client.GetAsync(AccountEndpoints.CallbackPath + "?returnUrl=%2Fterms");
         var page = await (await client.GetAsync(AccountEndpoints.RegisterPageAddress("/terms"))).ReadHtmlAsync();
 

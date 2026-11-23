@@ -1,6 +1,6 @@
 @using TaxBuddy.Web.Account
-@* Site bar user area (prototype desktopShell): the avatar and name link to Account, or "Sign in". The prototype's
-   "For accountants" link joins when that page exists (R17). *@
+@* Site bar user area (prototype desktopShell): the avatar and name link to Account, or "For accountants" and "Sign in",
+   then the theme toggle (BD14). *@
 <div class="siteuser">
     <AuthorizeView>
         <Authorized>
@@ -11,9 +11,12 @@
             </NavLink>
         </Authorized>
         <NotAuthorized>
+            @* F13 (R17): prototype desktopShell's "For accountants" for visitors, hidden on narrow desktops. *@
+            <a class="btn btn-ghost btn-sm siteuser-foracc" href="/for-accountants">For accountants</a>
             <a class="btn btn-primary btn-sm" href="@AccountEndpoints.SignInLinkFor(HttpContext)">Sign in</a>
         </NotAuthorized>
     </AuthorizeView>
+    <ThemeToggle />
 </div>
 
 @code {

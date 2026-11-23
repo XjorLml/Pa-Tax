@@ -1,0 +1,84 @@
+@page "/email/off"
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@inject EmailPreferences Preferences
+@* F14 (PRD R08): where an email's "turn them off" link leads (prototype infoPage('email-off')). With a genuine link the
+   emails turn off at once, without signing in, and can be turned back on here. Signed in without a link, it shows the
+   setting with a switch. The address is shown only to the signed-in owner, since a forwarded link shouldn't reveal it. *@
+
+<SeoHead Title="Email notifications · Tax Buddy" Description="Turn Tax Buddy's new-message emails on or off." CanonicalPath="/email/off" />
+<PhoneBar Title="Emails turned off" Back="/" />
+<DeskTitle Title="Email notifications" />
+
+<div class="single-inner">
+    @if (account is null)
+    {
+        <StateMessage IconName="mail" Title="@(T is null ? "Sign in to change this setting" : "This link doesn't work any more")"
+                      Text="You can turn new-message emails on or off in Account.">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/account")">Sign in</a>
+        </StateMessage>
+    }
+    else
+    {
+        <StateMessage IconName="mail" Title="@(on ? "Notification emails are on" : "Notification emails are off")" Text="@Detail">
+            <form method="post" action="@EmailPreferences.EndpointPath">
+                <AntiforgeryToken />
+                <input type="hidden" name="on" value="@(on ? "false" : "true")" />
+                @if (fromLink)
+                {
+                    <input type="hidden" name="t" value="@T" />
+                }
+                <input type="hidden" name="returnUrl" value="@ReturnAddress" />
+                <button type="submit" class="btn">@(on ? "Turn off" : "Turn emails back on")</button>
+            </form>
+        </StateMessage>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? T { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState>? Authentication { get; set; }
+
+    private Guid? account;
+    private bool fromLink;
+    private bool on;
+    private string? address;
+
+    private string Detail => on
+        ? (address is null ? "We email you about new messages." : $"We email {address} about new messages.")
+        : (address is null ? "We won't email you about new messages. Unread messages still show in Chats." : $"We won't email {address} about new messages. Unread messages still show in Chats.");
+
+    /// <summary>Back here after the switch, with the link if it came from one.</summary>
+    private string ReturnAddress => fromLink ? "/email/off?t=" + Uri.EscapeDataString(T!) + "&kept=1" : "/email/off";
+
+    [SupplyParameterFromQuery] public string? Kept { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var user = Authentication is null ? null : (await Authentication).User;
+        var signedIn = user is null ? null : EmailPreferences.SignedInAccount(user);
+        var linked = Preferences.AccountFromToken(T);
+        fromLink = linked is not null;
+        account = linked ?? signedIn;
+        if (account is not { } id)
+        {
+            return;
+        }
+
+        // Following the email's link turns emails off; coming back after "Turn emails back on" (kept=1) doesn't.
+        if (fromLink && Kept != "1")
+        {
+            await Preferences.SetAsync(id, false);
+        }
+
+        if (await Preferences.GetAsync(id) is not { } setting)
+        {
+            account = null;
+            return;
+        }
+
+        on = setting.On;
+        address = signedIn == id ? setting.Address : null;
+    }
+}

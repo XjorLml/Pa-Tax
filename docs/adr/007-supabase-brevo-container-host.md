@@ -2,6 +2,8 @@
 
 Status: Accepted. The owner approved the proposed parts on 2026-11-11 with the stack table in the [SDD](../SDD.md#technology-stack) ("stack approved for choices column"): Supabase is used as a PostgreSQL database only, and the host is Render. Render's paid price had not been confirmed at that time. Decision date: 2026-11-11. Decision owner/evidence: lumabanls, message of 2026-11-11 ("database is supabase, hosting is vercel, email service: recommend between brevo and SendGrid") and answers the same day ("Keep Blazor, change host", "Brevo").
 
+Amended 2026-11-16 by [ADR 011](011-profile-pictures-supabase-storage.md): Supabase Storage also holds profile pictures, in a private bucket reached only from the server.
+
 ## Context
 
 [ADR 005](005-web-platform-blazor.md) made AccApp one Blazor Web App whose signed-in pages hold a long-lived server connection, with an in-process chat notifier and a background email worker ([SDD](../SDD.md#live-chat-and-email-notifications)). That design needs a host that keeps the application running.

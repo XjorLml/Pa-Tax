@@ -31,7 +31,7 @@ public sealed class SignInTests(EmptyAppFixture app) : IClassFixture<EmptyAppFix
         Assert.Equal(HttpStatusCode.OK, form.StatusCode);
         Assert.Contains("How will you use Tax Buddy?", html);
         Assert.Contains("Signed in with Google. Choose one: an account is either a client or an accountant.", html);
-        Assert.Contains("""<a href="/terms">Terms of use</a>""", html);
+        Assert.Contains("""I agree to the <a href="/terms">Terms of use</a> and have read the <a href="/privacy">Privacy policy</a>.""", html); // F11 LP04
 
         var registered = await PostRegisterAsync(client, html, role: "client", agree: true);
         Assert.Equal(HttpStatusCode.Redirect, registered.StatusCode);
@@ -74,7 +74,7 @@ public sealed class SignInTests(EmptyAppFixture app) : IClassFixture<EmptyAppFix
     }
 
     [DatabaseTheory]
-    [InlineData("client", false, "Tick the box to agree")]
+    [InlineData("client", false, "Tick the box to agree to the Terms of use.")]
     [InlineData("", true, "Choose whether you're looking for an accountant")]
     [InlineData("admin", true, "Choose whether you're looking for an accountant")]
     public async Task Registration_without_agreement_or_a_valid_role_keeps_the_choice_and_creates_nothing(string role, bool agree, string error)
@@ -311,17 +311,40 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
     }
 
     [Theory]
-    [InlineData("/terms", "Terms of use")]
-    [InlineData("/privacy", "Privacy")]
-    public async Task Legal_pages_load_signed_out_and_say_they_are_drafts(string path, string heading)
+    [InlineData("/terms", "Terms of use", "terms", 24)]
+    [InlineData("/privacy", "Privacy", "privacy", 15)]
+    public async Task Legal_pages_load_signed_out_with_the_approved_text_and_working_contents(string path, string heading, string prefix, int sections)
     {
+        // F11 LP01, LP02.
         var response = await factory.CreateHttpsClient().GetAsync(path);
         var html = await response.ReadHtmlAsync();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Contains($">{heading}</h1>", html);
-        Assert.Contains("Draft outline for review. This is not legal text yet (decision D10).", html);
-        Assert.Contains(LegalText.CurrentVersion, html);
+        Assert.Contains($"Version {LegalText.CurrentVersion} · Last updated {LegalText.UpdatedOn}", html);
+        Assert.Contains("The short version</h2>", html);
+        Assert.Contains($"""<a href="mailto:{LegalText.ContactEmail}">{LegalText.ContactEmail}</a>""", html);
+        Assert.DoesNotContain("Draft", html);
+        Assert.DoesNotContain("[OPTIONAL", html);
+        Assert.DoesNotContain("[DECISION", html);
+        Assert.DoesNotContain("Microsoft", html); // Microsoft sign-in is archived (F15), so the text keeps it out
+
+        var targets = System.Text.RegularExpressions.Regex.Matches(html, $"""href="{path}#({prefix}-\d+)" """.Trim())
+            .Select(m => m.Groups[1].Value).ToList();
+        Assert.Equal(sections, targets.Count);
+        Assert.All(targets, id => Assert.Contains($"""<h2 id="{id}" tabindex="-1">""", html));
+    }
+
+    [Fact]
+    public async Task Privacy_lists_every_cookie_the_site_sets()
+    {
+        // F11 LP03; the cookies are the SDD's: session, external sign-in, antiforgery and theme.
+        var html = await (await factory.CreateHttpsClient().GetAsync("/privacy")).ReadHtmlAsync();
+
+        foreach (var cookie in new[] { "Sign-in cookie", "First sign-in cookie", "Security cookie", "Theme cookie (taxbuddy-theme)" })
+        {
+            Assert.Contains($"""<td data-label="Cookie">{cookie}</td>""", html);
+        }
     }
 
     [Fact]

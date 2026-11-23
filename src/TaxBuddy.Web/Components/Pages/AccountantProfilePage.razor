@@ -4,6 +4,8 @@
 @using TaxBuddy.Web.Application.Chat
 @using TaxBuddy.Web.Application.Reviews
 @using TaxBuddy.Web.Components.Chat
+@inject TaxBuddy.Web.Account.AccountService Accounts
+@inject TaxBuddy.Web.Application.Work.WorkService Work
 @inject DirectoryService Directory
 @inject ReviewService ReviewService
 @inject ChatService Chat
@@ -284,7 +286,7 @@ else if (profile is not null)
                 </ul>
                 <p class="muted small mt-2">Shown publicly by the accountant.</p>
             </div>
-            <p class="note"><Icon Name="info" Size="18" /><span>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications, so read the reviews and ask about credentials in your chat.</span></p>
+            <p class="note"><Icon Name="info" Size="18" /><span>Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications, so read the reviews, ask about credentials in your chat, and check a CPA's licence with the PRC.</span></p>
             @if (!reviews.IsOwner)
             {
                 @* F10 (prototype profileBodyHTML report-row): everyone but the owner; a visitor signs in on the report page. *@
@@ -328,6 +330,9 @@ else if (profile is not null)
     private ProfileReviews reviews = ProfileReviews.Empty;
     private ChatViewer? viewer;
     private Guid? existingChat;
+    private bool isSaved;
+    private string providers = "Google";
+    private bool takesRequests;
 
     /// <summary>
     /// The prototype's profileAction for this viewer: the owner and other accountants get a note; a client with a chat gets
@@ -350,7 +355,32 @@ else if (profile is not null)
         else
         {
             <a class="btn btn-primary btn-block" href="@($"/chats/new/{profile!.Id}")"><Icon Name="chat" Size="18" />Message @Display.FirstName(profile.Name)</a>
-            <p class="cta-hint">@(viewer is null ? "It's free to send a message. You'll sign in with Google before it's sent." : "It's free to send a message. Ask about pricing in the chat.")</p>
+            <p class="cta-hint">@(viewer is null ? $"It's free to send a message. You'll sign in with {providers} before it's sent." : "It's free to send a message. Ask about pricing in the chat.")</p>
+        }
+        @if (viewer is { IsClient: true } && profile is not null)
+        {
+            @* F03 (R20, BR14): prototype profileAction's workspace part. Adding is private; a request shares the client's name. *@
+            <div class="work-profile-actions">
+                @if (isSaved)
+                {
+                    <a class="btn btn-block" href="/workspace">Added · My accountants</a>
+                }
+                else
+                {
+                    <form method="post" action="@TaxBuddy.Web.Services.WorkEndpoints.SavedPath">
+                        <AntiforgeryToken />
+                        <input type="hidden" name="profileId" value="@profile.Id.Value" />
+                        <input type="hidden" name="on" value="true" />
+                        <input type="hidden" name="returnUrl" value="@($"/accountants/{profile.Id.Value}")" />
+                        <button type="submit" class="btn btn-block">Add accountant</button>
+                    </form>
+                }
+                @if (takesRequests)
+                {
+                    <a class="btn btn-ghost btn-block" href="@($"/accountants/{profile.Id.Value}/request-service")">Request a service</a>
+                }
+                <p class="cta-hint">Adding is private. Request a service when you are ready.</p>
+            </div>
         }
     };
     private Guid? editingReply;
@@ -363,12 +393,15 @@ else if (profile is not null)
         "review-updated" => "Your review was updated.",
         "review-deleted" => "Your review was deleted.",
         "reply" => "Your reply was posted.",
+        "added" => "Accountant added to your private list.",
+        "failed" => "We couldn't change your list. Please try again.",
         _ => null,
     };
 
     protected override async Task OnInitializedAsync()
     {
         viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        providers = await Accounts.ProviderNamesAsync();
         try
         {
             profile = await Directory.GetProfileAsync(Id);
@@ -384,6 +417,8 @@ else if (profile is not null)
             {
                 // Prototype profileAction: a client who already has a chat gets "Open chat" (D06: one per pair).
                 existingChat = (await Chat.PrepareNewChatAsync(viewer, profile.Id)).ConversationId;
+                isSaved = await Work.IsSavedAsync(viewer, profile.Id);
+                takesRequests = await Work.RequestTargetAsync(viewer, profile.Id) is not null;
             }
         }
         catch (DataUnavailableException)

@@ -11,14 +11,15 @@ namespace TaxBuddy.Web.Tests.Support;
 
 /// <summary>
 /// The test sign-in scheme (ADR 006, TEST-PLAN): a test-only address that leaves the browser exactly where Google's
-/// handler would, with Identity's external cookie holding a Google identity. Registered only by the test factory.
+/// or Microsoft's handler would, with Identity's external cookie holding that provider's identity (Google unless the
+/// address names another). Registered only by the test factory.
 /// </summary>
 public sealed class TestExternalSignIn : IStartupFilter
 {
     public const string Path = "/test/external-signin";
 
-    public static string Address(string key, string email, string name) =>
-        $"{Path}?key={Uri.EscapeDataString(key)}&email={Uri.EscapeDataString(email)}&name={Uri.EscapeDataString(name)}";
+    public static string Address(string key, string email, string name, string provider = "Google") =>
+        $"{Path}?key={Uri.EscapeDataString(key)}&email={Uri.EscapeDataString(email)}&name={Uri.EscapeDataString(name)}&provider={Uri.EscapeDataString(provider)}";
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next) => app =>
     {
@@ -32,15 +33,16 @@ public sealed class TestExternalSignIn : IStartupFilter
             }
 
             var query = context.Request.Query;
+            var provider = query["provider"].ToString() is { Length: > 0 } named ? named : "Google";
             var identity = new ClaimsIdentity(
             [
                 new Claim(ClaimTypes.NameIdentifier, query["key"].ToString()),
                 new Claim(ClaimTypes.Email, query["email"].ToString()),
                 new Claim(ClaimTypes.Name, query["name"].ToString()),
-            ], "Google");
+            ], provider);
             var properties = new AuthenticationProperties();
             // What SignInManager reads back in GetExternalLoginInfoAsync.
-            properties.Items["LoginProvider"] = "Google";
+            properties.Items["LoginProvider"] = provider;
             await context.SignInAsync(IdentityConstants.ExternalScheme, new ClaimsPrincipal(identity), properties);
             context.Response.StatusCode = StatusCodes.Status204NoContent;
         });

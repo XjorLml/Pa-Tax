@@ -11,8 +11,8 @@ The [template](TEMPLATE.md) is not an accepted ADR.
 | [010 One web project, with render modes chosen per page](010-single-project-per-page-render-modes.md) | Accepted (decisions 5 and 6 approved by the user the same day) | 2026-11-13 | Supersedes ADR 005 decision 5 |
 | [011 Profile pictures in a private Supabase Storage bucket, re-encoded with SkiaSharp](011-profile-pictures-supabase-storage.md) | Accepted (owner's choices on the day) | 2026-11-16 | Amends ADR 007 and the SDD's "Supabase Storage not used" |
 | [005 Blazor Web App on .NET 11, web only, email notifications](005-web-platform-blazor.md) | Accepted; email jobs Proposed; render modes and layout (decision 5) superseded by 010 | 2026-11-11 | Supersedes 001, 002, 003; decision 5 superseded by 010 |
-| [006 Google/Microsoft sign-in on the web](006-web-sign-in.md) | Accepted | 2026-11-11 | Supersedes 004 |
-| [007 Supabase database, Brevo email, and a host other than Vercel](007-supabase-brevo-container-host.md) | Accepted; Render chosen as the host | 2026-11-11 | None |
+| [006 Google/Microsoft sign-in on the web](006-web-sign-in.md) | Accepted | 2026-11-11 | Supersedes 004. Amended 2026-11-23: Microsoft archived, Google only |
+| [007 Supabase database, Brevo email, and a host other than Vercel](007-supabase-brevo-container-host.md) | Accepted; Render chosen as the host | 2026-11-11 | Amended by 011 (Supabase Storage for profile pictures) |
 | [008 A portfolio site with client ratings and no approval](008-portfolio-ratings-no-approval.md) | Accepted; reviewer naming, report handling and portfolio limits Proposed | 2026-11-11 | None |
 | [009 Private service workspaces](009-private-service-workspaces.md) | Accepted scope and private-save/request/accept model; remaining lifecycle, permissions and storage Proposed | 2026-11-11 | None; extends 008; chat stays text only |
 | [001 Android and Windows only](001-platform-scope-android-windows.md) | Superseded | 2026-11-10 | Superseded by 005 |
@@ -24,8 +24,7 @@ Superseded records describe the MAUI plan of 2026-11-10. They are kept for histo
 
 Decisions expected next:
 - Email sender address and email frequency (PRD D18).
-- Whether search engines may index public profiles (PRD D19).
-- How reports are handled without an admin page (PRD D22).
+- How content is removed and accounts closed without an admin page (PRD D22; the 10-working-day response time was decided on 2026-11-21, as was D19, search indexing).
 
 ## When and how
 

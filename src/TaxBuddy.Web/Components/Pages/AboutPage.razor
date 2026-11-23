@@ -1,0 +1,20 @@
+@page "/about"
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@* PRD R17 (F13, 2026-11-23): prototype infoPage('about'). The prototype's "who runs Tax Buddy: to be written" note is
+   filled from the operator details the owner gave on 2026-11-21 (the prototype keeps synthetic contact details). *@
+
+<SeoHead Title="About · Tax Buddy" Description="Tax Buddy is where accountants show their work and people find one they trust." CanonicalPath="/about" />
+<PhoneBar Title="About Tax Buddy" Back="/" />
+
+<div class="narrow">
+<article class="panel prose" aria-labelledby="page-title">
+    <h1 id="page-title" tabindex="-1">About Tax Buddy</h1>
+    <p class="lead">Tax Buddy is where accountants show their work and people find one they trust.</p>
+    <section class="section"><h3>For people looking for an accountant</h3><p>Read portfolios and reviews, compare experience and services, then message the accountant directly.</p></section>
+    <section class="section"><h3>For accountants</h3><p>Publish a profile with your services, experience and portfolio highlights. There is no approval step. <a href="/for-accountants">See how listing works</a>.</p></section>
+    <section class="section"><h3>How trust works here</h3><p>Tax Buddy doesn't verify accountants. Ratings come only from clients an accountant has replied to, and anyone signed in can report a profile or review.</p></section>
+    <section class="section"><h3>Who runs Tax Buddy</h3><p>@LegalText.Operator, an individual based in @LegalText.OperatorPlace. Questions and requests: <a href="@("mailto:" + LegalText.ContactEmail)">@LegalText.ContactEmail</a>.</p></section>
+</article>
+</div>

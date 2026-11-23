@@ -43,11 +43,30 @@ public static class AccountLimits
     public const int TermsVersion = 40;
 }
 
+/// <summary>What is left of a deleted account (F12; PRD D07): the name the other person sees in their chats.</summary>
+public static class DeletedAccount
+{
+    public const string DisplayName = "Deleted user";
+}
+
 /// <summary>
-/// The terms and privacy text a person agrees to at registration (PRD R16). Stored with the account, so a later
-/// version can ask people to agree again. The current text is a draft pending legal review (D10, gate G13).
+/// The terms and privacy text a person agrees to (PRD R16). Stored with the account; a person whose stored version
+/// differs is asked to agree again (F11). The text lives in docs/legal and was approved by the owner on 2026-11-21
+/// without a lawyer's review (D10). A change to the text needs a new version here and in both documents (F11 LP14).
+/// Version 2026-11-23.2 adds saved accountants, service work and documents, and awaits the owner's approval.
 /// </summary>
 public static class LegalText
 {
-    public const string CurrentVersion = "draft-2026-11-16";
+    public const string CurrentVersion = "2026-11-23.2";
+
+    /// <summary>The date shown on the pages and the agree page.</summary>
+    public const string UpdatedOn = "23 November 2026";
+
+    /// <summary>The operator named in the text (owner's details of 2026-11-21; no registered business name yet).</summary>
+    public const string Operator = "Lemnuel Lumaban";
+
+    public const string OperatorPlace = "Manila, Metro Manila, Philippines";
+
+    /// <summary>Support, privacy (Data Protection Officer) and takedown requests.</summary>
+    public const string ContactEmail = "lumaban.lemnuel.1@gmail.com";
 }

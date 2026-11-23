@@ -1,0 +1,119 @@
+@page "/accountants/{Id:guid}/request-service"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Directory
+@using TaxBuddy.Web.Application.Work
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Domain
+@inject WorkService Work
+@inject NavigationManager Navigation
+@* F03 (R21, BR14): a client requests one of the accountant's offered services (prototype requestHTML). A named form
+   posted to this page; the choice is kept when something is wrong. Visitors are asked to sign in; accountants and
+   accountants without an account get "not available". *@
+
+<SeoHead Title="Request a service · Tax Buddy" Description="Request a service from an accountant on Tax Buddy." CanonicalPath="@($"/accountants/{Id}/request-service")" />
+<PhoneBar Title="Request a service" Back="@($"/accountants/{Id}")" />
+<DeskTitle Title="Request a service" />
+
+<div class="single-inner work-page">
+    @if (viewer is null)
+    {
+        <StateMessage IconName="lock" Title="Sign in to request a service" Text="Requests and service work are private to you and the accountant.">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress($"/accountants/{Id}/request-service")">Sign in</a>
+        </StateMessage>
+    }
+    else if (failed)
+    {
+        <StateMessage IconName="alert" Title="We couldn't load this page" Text="Please try again." />
+    }
+    else if (accountant is null)
+    {
+        <StateMessage IconName="lock" Title="This isn't available" Text="Only clients can request services, from an accountant who can take them.">
+            <a class="btn" href="/workspace">Back to my workspace</a>
+        </StateMessage>
+    }
+    else
+    {
+        <WorkIntro Title="Request a service" Text="@($"{accountant.Name} will review your request before work starts.")" />
+        <section class="work-panel work-form">
+            <form method="post" @formname="request" @onsubmit="RequestAsync" novalidate>
+                <AntiforgeryToken />
+                <label class="work-field">
+                    Service
+                    <select name="Form.Service" aria-invalid="@(problem is null ? null : "true")" aria-describedby="@(problem is null ? null : "request-error")">
+                        <option value="">Choose a service</option>
+                        @foreach (var service in accountant.Services)
+                        {
+                            <option value="@service" selected="@(Form!.Service == service)">@service</option>
+                        }
+                    </select>
+                </label>
+                <p class="note"><span>This shares your account name and requested service with @accountant.Name. It does not make a payment, booking or guarantee of service. The shared client relationship starts after the accountant accepts.</span></p>
+                @if (problem is not null)
+                {
+                    <p class="work-error" id="request-error" role="alert">@problem</p>
+                }
+                <div class="actions"><button type="submit" class="btn btn-primary">Send service request</button></div>
+            </form>
+        </section>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm(FormName = "request")] private RequestForm? Form { get; set; }
+
+    private TaxBuddy.Web.Application.Chat.ChatViewer? viewer;
+    private WorkAccountant? accountant;
+    private string? problem;
+    private bool failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Form ??= new RequestForm();
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        if (viewer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            accountant = await Work.RequestTargetAsync(viewer, new AccountantId(Id));
+        }
+        catch (DataUnavailableException)
+        {
+            failed = true;
+        }
+    }
+
+    private async Task RequestAsync()
+    {
+        var result = await Work.RequestAsync(viewer, new AccountantId(Id), Form!.Service);
+        switch (result.Outcome)
+        {
+            case WorkOutcome.Done:
+                Navigation.NavigateTo($"/work/{result.EngagementId}?done=requested");
+                break;
+            case WorkOutcome.Existing:
+                Navigation.NavigateTo($"/work/{result.EngagementId}?done=existing");
+                break;
+            case WorkOutcome.Invalid:
+                problem = result.Problem;
+                break;
+            case WorkOutcome.Failed:
+                problem = "We couldn't send your request. Your choice is kept; please try again.";
+                break;
+            default:
+                accountant = null;
+                break;
+        }
+    }
+
+    private sealed class RequestForm
+    {
+        public string? Service { get; set; }
+    }
+}

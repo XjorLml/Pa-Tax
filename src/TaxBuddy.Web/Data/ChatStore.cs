@@ -98,7 +98,7 @@ public sealed class ChatStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
 
             var peerId = conversation.OtherThan(viewerId);
             var peer = await db.Users.AsNoTracking().Where(u => u.Id == peerId)
-                .Select(u => new { u.DisplayName, u.PictureObject }).FirstOrDefaultAsync(cancellationToken);
+                .Select(u => new { u.DisplayName, u.PictureObject, u.DeletedAt }).FirstOrDefaultAsync(cancellationToken);
             var profile = await db.AccountantProfiles.AsNoTracking().Where(p => p.OwnerAccountId == peerId)
                 .Select(p => new { p.Id, p.DisplayName }).FirstOrDefaultAsync(cancellationToken);
             AccountantId? listedProfile = profile is not null
@@ -113,7 +113,8 @@ public sealed class ChatStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
                 .ToListAsync(cancellationToken);
             messages.Reverse();
 
-            return new ThreadData(conversation, PeerName(profile?.DisplayName, peer?.DisplayName), peer?.PictureObject, listedProfile, messages);
+            return new ThreadData(conversation, PeerName(profile?.DisplayName, peer?.DisplayName), peer?.PictureObject, listedProfile, messages,
+                PeerDeleted: peer?.DeletedAt is not null);
         }, cancellationToken);
 
     public async Task<StoredMessage> AddMessageAsync(
@@ -152,7 +153,19 @@ public sealed class ChatStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
 
                 db.Messages.Add(stored);
                 conversation.RecordMessage(message.SenderAccountId, message.SentAt);
-                await db.SaveChangesAsync(cancellationToken); // One statement batch: the conversation and the message together.
+
+                // F14 (R08, D18): the other person's notification email, in this same transaction (SDD email contract),
+                // only when no email was queued since they last opened the conversation.
+                var recipient = conversation.OtherThan(message.SenderAccountId);
+                var latestJob = await db.EmailJobs
+                    .Where(j => j.RecipientAccountId == recipient && j.ConversationId == conversation.Id)
+                    .MaxAsync(j => (DateTimeOffset?)j.CreatedAt, cancellationToken);
+                if (EmailRules.NeedsNewJob(conversation.ReadAtFor(recipient), latestJob))
+                {
+                    db.EmailJobs.Add(new EmailJob(Guid.NewGuid(), recipient, conversation.Id, message.SentAt));
+                }
+
+                await db.SaveChangesAsync(cancellationToken); // One statement batch: the conversation, the message and its email.
                 await transaction.CommitAsync(cancellationToken);
                 return new StoredMessage(StoreMessageOutcome.Stored, stored, conversation);
             }

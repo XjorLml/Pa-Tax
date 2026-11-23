@@ -1,0 +1,133 @@
+@page "/clients/{ClientId:guid}"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Directory
+@using TaxBuddy.Web.Application.Work
+@using TaxBuddy.Web.Components.Chat
+@inject WorkService Work
+@inject NavigationManager Navigation
+@* F03 (R19, D24 proposal): an accountant's view of one client's services, and adding a service for a client they already
+   work with (prototype clientHTML). Anyone else, and a client the accountant has no services with, gets "not available". *@
+
+<SeoHead Title="Client services · Tax Buddy" Description="A client's services on Tax Buddy." CanonicalPath="@($"/clients/{ClientId}")" />
+<PhoneBar Title="Client services" Back="/workspace" />
+<DeskTitle Title="Client services" />
+
+<div class="single-inner work-page">
+    @if (viewer is null)
+    {
+        <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress($"/clients/{ClientId}")">Sign in</a>
+        </StateMessage>
+    }
+    else if (failed)
+    {
+        <StateMessage IconName="alert" Title="Could not load your workspace" Text="Try again. Your work has not been changed." />
+    }
+    else if (view is null)
+    {
+        <WorkUnavailable />
+    }
+    else
+    {
+        <WorkIntro Title="@view.ClientName" Text="Services shared with you. Only this client and you can see the work below." />
+        @if (view.ConversationId is { } chat)
+        {
+            <div class="actions"><a class="btn btn-sm" href="@ChatDisplay.ThreadPath(chat)"><Icon Name="chat" Size="16" />Open chat</a></div>
+        }
+        <ul class="work-services">
+            @foreach (var card in view.Services)
+            {
+                <ServiceCardItem Card="card" />
+            }
+        </ul>
+        @if (view.CanAdd.Count > 0)
+        {
+            <section class="work-panel">
+                <h3>Add a service for this client</h3>
+                <p class="muted small">You can add work for a client you already serve. No prices, payment or booking.</p>
+                <form method="post" @formname="add-service" @onsubmit="AddAsync" novalidate>
+                    <AntiforgeryToken />
+                    <label class="work-field">
+                        Service
+                        <select name="Form.Service">
+                            <option value="">Choose a service</option>
+                            @foreach (var service in view.CanAdd)
+                            {
+                                <option value="@service" selected="@(Form!.Service == service)">@service</option>
+                            }
+                        </select>
+                    </label>
+                    @if (problem is not null)
+                    {
+                        <p class="work-error" role="alert">@problem</p>
+                    }
+                    <button type="submit" class="btn btn-primary">Add service</button>
+                </form>
+            </section>
+        }
+    }
+</div>
+
+@code {
+    [Parameter] public Guid ClientId { get; set; }
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromForm(FormName = "add-service")] private AddForm? Form { get; set; }
+
+    private TaxBuddy.Web.Application.Chat.ChatViewer? viewer;
+    private ClientServicesView? view;
+    private string? problem;
+    private bool failed;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Form ??= new AddForm();
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        if (viewer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            view = await Work.ClientServicesAsync(viewer, ClientId);
+            if (view is null)
+            {
+                HttpContext!.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+        }
+        catch (DataUnavailableException)
+        {
+            failed = true;
+        }
+    }
+
+    private async Task AddAsync()
+    {
+        var result = await Work.AddServiceAsync(viewer, ClientId, Form!.Service);
+        switch (result.Outcome)
+        {
+            case WorkOutcome.Done:
+                Navigation.NavigateTo($"/work/{result.EngagementId}?done=added");
+                break;
+            case WorkOutcome.Existing:
+                Navigation.NavigateTo($"/work/{result.EngagementId}?done=existing");
+                break;
+            case WorkOutcome.Invalid:
+                problem = result.Problem;
+                break;
+            case WorkOutcome.Failed:
+                problem = "We couldn't add the service. Please try again.";
+                break;
+            default:
+                view = null;
+                break;
+        }
+    }
+
+    private sealed class AddForm
+    {
+        public string? Service { get; set; }
+    }
+}

@@ -11,10 +11,15 @@
     <div class="sitebar-inner">
         <a href="/" aria-label="Tax Buddy home"><BrandLogo /></a>
         <nav class="sitenav" aria-label="Main">
-            @* Clients / My accountants joins this list when service work (F03) is built. *@
+            @* F03: Clients for accountants, My accountants for clients (prototype desktopShell). *@
             @* Current on the directory and on profiles, as the prototype's desktopShell maps profile to directory. *@
             <a href="/" class="@(InDirectory ? "active" : null)" aria-current="@(InDirectory ? "page" : null)">Find an accountant</a>
             <NavLink href="/chats">Chats<UnreadBadge /></NavLink>
+            <AuthorizeView>
+                <Authorized>
+                    <NavLink href="/workspace">@(context.User.IsInRole("accountant") ? "Clients" : "My accountants")</NavLink>
+                </Authorized>
+            </AuthorizeView>
         </nav>
         <SiteUser />
     </div>
@@ -32,13 +37,14 @@
         <BrandLogo />
         @* PRD D09 proposal: Tax Buddy does not verify accountants. Wording still needs review. *@
         <span class="sitefoot-note">Accountants write their own profiles. Tax Buddy doesn't check licences or qualifications.</span>
-        @* PRD R16: the terms and privacy policy are reachable from every page. About, Help and For accountants join when built. *@
+        @* PRD R16, R17: the information and legal pages are reachable from every page (prototype infoLinksHTML). *@
         <nav class="infolinks" aria-label="About Tax Buddy">
+            <a href="/about">About</a>
+            <a href="/help">Help</a>
+            <a href="/for-accountants">For accountants</a>
             <a href="/privacy">Privacy</a>
             <a href="/terms">Terms</a>
         </nav>
-        @* F02 BD09: kept at the user's request; the prototype has no theme control on the site (recorded deviation). *@
-        <ThemeSwitch />
     </div>
 </footer>
 

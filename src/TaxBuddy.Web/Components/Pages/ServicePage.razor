@@ -1,0 +1,500 @@
+@page "/work/{Id:guid}"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Directory
+@using TaxBuddy.Web.Application.Work
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Domain
+@using TaxBuddy.Web.Services
+@inject WorkService Work
+@inject ServiceDocuments Documents
+@inject NavigationManager Navigation
+@inject IClock Clock
+@* F03 (R21, R22; BR15, BR16): one service, prototype service-workspace.js detailHTML. Both participants read it; only the
+   accountant accepts or declines a request, saves task statuses, adds tasks and posts shared notes. Static named forms:
+   a failed or stale save shows the page again with the choices kept (C04 closed for service work). Anyone else, or an
+   unknown ID, gets "not available" with nothing about the service.
+   Stage 2 (R23, BR17, BR18): prototype filesHTML. Either participant uploads a real PDF, JPEG or PNG with a plain
+   multipart form to /work/{id}/files and both download it; the uploader removes their own after a confirmation step
+   (?remove=), a named form. Recorded deviations: no upload progress bar, as the page has no script, and after a
+   failed upload the file must be chosen again (browsers don't keep a file choice across pages); the task is kept. *@
+
+<SeoHead Title="Service progress · Tax Buddy" Description="Private service progress on Tax Buddy." CanonicalPath="@($"/work/{Id}")" />
+<PhoneBar Title="Service progress" Back="/workspace" />
+<DeskTitle Title="Service progress" />
+
+<div class="single-inner work-page">
+    @if (viewer is null)
+    {
+        <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress($"/work/{Id}")">Sign in</a>
+        </StateMessage>
+    }
+    else if (failed)
+    {
+        <StateMessage IconName="alert" Title="Could not load this service" Text="Try again. Your work has not been changed.">
+            <a class="btn btn-primary" href="@($"/work/{Id}")">Try again</a>
+        </StateMessage>
+    }
+    else if (view is null)
+    {
+        <WorkUnavailable />
+    }
+    else
+    {
+        <WorkIntro Title="@view.ServiceName" Text="@($"{view.ClientName} · {view.AccountantName}")" />
+        @if (DoneText is { } done)
+        {
+            <p class="save-status ok" role="status">@done</p>
+        }
+        <div class="work-row work-summary">
+            <span class="work-status @(view.Completed ? "done" : null)">@view.StatusText</span>
+            @if (view.ConversationId is { } chat)
+            {
+                <a class="btn btn-sm" href="@ChatDisplay.ThreadPath(chat)"><Icon Name="chat" Size="16" />Open chat</a>
+            }
+        </div>
+
+        @if (view.Phase == ServicePhase.Requested)
+        {
+            <section class="work-panel work-request">
+                <h3>Service request</h3>
+                <p>Work has not started. @(view.ViewerIsAccountant ? "Review this request, then accept or decline." : "Your accountant has not accepted this request yet.")</p>
+                @if (view.ViewerIsAccountant)
+                {
+                    <div class="actions">
+                        <form method="post" @formname="accept" @onsubmit="AcceptAsync"><AntiforgeryToken /><button type="submit" class="btn btn-primary">Accept request</button></form>
+                        <form method="post" @formname="decline" @onsubmit="DeclineAsync"><AntiforgeryToken /><button type="submit" class="btn">Decline</button></form>
+                    </div>
+                }
+                @if (actionError is not null)
+                {
+                    <p class="work-error" role="alert">@actionError</p>
+                }
+            </section>
+        }
+        else if (view.Phase == ServicePhase.Declined)
+        {
+            <section class="work-panel"><h3>Service request</h3><p>@(view.ViewerIsAccountant ? "You declined this request." : "The accountant declined this request. You can request another service, or message them.")</p></section>
+        }
+
+        <div class="work-grid">
+            <div>
+                <section class="work-panel">
+                    <div class="work-row">
+                        <h3>Service checklist</h3>
+                        <span class="muted small">@(view.CanEdit ? "Changes are shared when saved" : "Updated by your accountant")</span>
+                    </div>
+                    <WorkMeter Done="view.Done" Total="view.Tasks.Count" />
+                    @if (view.Tasks.Count == 0)
+                    {
+                        <p class="work-quiet">@(view.Phase == ServicePhase.Active ? "No checklist tasks yet." : "The checklist starts when the request is accepted.")</p>
+                    }
+                    else if (view.CanEdit)
+                    {
+                        <form method="post" @formname="statuses" @onsubmit="SaveStatusesAsync" novalidate>
+                            <AntiforgeryToken />
+                            <input type="hidden" name="Statuses.Version" value="@view.Version" />
+                            <ol class="work-tasks">
+                                @for (var i = 0; i < view.Tasks.Count; i++)
+                                {
+                                    var task = view.Tasks[i];
+                                    var chosen = ChosenStatus(task);
+                                    <li>
+                                        <div class="work-task-name">
+                                            <span aria-hidden="true">@(task.Status == ServiceTaskStatus.Completed ? "✓" : "○")</span>
+                                            <span>@task.Title</span>
+                                        </div>
+                                        <label class="work-task-status">
+                                            <span class="sr-only">Status of @task.Title</span>
+                                            <input type="hidden" name="Statuses.Tasks[@i].Id" value="@task.Id" />
+                                            <select name="Statuses.Tasks[@i].Status">
+                                                @foreach (var status in Enum.GetValues<ServiceTaskStatus>())
+                                                {
+                                                    <option value="@status" selected="@(chosen == status)">@WorkRules.Label(status)</option>
+                                                }
+                                            </select>
+                                            @if (stale && chosen != task.Status)
+                                            {
+                                                <small class="muted">Saved now: @WorkRules.Label(task.Status)</small>
+                                            }
+                                        </label>
+                                    </li>
+                                }
+                            </ol>
+                            @if (statusError is not null)
+                            {
+                                <p class="work-error" role="alert">@statusError</p>
+                            }
+                            <div class="actions"><button type="submit" class="btn btn-primary">Save checklist changes</button></div>
+                        </form>
+                    }
+                    else
+                    {
+                        <ol class="work-tasks">
+                            @foreach (var task in view.Tasks)
+                            {
+                                <li>
+                                    <div class="work-task-name"><span aria-hidden="true">@(task.Status == ServiceTaskStatus.Completed ? "✓" : "○")</span><span>@task.Title</span></div>
+                                    <span class="work-status @(task.Status == ServiceTaskStatus.Completed ? "done" : null)">@WorkRules.Label(task.Status)</span>
+                                </li>
+                            }
+                        </ol>
+                    }
+                    @if (view.CanEdit)
+                    {
+                        <form method="post" @formname="add-task" @onsubmit="AddTaskAsync" novalidate>
+                            <AntiforgeryToken />
+                            <label class="work-field">New checklist task<input name="NewTask.Title" value="@NewTask!.Title" maxlength="@WorkRules.TaskTitle" /></label>
+                            @if (taskError is not null)
+                            {
+                                <p class="work-error" role="alert">@taskError</p>
+                            }
+                            <button type="submit" class="btn">Add task</button>
+                        </form>
+                    }
+                </section>
+
+                <section class="work-panel" id="documents" aria-labelledby="documents-heading">
+                    <h3 id="documents-heading">Service documents</h3>
+                    <p class="muted small">Private to @view.ClientName and @view.AccountantName. These are service documents, not chat attachments.</p>
+                    @if (FileDoneText is { } fileDone)
+                    {
+                        <p class="save-status ok" role="status">@fileDone</p>
+                    }
+                    @if (FileErrorText is { } downloadError && FileResult == "download-failed")
+                    {
+                        <p class="work-error" role="alert">@downloadError</p>
+                    }
+                    @if (view.Files.Count == 0)
+                    {
+                        <p class="work-quiet">No documents attached yet.</p>
+                    }
+                    else
+                    {
+                        <ul class="work-files">
+                            @foreach (var file in view.Files)
+                            {
+                                <li>
+                                    <div>
+                                        <Icon Name="file" Size="20" />
+                                        <div>
+                                            <strong>@file.Name</strong>
+                                            <small>Available · @file.UploaderName · @ChatDisplay.Short(file.At, Clock.UtcNow) · @(file.TaskTitle ?? "Whole service") · @DocumentRules.SizeText(file.Length)</small>
+                                        </div>
+                                    </div>
+                                    @if (file.ViewerUploaded && RemoveId == file.Id)
+                                    {
+                                        <div class="work-confirm" role="group" aria-labelledby="remove-heading">
+                                            <h4 id="remove-heading">Remove @file.Name?</h4>
+                                            <p>This removes it from the service for both of you. It can't be undone.</p>
+                                            @if (removeError is not null)
+                                            {
+                                                <p class="work-error" role="alert">@removeError</p>
+                                            }
+                                            <form method="post" action="@($"/work/{Id}?remove={file.Id}#documents")" @formname="remove-file" @onsubmit="RemoveFileAsync">
+                                                <AntiforgeryToken />
+                                                <input type="hidden" name="Removal.FileId" value="@file.Id" />
+                                                <div class="actions">
+                                                    <a class="btn btn-sm" href="@($"/work/{Id}#documents")">Cancel</a>
+                                                    <button type="submit" class="btn btn-danger btn-sm">Remove document</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="actions">
+                                            <a class="btn btn-sm" href="@WorkEndpoints.FilePath(view.Id, file.Id)" download>Download<span class="sr-only">@($" {file.Name}")</span></a>
+                                            @if (file.ViewerUploaded)
+                                            {
+                                                <a class="btn btn-ghost btn-sm" href="@($"/work/{Id}?remove={file.Id}#documents")">Remove<span class="sr-only">@($" {file.Name}")</span></a>
+                                            }
+                                        </div>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                    @if (!view.CanAttach)
+                    {
+                        <p class="muted small">Documents can be added after acceptance.</p>
+                    }
+                    else if (!Documents.IsAvailable)
+                    {
+                        <p class="hint">Document upload isn't set up on this site yet.</p>
+                    }
+                    else if (view.Files.Count >= DocumentRules.FilesPerService)
+                    {
+                        <p class="work-quiet">This service has @DocumentRules.FilesPerService documents, the most it can hold. Remove one of yours to add another.</p>
+                    }
+                    else
+                    {
+                        <form method="post" action="@WorkEndpoints.FilesPath(view.Id)" enctype="multipart/form-data" class="work-upload">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="key" value="@uploadKey" />
+                            <label class="work-field">Document<input type="file" name="file" accept="@DocumentRules.Accept" required aria-describedby="document-hint" /></label>
+                            <p class="hint" id="document-hint">PDF, JPEG or PNG, up to 10 MB. Both of you can download it.</p>
+                            <label class="work-field">
+                                Attach to
+                                <select name="taskId">
+                                    <option value="">Whole service</option>
+                                    @foreach (var task in view.Tasks)
+                                    {
+                                        <option value="@task.Id" selected="@(TaskChoice == task.Id)">@task.Title</option>
+                                    }
+                                </select>
+                            </label>
+                            @if (FileErrorText is { } uploadError && FileResult != "download-failed")
+                            {
+                                <p class="work-error" role="alert">@uploadError</p>
+                            }
+                            <button type="submit" class="btn btn-primary">@(FileErrorText is not null && FileResult != "download-failed" ? "Retry upload" : "Upload document")</button>
+                        </form>
+                    }
+                </section>
+            </div>
+            <aside class="work-panel work-history">
+                <h3>Progress updates</h3>
+                <p class="muted small">Shared notes and activity, newest first. Times are shown in Asia/Manila.</p>
+                @if (view.CanEdit)
+                {
+                    <form method="post" @formname="note" @onsubmit="PostNoteAsync" novalidate>
+                        <AntiforgeryToken />
+                        <label class="work-field">Shared progress note<textarea name="Note.Text" rows="4" maxlength="@WorkRules.Note">@Note!.Text</textarea></label>
+                        @if (noteError is not null)
+                        {
+                            <p class="work-error" role="alert">@noteError</p>
+                        }
+                        <button type="submit" class="btn">Post update</button>
+                    </form>
+                }
+                <ol class="work-timeline">
+                    @foreach (var update in view.Updates)
+                    {
+                        <li>
+                            <strong>@update.AuthorName</strong>
+                            <time datetime="@update.At.ToString("O")">@ChatDisplay.Short(update.At, Clock.UtcNow) · @ChatDisplay.Time(update.At)</time>
+                            <p>@update.Text</p>
+                        </li>
+                    }
+                </ol>
+            </aside>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public Guid Id { get; set; }
+
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = "done")] public string? Done { get; set; }
+
+    [SupplyParameterFromForm(FormName = "statuses")] private StatusesForm? Statuses { get; set; }
+
+    [SupplyParameterFromForm(FormName = "add-task")] private TaskForm? NewTask { get; set; }
+
+    [SupplyParameterFromForm(FormName = "note")] private NoteForm? Note { get; set; }
+
+    [SupplyParameterFromForm(FormName = "remove-file")] private RemoveForm? Removal { get; set; }
+
+    /// <summary>The result of an upload or download, from the endpoints' redirect.</summary>
+    [SupplyParameterFromQuery(Name = "file")] public string? FileResult { get; set; }
+
+    /// <summary>The task chosen before a failed upload, kept for the retry.</summary>
+    [SupplyParameterFromQuery(Name = "task")] public Guid? TaskChoice { get; set; }
+
+    /// <summary>The document whose removal is being confirmed.</summary>
+    [SupplyParameterFromQuery(Name = "remove")] public Guid? RemoveId { get; set; }
+
+    private TaxBuddy.Web.Application.Chat.ChatViewer? viewer;
+    private EngagementView? view;
+    private bool failed;
+    private bool stale;
+    private string? actionError;
+    private string? statusError;
+    private string? taskError;
+    private string? noteError;
+    private string? removeError;
+
+    /// <summary>A new key for each upload form: the same form sent twice stores one document (BR18).</summary>
+    private readonly Guid uploadKey = Guid.NewGuid();
+
+    private string? FileDoneText => FileResult switch
+    {
+        "attached" => "Document attached.",
+        _ => Done == "removed" ? "Document removed." : null,
+    };
+
+    private string? FileErrorText => FileResult switch
+    {
+        "no-file" => "Choose a file to upload.",
+        "too-large" => "That file is over 10 MB. Choose a smaller file.",
+        "wrong-type" => "That file isn't a PDF, JPEG or PNG. Choose one of those.",
+        "no-task" => "Choose a valid service task.",
+        "full" => $"This service already has {DocumentRules.FilesPerService} documents. Remove one of yours to add another.",
+        "unavailable" => "Document upload isn't set up on this site yet.",
+        "failed" => "The document could not be uploaded. Choose the file again and retry.",
+        "download-failed" => "The document could not be downloaded. Please try again.",
+        _ => null,
+    };
+
+    private string? DoneText => Done switch
+    {
+        "requested" => "Service request sent.",
+        "existing" => "This service already has a workspace.",
+        "added" => "Service added.",
+        "accepted" => "Request accepted.",
+        "declined" => "Request declined.",
+        "saved" => "Checklist progress saved.",
+        "task" => "Task added.",
+        "note" => "Progress update shared.",
+        _ => null,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        Statuses ??= new StatusesForm();
+        NewTask ??= new TaskForm();
+        Note ??= new NoteForm();
+        Removal ??= new RemoveForm();
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        if (viewer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            view = await Work.ServiceAsync(viewer, Id);
+            if (view is null)
+            {
+                HttpContext!.Response.StatusCode = StatusCodes.Status404NotFound;
+            }
+        }
+        catch (DataUnavailableException)
+        {
+            failed = true;
+        }
+    }
+
+    /// <summary>The status to show: the one just posted when a save failed or was stale (the draft is kept), else the saved one.</summary>
+    private ServiceTaskStatus ChosenStatus(TaskView task) =>
+        (stale || statusError is not null)
+        && Statuses?.Tasks.FirstOrDefault(t => t.Id == task.Id)?.Status is { } posted && Enum.TryParse<ServiceTaskStatus>(posted, out var status)
+            ? status
+            : task.Status;
+
+    private async Task AcceptAsync() => After(await Work.AcceptAsync(viewer, Id), "accepted", e => actionError = e);
+
+    private async Task DeclineAsync() => After(await Work.DeclineAsync(viewer, Id), "declined", e => actionError = e);
+
+    private async Task SaveStatusesAsync()
+    {
+        var changes = Statuses!.Tasks
+            .Where(t => Enum.TryParse<ServiceTaskStatus>(t.Status, out _))
+            .ToDictionary(t => t.Id, t => Enum.Parse<ServiceTaskStatus>(t.Status!));
+        var outcome = await Work.SaveStatusesAsync(viewer, Id, Statuses.Version, changes);
+        if (outcome == WorkOutcome.Stale)
+        {
+            stale = true;
+            statusError = "Someone saved this checklist since you opened it. Your choices are kept below; check the saved values, then save again.";
+            await LoadAsync();
+            return;
+        }
+
+        After(outcome, "saved", e => statusError = e);
+    }
+
+    private async Task AddTaskAsync()
+    {
+        var result = await Work.AddTaskAsync(viewer, Id, NewTask!.Title);
+        if (result.Outcome == WorkOutcome.Invalid)
+        {
+            taskError = result.Problem;
+            return;
+        }
+
+        After(result.Outcome, "task", e => taskError = e);
+    }
+
+    private async Task PostNoteAsync()
+    {
+        var result = await Work.PostNoteAsync(viewer, Id, Note!.Text);
+        if (result.Outcome == WorkOutcome.Invalid)
+        {
+            noteError = result.Problem;
+            return;
+        }
+
+        After(result.Outcome, "note", e => noteError = e);
+    }
+
+    private async Task RemoveFileAsync()
+    {
+        switch (await Documents.RemoveAsync(viewer, Id, Removal!.FileId))
+        {
+            case WorkOutcome.Done:
+                Navigation.NavigateTo($"/work/{Id}?done=removed#documents");
+                break;
+            case WorkOutcome.Failed:
+                removeError = "We couldn't remove that document. Please try again.";
+                break;
+            default:
+                Navigation.NavigateTo($"/work/{Id}#documents"); // already gone, or not theirs: the current list
+                break;
+        }
+    }
+
+    /// <summary>Done: back to the page with the status line. Failed: the page again with the input kept. Otherwise unavailable.</summary>
+    private void After(WorkOutcome outcome, string done, Action<string> showError)
+    {
+        switch (outcome)
+        {
+            case WorkOutcome.Done:
+                Navigation.NavigateTo($"/work/{Id}?done={done}");
+                break;
+            case WorkOutcome.Failed:
+                showError("We couldn't save that. Your changes are kept; please try again.");
+                break;
+            default:
+                view = null;
+                HttpContext!.Response.StatusCode = StatusCodes.Status404NotFound;
+                break;
+        }
+    }
+
+    private sealed class StatusesForm
+    {
+        public int Version { get; set; }
+
+        public List<TaskEntry> Tasks { get; set; } = [];
+    }
+
+    private sealed class TaskEntry
+    {
+        public Guid Id { get; set; }
+
+        public string? Status { get; set; }
+    }
+
+    private sealed class TaskForm
+    {
+        public string? Title { get; set; }
+    }
+
+    private sealed class NoteForm
+    {
+        public string? Text { get; set; }
+    }
+
+    private sealed class RemoveForm
+    {
+        public Guid FileId { get; set; }
+    }
+}

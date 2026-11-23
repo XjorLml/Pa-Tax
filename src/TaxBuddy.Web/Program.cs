@@ -7,10 +7,12 @@ using TaxBuddy.Web.Application.Pictures;
 using TaxBuddy.Web.Application.Profiles;
 using TaxBuddy.Web.Application.Reports;
 using TaxBuddy.Web.Application.Reviews;
+using TaxBuddy.Web.Application.Work;
 using TaxBuddy.Web.Components;
 using TaxBuddy.Web.Data;
 using TaxBuddy.Web.Domain;
 using TaxBuddy.Web.Services;
+using TaxBuddy.Web.Services.Email;
 
 // "seed-development" is a developer command, not a host setting (SETUP: local development).
 var seedCommand = args.Length > 0 && args[0] == DevelopmentSeed.Command;
@@ -53,8 +55,28 @@ builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<IReportStore, ReportStore>();
 builder.Services.AddScoped<ReportService>();
 
+// F03: client services (R19–R22): saved accountants, requests, checklists and shared notes.
+builder.Services.AddScoped<IWorkStore, WorkStore>();
+builder.Services.AddScoped<WorkService>();
+
+// F03 stage 2 (R23, D28): service documents in their own private Supabase Storage bucket; switched off when it isn't configured.
+builder.Services.AddScoped<ServiceDocuments>();
+if (SupabaseDocumentStorage.IsConfigured(builder.Configuration))
+{
+    builder.Services.AddHttpClient<IDocumentStorage, SupabaseDocumentStorage>(client => client.Timeout = TimeSpan.FromSeconds(60));
+}
+else
+{
+    builder.Services.AddSingleton<IDocumentStorage, NoDocumentStorage>();
+}
+
 // F04: Google sign-in and accounts (ADR 006).
 builder.AddTaxBuddyAccounts();
+
+// F14: new-message emails (R08): queued with each message, sent by a background worker through Brevo or, in development,
+// written to artifacts/emails.
+builder.AddTaxBuddyEmail();
+builder.Services.AddScoped<EmailPreferences>();
 
 var app = builder.Build();
 
@@ -110,6 +132,9 @@ if (!app.Configuration.GetValue<bool>("Seo:AllowIndexing"))
 app.UseAuthentication();
 app.UseAuthorization();
 
+// F11 (PRD R16): a signed-in person who agreed to an older version of the terms agrees again before other pages.
+app.UseTermsAgreement();
+
 // SDD: antiforgery protection on every form (theme switch, sign-in, registration, sign-out). After authentication,
 // because a token belongs to the signed-in user.
 app.UseAntiforgery();
@@ -117,6 +142,8 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapThemePreference();
 app.MapAccountEndpoints();
+app.MapEmailPreferences();
+app.MapWorkEndpoints();
 app.MapPictureEndpoints();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();

@@ -119,6 +119,9 @@ public sealed class Conversation
 
     public Guid OtherThan(Guid accountId) => accountId == ClientAccountId ? AccountantAccountId : ClientAccountId;
 
+    /// <summary>When the participant last opened the conversation (F14 uses it to send one email until then).</summary>
+    public DateTimeOffset? ReadAtFor(Guid accountId) => accountId == ClientAccountId ? ClientReadAt : AccountantReadAt;
+
     /// <summary>A new message: the conversation moves to the top, and the sender has read up to it.</summary>
     public void RecordMessage(Guid senderId, DateTimeOffset sentAt)
     {

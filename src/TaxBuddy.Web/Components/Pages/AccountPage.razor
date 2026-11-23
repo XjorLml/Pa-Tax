@@ -5,8 +5,9 @@
 @using TaxBuddy.Web.Domain
 @inject ProfileEditorService Editor
 @inject TaxBuddy.Web.Application.Pictures.ProfilePictureService Pictures
+@inject EmailPreferences EmailSettings
 @* Account (prototype meHTML; F02 BD10). Static. Rows for features not built yet are left out until they exist:
-   service work (F03), reviews (R13), email settings (R08) and account deletion (R09). *@
+   service work (F03) and reviews (R13). Account deletion (R09) joined in F12, email notifications (R08) in F14. *@
 
 <SeoHead Title="Account · Tax Buddy" Description="Your Tax Buddy account." CanonicalPath="/account" />
 <PhoneBar Title="Account" />
@@ -118,6 +119,24 @@
                     </a>
                 </li>
             }
+            @if (email is not null)
+            {
+                @* F14 (R08): prototype emailRow. *@
+                <li>
+                    <div class="mi">
+                        <Icon Name="mail" />
+                        <span class="mi-main">Email notifications: @(email.On ? "On" : "Off")<small>@(email.On
+                            ? $"We email {email.Address} when {(isAccountant ? "a client messages you" : "an accountant replies to you")} and you're not on the site. Emails don't include the message text."
+                            : "You won't get emails. New messages still show as unread in Chats.")</small></span>
+                        <form method="post" action="@EmailPreferences.EndpointPath">
+                            <AntiforgeryToken />
+                            <input type="hidden" name="on" value="@(email.On ? "false" : "true")" />
+                            <input type="hidden" name="returnUrl" value="/account" />
+                            <button type="submit" class="btn btn-sm">@(email.On ? "Turn off" : "Turn on")</button>
+                        </form>
+                    </div>
+                </li>
+            }
             <li>
                 <form method="post" action="@AccountEndpoints.SignOutPath">
                     <AntiforgeryToken />
@@ -125,9 +144,22 @@
                 </form>
             </li>
         </ul>
+        @* F12 (R09): prototype meHTML's separate danger menu. *@
+        <ul class="menu">
+            <li>
+                <a class="mi danger" href="/account/delete">
+                    <Icon Name="trash" />
+                    <span class="mi-main">Delete account</span>
+                    <Icon Name="chevron" />
+                </a>
+            </li>
+        </ul>
     }
 
     <nav class="infolinks" aria-label="About Tax Buddy">
+        <a href="/about">About</a>
+        <a href="/help">Help</a>
+        <a href="/for-accountants">For accountants</a>
         <a href="/privacy">Privacy</a>
         <a href="/terms">Terms</a>
     </nav>
@@ -160,6 +192,7 @@
     private bool isAccountant;
     private ListingStatus? status;
     private bool statusUnavailable;
+    private EmailSetting? email;
 
     private string ProfileStatusText => statusUnavailable ? "Status unavailable right now"
         : status?.IsListed == true ? "Listed in the directory" : "Not listed yet";
@@ -176,6 +209,17 @@
         provider = user.FindFirst(ClaimTypes.AuthenticationMethod)?.Value ?? "Google";
         picture = user.FindFirst(TaxBuddyClaimsFactory.PictureClaim)?.Value;
         isAccountant = user.FindFirst(ClaimTypes.Role)?.Value == AccountRoles.ValueOf(AccountRole.Accountant);
+        if (EmailPreferences.SignedInAccount(user) is { } accountId)
+        {
+            try
+            {
+                email = await EmailSettings.GetAsync(accountId);
+            }
+            catch (Exception ex) when (ex is System.Data.Common.DbException or TimeoutException or InvalidOperationException)
+            {
+                email = null; // The row is left out when the database is down; the rest of Account still works.
+            }
+        }
         if (isAccountant && Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var owner))
         {
             try

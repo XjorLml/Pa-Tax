@@ -12,6 +12,7 @@
       EF Core 10 (long-term support) with Npgsql's stable 10.x provider, chosen 2026-11-13 because Npgsql's EF Core 11
       provider was still a release candidate. Move both to 11 when Npgsql.EntityFrameworkCore.PostgreSQL 11.0.0 ships (SETUP).
     -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="11.0.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.3" />
     <!-- Pins EF Core above the provider's minimum so test projects resolve the same version as the design-time tools. -->
     <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.15" />
@@ -43,16 +44,12 @@
     <TailwindInputs Include="Styles/**/*.css;Components/**/*.razor;Components/**/*.cs" />
   </ItemGroup>
 
-  <Target Name="BuildTailwindCss" BeforeTargets="BeforeBuild" Condition="'$(SkipTailwind)' != 'true'"
-          Inputs="@(TailwindInputs);package-lock.json" Outputs="wwwroot/app.css">
-    <Message Importance="high" Text="Tailwind: node_modules is missing; run 'npm ci' in src/TaxBuddy.Web to build the styles."
-             Condition="!Exists('node_modules/.bin/tailwindcss')" />
+  <Target Name="BuildTailwindCss" BeforeTargets="BeforeBuild" Condition="'$(SkipTailwind)' != 'true'" Inputs="@(TailwindInputs);package-lock.json" Outputs="wwwroot/app.css">
+    <Message Importance="high" Text="Tailwind: node_modules is missing; run 'npm ci' in src/TaxBuddy.Web to build the styles." Condition="!Exists('node_modules/.bin/tailwindcss')" />
     <!-- Linux and macOS use their own Node. In WSL without a Linux Node, node_modules holds the Windows binaries
          (installed by Windows npm), so the Windows node.exe on the WSL path runs the same command-line tool. -->
-    <Exec Command="if command -v node &gt;/dev/null 2&gt;&amp;1; then node_modules/.bin/tailwindcss -i Styles/app.css -o wwwroot/app.css --minify; elif command -v node.exe &gt;/dev/null 2&gt;&amp;1; then node.exe node_modules/@tailwindcss/cli/dist/index.mjs -i Styles/app.css -o wwwroot/app.css --minify; else echo 'Tailwind: Node was not found. Install Node 22 or later, or build with -p:SkipTailwind=true.' &gt;&amp;2; exit 127; fi"
-          Condition="Exists('node_modules/.bin/tailwindcss') And '$(OS)' != 'Windows_NT'" />
-    <Exec Command="node_modules\.bin\tailwindcss.cmd -i Styles\app.css -o wwwroot\app.css --minify"
-          Condition="Exists('node_modules\.bin\tailwindcss.cmd') And '$(OS)' == 'Windows_NT'" />
+    <Exec Command="if command -v node &gt;/dev/null 2&gt;&amp;1; then node_modules/.bin/tailwindcss -i Styles/app.css -o wwwroot/app.css --minify; elif command -v node.exe &gt;/dev/null 2&gt;&amp;1; then node.exe node_modules/@tailwindcss/cli/dist/index.mjs -i Styles/app.css -o wwwroot/app.css --minify; else echo 'Tailwind: Node was not found. Install Node 22 or later, or build with -p:SkipTailwind=true.' &gt;&amp;2; exit 127; fi" Condition="Exists('node_modules/.bin/tailwindcss') And '$(OS)' != 'Windows_NT'" />
+    <Exec Command="node_modules\.bin\tailwindcss.cmd -i Styles\app.css -o wwwroot\app.css --minify" Condition="Exists('node_modules\.bin\tailwindcss.cmd') And '$(OS)' == 'Windows_NT'" />
   </Target>
 
 </Project>

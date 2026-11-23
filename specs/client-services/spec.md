@@ -1,6 +1,6 @@
 # F03: Client relationships, service progress and private documents
 
-Status: scope expansion authorized for documentation and prototype, 2026-11-11. The user requested accountant client lists, per-client service checklists, a client's added-accountant list and files for service progress, then instructed execution of the expanded brief. [PRD](../../docs/PRD.md) R19–R23 own the behavior; [SDD](../../docs/SDD.md#private-service-workspaces) owns contracts; [DESIGN](../../docs/DESIGN.md#service-workspace-presentation) owns presentation. [Plan](plan.md), [tasks](tasks.md).
+Status: scope expansion authorized for documentation and prototype, 2026-11-11. **Application stage 1 built 2026-11-23** (saved accountants, requests, accept and decline, checklists, notes; [evidence](../../docs/delivery/evidence/2026-11-23-f03-stage1.md)). **Application stage 2, documents (R23), built the same day** ([evidence](../../docs/delivery/evidence/2026-11-23-f03-stage2-f15.md); see [stage 2 in the application](#stage-2-in-the-application-2026-11-23)). The user adopted the prototype's D24–D25 proposals for now and chose D26/D28 for documents: PDF and images up to 10 MB in a private Supabase Storage bucket. The user requested accountant client lists, per-client service checklists, a client's added-accountant list and files for service progress, then instructed execution of the expanded brief. [PRD](../../docs/PRD.md) R19–R23 own the behavior; [SDD](../../docs/SDD.md#private-service-workspaces) owns contracts; [DESIGN](../../docs/DESIGN.md#service-workspace-presentation) owns presentation. [Plan](plan.md), [tasks](tasks.md).
 
 ## Scope and baseline
 
@@ -22,6 +22,23 @@ The feature categories are authorized. Unresolved policy stays in PRD D24–D28.
 | CS08 / R23 | Uploader removes an own file | Confirmation, then removal in this demo; counterpart cannot remove it. Production retention/deletion remain D27 | Prototype |
 | CS09 / DESIGN | Desktop, phone, dark theme and keyboard | List, checklist, upload states and actions fit; controls labelled, progress textual, status announcements present | Recorded browser/layout checks |
 | CS10 / preservation | Run existing regression checker and documentation check | Old flows preserved; current evidence is separate from F02; links and traceability resolve | Automated checks and diff |
+
+## Stage 2 in the application (2026-11-23)
+
+At the user's request "implement Service documents and Microsoft sign-in", with D26/D28 as decided (PDF, JPEG and PNG, checked by content, up to 10 MB, a private Supabase Storage bucket, no virus scanning) and the D27 proposal (uploader-only removal) adopted with the rest of the prototype's proposals. Contract: [SDD](../../docs/SDD.md#private-service-workspaces); presentation and deviations: [DESIGN](../../docs/DESIGN.md#service-workspace-presentation).
+
+| ID / requirement | Given / when | Observable result in the application | Verification |
+|---|---|---|---|
+| CS06a / R23, BR17 | A participant of an accepted service uploads a PDF to a task | "Document attached."; both see it with uploader, time, task and size; the other downloads it as an attachment with its name; the history says "Attached … to …"; the service card counts it | Web test |
+| CS07a / R10, R23, D26 | A non-PDF named `.pdf`, a PNG signature without an image, a PDF with no end marker, over 10 MB, an empty file, or another service's task | A message for each; the task choice kept and "Retry upload"; nothing stored | Web test, unit tests |
+| CS07b / BR18 | The same upload form sent twice | One document, one history line | Web test |
+| CS07c / BR18 | Storage refuses the write | "The document could not be uploaded…", nothing listed, a log line with the error type only | Web test |
+| CS05a / BR15 | A stranger, another accountant, a visitor, a guessed ID, a file under another service, or an upload before acceptance | 404 (visitors sign in); nothing stored; "Documents can be added after acceptance." | Web test |
+| CS08a / R23, D27 | The uploader removes their document; the other participant tries | A confirmation step, then "Document removed." and a history line; the other sees no Remove and a forged post changes nothing | Web test |
+| CS11 / R09, D27 | A participant deletes their account | Their documents and bytes go, with a history line; the other's documents stay | Web test |
+| CS12 / D28 | No document storage configured | "Document upload isn't set up on this site yet." | Web test |
+
+Working value: 50 documents per service (D26 counts and quotas are open). Not done: a real Supabase bucket round trip (the `service-documents` bucket exists since 2026-11-23, but this machine has no Supabase API key for the site), the signed-in pages in a browser, and the privacy impact assessment the legal notes recommend before real documents (issue 2.10).
 
 ## Decisions and evidence limits
 

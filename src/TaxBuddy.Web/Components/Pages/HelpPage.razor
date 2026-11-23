@@ -1,0 +1,43 @@
+@page "/help"
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@inject AccountService Accounts
+@* PRD R17 (F13, 2026-11-23): prototype infoPage('help'). Only questions about features the site has. Service work and
+   documents (F03) and emails (R08) joined when they were built (2026-11-23), in the prototype's order; the documents answer
+   gives the decided policy (D26) instead of the prototype's sample note. The sign-in providers are the ones this site
+   offers (F15). *@
+
+<SeoHead Title="Help and contact · Tax Buddy" Description="How to track a service, attach documents, message an accountant, write a review, report or block someone, and delete your account." CanonicalPath="/help" />
+<PhoneBar Title="Help and contact" Back="/" />
+
+<div class="narrow">
+<article class="panel prose" aria-labelledby="page-title">
+    <h1 id="page-title" tabindex="-1">Help and contact</h1>
+    <dl class="faq">
+        <dt>How do I track a service?</dt>
+        <dd>Add an accountant from their profile, request a service, and open <a href="/workspace">My accountants</a>. Once the accountant accepts, you both see the checklist and shared updates. Fees and bookings are outside this site.</dd>
+        <dt>Can I attach documents?</dt>
+        <dd>Yes, to a service the accountant has accepted: a PDF, JPEG or PNG of up to 10 MB, for the whole service or one checklist task. Only you and the accountant can download it. Chat stays text only.</dd>
+        <dt>How do I message an accountant?</dt>
+        <dd>Open their profile and choose Message. You sign in with @providers before the message is sent.</dd>
+        <dt>Who can leave a review?</dt>
+        <dd>A client can review an accountant after that accountant has replied to them in chat. One review each, which you can edit or delete.</dd>
+        <dt>How do I report or block someone?</dt>
+        <dd>Use Report on a profile, a review or a chat. Use Block in a chat to stop someone messaging you. They aren't told.</dd>
+        <dt>How do I stop the emails?</dt>
+        <dd>Use the link in any notification email, or the switch in <a href="/account">Account</a>.</dd>
+        <dt>How do I check an accountant's licence?</dt>
+        <dd>Tax Buddy doesn't check licences or qualifications. Ask the accountant in your chat, and check a CPA's licence with the PRC.</dd>
+        <dt>How do I delete my account?</dt>
+        <dd>Go to <a href="/account">Account</a>, then Delete account.</dd>
+    </dl>
+    <section class="section"><h3>Contact</h3><p>Email <a href="@("mailto:" + LegalText.ContactEmail)">@LegalText.ContactEmail</a>. Include the support code if an error page showed one.</p></section>
+</article>
+</div>
+
+@code {
+    private string providers = "Google";
+
+    protected override async Task OnInitializedAsync() => providers = await Accounts.ProviderNamesAsync();
+}

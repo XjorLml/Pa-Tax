@@ -125,7 +125,7 @@
                             {
                                 <a class="linkbtn" href="@($"/report/conversation/{thread.ConversationId:D}")">Report</a>
                             }
-                            @if (!thread.BlockedByMe)
+                            @if (!thread.BlockedByMe && !thread.PeerDeleted)
                             {
                                 <button type="button" class="linkbtn" data-block @onclick="AskToBlock">Block</button>
                             }
@@ -199,7 +199,12 @@
             @if (!threadFailed)
             {
                 <div class="footer">
-                    @if (thread is { BlockedByMe: true })
+                    @if (thread is { PeerDeleted: true })
+                    {
+                        @* F12 (D07): the conversation stays to read; the deleted side's block stops any reply (prototype threadParts). *@
+                        <p class="note deleted-note"><span>This @(thread.ViewerIsClient ? "accountant" : "client") deleted their account. You can still read this conversation, but you can't reply.</span></p>
+                    }
+                    else if (thread is { BlockedByMe: true })
                     {
                         @* F10: the composer's draft stays in the tab and comes back after Unblock. *@
                         <p class="note blocked-note">
@@ -222,8 +227,10 @@
                     {
                     @* The text, count, hint and errors belong to the script; it enables Send once it is running. *@
                     <form class="composer" data-chat-composer novalidate>
+                        @* F11 (D10, 2026-11-21): chat isn't for sensitive documents (prototype composerHTML). *@
+                        <p class="composer-note" id="composer-note"><Icon Name="lock" Size="14" /><span>Don't share TINs, tax returns or ID numbers in chat.</span></p>
                         <label class="sr-only" for="composer">Message</label>
-                        <textarea id="composer" rows="1" placeholder="Write a message" aria-describedby="composer-status composer-count"></textarea>
+                        <textarea id="composer" rows="1" placeholder="Write a message" aria-describedby="composer-note composer-status composer-count"></textarea>
                         <button type="submit" class="btn btn-primary" disabled><Icon Name="send" Size="18" /><span>@(viewer is null ? "Sign in to send" : "Send")</span></button>
                         <div class="composer-meta">
                             <span class="cerr" id="composer-status" role="status" data-composer-status></span>

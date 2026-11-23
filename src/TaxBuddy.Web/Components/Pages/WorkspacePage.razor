@@ -1,0 +1,179 @@
+@page "/workspace"
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Directory
+@using TaxBuddy.Web.Application.Work
+@using TaxBuddy.Web.Components.Chat
+@using TaxBuddy.Web.Services
+@inject WorkService Work
+@* F03 (R19, R20): the private workspace, prototype service-workspace.js listHTML. A client sees "My accountants": saved
+   accountants and their services. An accountant sees "Clients": only clients with requests or work. Static. *@
+
+<SeoHead Title="@($"{Title} · Tax Buddy")" Description="Your private Tax Buddy workspace." CanonicalPath="/workspace" />
+<PhoneBar Title="@Title" />
+<PhoneTabs Current="workspace" />
+<DeskTitle Title="@Title" />
+
+<div class="single-inner work-page">
+    @if (viewer is null)
+    {
+        <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/workspace")">Sign in</a>
+        </StateMessage>
+    }
+    else if (failed)
+    {
+        <StateMessage IconName="alert" Title="Could not load your workspace" Text="Try again. Your work has not been changed.">
+            <a class="btn btn-primary" href="/workspace">Try again</a>
+        </StateMessage>
+    }
+    else if (accountantView is { } a)
+    {
+        <WorkIntro Title="A clear view of your client work." Text="Keep services, next steps and shared documents together. Client details stay private." />
+        <div class="work-stats">
+            <div class="work-stat"><span>Clients</span><strong>@a.Clients.Count</strong><small>With requests or service work</small></div>
+            <div class="work-stat"><span>In progress</span><strong>@a.InProgress</strong><small>Services to move forward</small></div>
+            <div class="work-stat"><span>New requests</span><strong>@a.NewRequests</strong><small>Waiting for your response</small></div>
+        </div>
+        @if (a.Clients.Count == 0)
+        {
+            <StateMessage IconName="user" Title="No clients yet" Text="Clients appear here when they request a service from your profile." />
+        }
+        else
+        {
+            <ul class="work-people">
+                @foreach (var c in a.Clients)
+                {
+                    <li>
+                        <a class="work-person" href="/clients/@c.ClientId">
+                            <Avatar Name="@c.Name" />
+                            <div>
+                                <h3>@c.Name</h3>
+                                <p>@c.Services @(c.Services == 1 ? "service" : "services") · @c.Requests awaiting your response</p>
+                            </div>
+                            <Icon Name="chevron" Size="18" />
+                        </a>
+                    </li>
+                }
+            </ul>
+        }
+    }
+    else if (clientView is { } cv)
+    {
+        <WorkIntro Title="Your people. Your next steps." Text="Accountants you have added, with your service progress in one place." />
+        @if (SavedText is { } saved)
+        {
+            <p class="save-status ok" role="status">@saved</p>
+        }
+        <div class="work-stats">
+            <div class="work-stat"><span>Added accountants</span><strong>@cv.SavedCount</strong><small>Your private saved list</small></div>
+            <div class="work-stat"><span>Active services</span><strong>@cv.ActiveCount</strong><small>Shared with each accountant</small></div>
+            <div class="work-stat"><span>Completed</span><strong>@cv.CompletedCount</strong><small>All checklist tasks complete</small></div>
+        </div>
+        <p class="muted small">Adding is private. A shared client relationship starts when an accountant accepts a service request.</p>
+        @if (cv.Accountants.Count == 0)
+        {
+            <StateMessage IconName="user" Title="No accountants added yet" Text="Explore the directory and add an accountant from their profile.">
+                <a class="btn btn-primary" href="/">Find an accountant</a>
+            </StateMessage>
+        }
+        else
+        {
+            <div class="work-accountants">
+                @foreach (var entry in cv.Accountants)
+                {
+                    <section class="work-panel">
+                        <div class="work-row">
+                            <div>
+                                <h3>@if (entry.Listed && entry.ProfileId is { } pid) { <a href="/accountants/@pid.Value">@entry.Name</a> } else { @entry.Name }</h3>
+                                <p class="muted small">@(entry.Listed ? entry.Title : "Existing service work stays private.")</p>
+                            </div>
+                        </div>
+                        @if (entry.Services.Count == 0)
+                        {
+                            <p class="work-quiet">No services requested yet. You can browse their profile or request a service.</p>
+                        }
+                        else
+                        {
+                            <ul class="work-services">
+                                @foreach (var card in entry.Services)
+                                {
+                                    <ServiceCardItem Card="card" />
+                                }
+                            </ul>
+                        }
+                        <div class="actions">
+                            @if (entry.Listed && entry.AccountId is not null && entry.ProfileId is { } requestId)
+                            {
+                                <a class="btn btn-primary btn-sm" href="/accountants/@requestId.Value/request-service">Request a service</a>
+                            }
+                            @if (entry.ConversationId is { } chat)
+                            {
+                                <a class="btn btn-sm" href="@ChatDisplay.ThreadPath(chat)"><Icon Name="chat" Size="16" />Open chat</a>
+                            }
+                            else if (entry.Listed && entry.ProfileId is { } messageId)
+                            {
+                                <a class="btn btn-sm" href="/chats/new/@messageId.Value">Message accountant</a>
+                            }
+                            @if (entry.Saved && entry.ProfileId is { } savedId)
+                            {
+                                <form method="post" action="@WorkEndpoints.SavedPath">
+                                    <AntiforgeryToken />
+                                    <input type="hidden" name="profileId" value="@savedId.Value" />
+                                    <input type="hidden" name="on" value="false" />
+                                    <input type="hidden" name="returnUrl" value="/workspace" />
+                                    <button type="submit" class="btn btn-ghost btn-sm">Remove from my list</button>
+                                </form>
+                            }
+                        </div>
+                    </section>
+                }
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [SupplyParameterFromQuery(Name = "saved")] public string? Saved { get; set; }
+
+    private TaxBuddy.Web.Application.Chat.ChatViewer? viewer;
+    private ClientWorkspaceView? clientView;
+    private AccountantWorkspaceView? accountantView;
+    private bool failed;
+
+    private string Title => WorkService.IsAccountant(viewer) ? "Clients" : "My accountants";
+
+    private string? SavedText => Saved switch
+    {
+        "removed" => "Removed from your list. Existing service work stays here.",
+        "failed" => "We couldn't change your list. Please try again.",
+        _ => null,
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
+        if (viewer is null)
+        {
+            return;
+        }
+
+        try
+        {
+            if (WorkService.IsAccountant(viewer))
+            {
+                accountantView = await Work.AccountantWorkspaceAsync(viewer);
+            }
+            else
+            {
+                clientView = await Work.ClientWorkspaceAsync(viewer);
+            }
+        }
+        catch (DataUnavailableException)
+        {
+            failed = true;
+            HttpContext!.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+        }
+    }
+}

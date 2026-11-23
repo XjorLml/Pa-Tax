@@ -26,4 +26,13 @@ public sealed class TaxBuddyUser : IdentityUser<Guid>
     /// A new name for every upload, so a picture's address changes when the picture does.
     /// </summary>
     public string? PictureObject { get; set; }
+
+    /// <summary>
+    /// When the person deleted the account (F12, PRD R09), or null. A deleted account keeps only this row, nameless
+    /// ("Deleted user") and without email, picture or sign-in links, because the other person's chats still point at it (D07).
+    /// </summary>
+    public DateTimeOffset? DeletedAt { get; set; }
+
+    /// <summary>Whether new-message emails go to <see cref="IdentityUser{TKey}.Email"/> (F14, PRD R08). On by default.</summary>
+    public bool EmailNotifications { get; set; } = true;
 }

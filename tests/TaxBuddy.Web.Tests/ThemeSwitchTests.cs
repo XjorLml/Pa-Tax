@@ -6,7 +6,8 @@ using TaxBuddy.Web.Tests.Support;
 namespace TaxBuddy.Web.Tests;
 
 /// <summary>
-/// F02 BD09 theme switch through the whole app. The not-found page needs no database, so these tests run without one.
+/// F02 BD09 theme choice through the whole app, since 2026-11-23 as the header toggle (BD14). The not-found page needs no
+/// database, so these tests run without one.
 /// </summary>
 public sealed partial class ThemeSwitchTests : IDisposable
 {
@@ -15,14 +16,36 @@ public sealed partial class ThemeSwitchTests : IDisposable
     private readonly TaxBuddyAppFactory factory = new(TaxBuddyAppFactory.UnreachableDatabase);
 
     [Fact]
-    public async Task Without_a_choice_the_page_follows_the_browser_and_System_is_pressed()
+    public async Task Without_a_choice_the_page_follows_the_browser_and_the_header_offers_the_toggle()
     {
         var html = await ReadPageAsync(factory.CreateClient());
 
         Assert.Matches("""<html lang="en">""", html);
-        Assert.Equal("system", PressedOption(html));
         Assert.Contains("""name="returnUrl" value="/no-such-page?x=1" """.Trim(), html);
-        Assert.Contains("""role="group" aria-labelledby="theme-switch-label" """.Trim(), html);
+
+        // BD14: in the site bar and in the phone app bar, never in the footer. Both buttons are drawn; CSS shows one.
+        Assert.Equal(2, Regex.Matches(html, """<form method="post" action="/preferences/theme" class="theme-toggle">""").Count);
+        Assert.Equal(2, Regex.Matches(html, """name="theme" value="dark" class="icon-btn theme-to-dark" aria-label="Switch to dark theme" """.Trim()).Count);
+        Assert.Equal(2, Regex.Matches(html, """name="theme" value="light" class="icon-btn theme-to-light" aria-label="Switch to light theme" """.Trim()).Count);
+        var siteBar = html[html.IndexOf("<header class=\"sitebar\"", StringComparison.Ordinal)..];
+        Assert.Contains("theme-toggle", siteBar[..siteBar.IndexOf("</header>", StringComparison.Ordinal)]);
+        var appBar = html[html.IndexOf("<header class=\"appbar", StringComparison.Ordinal)..];
+        Assert.Contains("theme-toggle", appBar[..appBar.IndexOf("</header>", StringComparison.Ordinal)]);
+        var footer = html[html.IndexOf("<footer class=\"sitefoot\"", StringComparison.Ordinal)..];
+        Assert.DoesNotContain("theme", footer[..footer.IndexOf("</footer>", StringComparison.Ordinal)]);
+    }
+
+    [Fact]
+    public void The_stylesheet_shows_the_sun_in_a_dark_theme_and_the_moon_otherwise()
+    {
+        // BD14: the same rule as the logo, for a chosen dark theme and for System on a dark device.
+        var css = File.ReadAllText(Path.Combine(RepositoryRoot(), "src", "TaxBuddy.Web", "Styles", "app.css"));
+
+        Assert.Contains(".theme-to-light { display: none; }", css);
+        Assert.Contains(""":root:not([data-theme="light"]) .theme-to-dark { display: none; }""", css);
+        Assert.Contains(""":root:not([data-theme="light"]) .theme-to-light { display: inline-grid; }""", css);
+        Assert.Contains(""":root[data-theme="dark"] .theme-to-dark { display: none; }""", css);
+        Assert.Contains(""":root[data-theme="dark"] .theme-to-light { display: inline-grid; }""", css);
     }
 
     [Theory]
@@ -45,12 +68,12 @@ public sealed partial class ThemeSwitchTests : IDisposable
 
         var html = await ReadPageAsync(client);
         Assert.Contains($"""<html lang="en" data-theme="{theme}">""", html);
-        Assert.Equal(theme, PressedOption(html));
     }
 
     [Fact]
     public async Task Choosing_System_removes_the_stored_choice()
     {
+        // The header has no System button since BD14, but the address still accepts it (for a later "use the device setting").
         var client = factory.CreateClientWithoutRedirects();
         await PostAsync(client, "dark", Page);
 
@@ -62,7 +85,6 @@ public sealed partial class ThemeSwitchTests : IDisposable
 
         var html = await ReadPageAsync(client);
         Assert.Contains("""<html lang="en">""", html);
-        Assert.Equal("system", PressedOption(html));
     }
 
     [Fact]
@@ -151,12 +173,6 @@ public sealed partial class ThemeSwitchTests : IDisposable
         return await response.ReadHtmlAsync();
     }
 
-    private static string? PressedOption(string html)
-    {
-        var pressed = PressedPattern().Matches(html).Select(m => m.Groups[1].Value).ToList();
-        return Assert.Single(pressed);
-    }
-
     /// <summary>The custom-property declarations after a marker comment, up to the first closing brace.</summary>
     private static List<string> Declarations(string css, string marker)
     {
@@ -184,7 +200,4 @@ public sealed partial class ThemeSwitchTests : IDisposable
 
     [GeneratedRegex("""name="__RequestVerificationToken" value="([^"]+)" """)]
     private static partial Regex TokenPattern();
-
-    [GeneratedRegex("""<button type="submit" name="theme" value="(\w+)" class="theme-option" aria-pressed="true" """)]
-    private static partial Regex PressedPattern();
 }

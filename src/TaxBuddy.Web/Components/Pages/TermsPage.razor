@@ -1,28 +1,282 @@
 @page "/terms"
-@* PRD R16: reachable from every page. Draft outline from the prototype, not reviewed legal text (D10, gate G13). *@
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@* PRD R16 (F11): the Terms of use the owner approved on 2026-11-21, without a lawyer's review (D10). The text comes from
+   docs/legal/terms-of-use.md without its [OPTIONAL] blocks for unbuilt features. F12 (2026-11-23): deletion on the site,
+   version 2026-11-23. F03 (2026-11-23): service work switched on, version 2026-11-23.2, awaiting the owner's approval.
+   Microsoft sign-in stays out: archived by the owner on 2026-11-23 (F15). Change both together, with a new LegalText version (LP14). Layout: prototype legalPage. *@
 
-<SeoHead Title="Terms of use · Tax Buddy" Description="The terms for using Tax Buddy. Draft pending legal review." CanonicalPath="/terms" />
+<SeoHead Title="Terms of use · Tax Buddy" Description="The terms for using Tax Buddy: accounts, public content, reviews, reports and your rights." CanonicalPath="/terms" />
 
 <PhoneBar Title="Terms of use" Back="/" />
 
-@* Laid out as the prototype's infoPage in a narrow panel (F02 BD10). *@
 <div class="narrow">
-<article class="panel prose" aria-labelledby="page-title">
+<article class="panel prose legal" aria-labelledby="page-title">
     <h1 id="page-title" tabindex="-1">Terms of use</h1>
-    <DraftLegalNotice />
+    <p class="legal-meta">Version @LegalText.CurrentVersion · Last updated @LegalText.UpdatedOn</p>
 
-    <section class="section"><h3>Using Tax Buddy</h3><p>Browsing is free and needs no account. You sign in with your Google account to message accountants, review them or publish a profile. Signing in with Microsoft is planned.</p></section>
+    <section class="legal-short" aria-labelledby="short-title">
+        <h2 id="short-title">The short version</h2>
+        <ul>
+            <li>Tax Buddy is a public site where accountants show their professional credentials and clients find and message them. Anyone can browse, and anyone 18 or older with a Google account can join.</li>
+            <li>Accountants write their own profiles. We don't check licences, registrations or qualifications, so check them yourself before you hire anyone.</li>
+            <li>Profiles, portfolio highlights, reviews and replies are public. Anyone can see and copy them, so post only what is true, lawful and yours to share.</li>
+            <li>Work, fees and deadlines are agreed between the client and the accountant. We aren't part of those agreements, and we don't give tax, accounting or legal advice.</li>
+            <li>We may remove content or close accounts that break these Terms.</li>
+            <li>Philippine law applies.</li>
+        </ul>
+    </section>
 
-    <section class="section"><h3>Your account</h3><p>When you first sign in you choose to be a client or an accountant. An account is one or the other. You agree to these terms and the privacy policy when you create your account.</p></section>
+    <nav class="legal-toc" aria-labelledby="toc-title">
+        <h2 id="toc-title">Contents</h2>
+        <ol>
+            @for (var i = 0; i < Sections.Length; i++)
+            {
+                <li><a href="/terms#@SectionId(i + 1)">@Sections[i]</a></li>
+            }
+        </ol>
+    </nav>
 
-    <section class="section"><h3>Accountant profiles</h3><p>Accountants write their own profiles and are responsible for what they say. Tax Buddy doesn't check licences or qualifications.</p></section>
+    <section class="legal-sec">
+        @Heading(1)
+        <p>@LegalText.Operator, an individual based in @LegalText.OperatorPlace ("Tax Buddy", "we", "us" or "our"), runs the Tax Buddy website (the "Site").</p>
+        <p>These Terms of Use (the "Terms") are a contract between you and us. They apply whenever you use the Site, whether or not you have an account. When you create an account, you confirm that you have read these Terms and our <a href="/privacy">Privacy Policy</a> and that you agree to them. If you don't agree, don't use the Site.</p>
+        <p>In these Terms:</p>
+        <ul>
+            <li>a <strong>visitor</strong> is anyone using the Site without signing in;</li>
+            <li>a <strong>client</strong> is a person with a client account;</li>
+            <li>an <strong>accountant</strong> is a person with an accountant account;</li>
+            <li><strong>content</strong> means anything a user puts on the Site: profiles, credentials, pictures, portfolio highlights, messages, reviews, replies and reports.</li>
+        </ul>
+    </section>
 
-    <section class="section"><h3>Reviews</h3><p>A client can review an accountant who has replied to them, once, and can change or delete it. Reviews must describe the reviewer's own experience.</p></section>
+    <section class="legal-sec">
+        @Heading(2)
+        <p>The Site is being tested, and only people we invite can sign in. Features may change, stop working or be withdrawn while we test. Accounts and content created during testing carry over to the public Site when it launches; if you don't want that, you can close your account before launch (section 20). Please tell us about problems at @Email.</p>
+    </section>
 
-    <section class="section"><h3>Reports and blocking</h3><p>Anyone signed in can report a profile, review or conversation, and block someone from messaging them. Tax Buddy may remove content or close accounts that break these terms.</p></section>
+    <section class="legal-sec">
+        @Heading(3)
+        <ul>
+            <li>Anyone may browse the Site's public pages without an account.</li>
+            <li>To create an account you must be at least 18 years old and able to enter into a binding contract under Philippine law.</li>
+            <li>You may not create a new account if we have closed one of yours for breaking these Terms, unless we agree in writing.</li>
+        </ul>
+    </section>
 
-    <section class="section"><h3>Agreements between you</h3><p>Work, fees and deadlines are agreed between the client and the accountant. Tax Buddy is not a party to them.</p></section>
+    <section class="legal-sec">
+        @Heading(4)
+        <p><strong>Signing in.</strong> You sign in with your Google account. We don't issue Tax Buddy passwords, and we never see your Google password. Google's own terms also apply to your Google account.</p>
+        <p><strong>Your role.</strong> When you first sign in, you choose to be a client or an accountant. Each account has one role, chosen once at registration. To finish registering, you tick the box agreeing to these Terms and confirming that you have read the Privacy Policy. We record when you agreed and to which version.</p>
+        <p><strong>Your name.</strong> Your name comes from your Google account. The people you chat with see it, and a review you write shows your first name and last initial.</p>
+        <p><strong>Keeping it safe.</strong> You are responsible for what happens through your account. Keep your Google account secure, sign out on shared devices, and tell us at @Email if you think someone else has used your account.</p>
+    </section>
 
-    <p class="muted small mt-4">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
+    <section class="legal-sec">
+        @Heading(5)
+        <p>Tax Buddy is a place for accountants to present themselves and for clients to find and contact them. It offers public profiles, a directory with search and ratings, private one-to-one chat, and public reviews.</p>
+        <ul>
+            <li><strong>We don't verify accountants.</strong> We don't approve accountants or check their licences, PRC or Board of Accountancy registration, BIR accreditation, qualifications, experience or identity. A profile appears in the directory once its required fields are complete, and its credentials are shown exactly as the accountant wrote them.</li>
+            <li><strong>We don't endorse anyone.</strong> The directory's order, ratings and reviews are not a recommendation by us.</li>
+            <li><strong>We aren't part of your agreements.</strong> Work, fees, deadlines, deliverables and payment are agreed directly between the client and the accountant. We are not a party to those agreements and aren't responsible for their performance.</li>
+            <li><strong>We don't give advice.</strong> Nothing we publish on the Site is tax, accounting, legal or financial advice. What accountants say on the Site is their own.</li>
+            <li><strong>No payments on the Site.</strong> The Site doesn't show prices, take payments or make bookings. Using the Site is currently free for clients and accountants. If we ever introduce fees, we'll tell you in advance, and you won't be charged unless you agree.</li>
+        </ul>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(6)
+        <p>Some content is public by design:</p>
+        <ul>
+            <li>accountant profiles, including name, title, city, career summary, experience, services, picture and the contact details the accountant chooses to show;</li>
+            <li>portfolio highlights;</li>
+            <li>reviews (with the reviewer's first name and last initial), the accountant's replies, and each accountant's average rating and number of reviews.</li>
+        </ul>
+        <p>Public means anyone can see it, including people without an account. Search engines may also index it and show it in their results. Anyone can copy or screenshot public content. If you change or remove it on the Site, we can't recall copies that others have made.</p>
+        <p>Chats are private to their client and accountant (section 11). Client accounts are never listed publicly.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(7)
+        <p>You agree that:</p>
+        <ol>
+            <li><strong>Your credentials are true.</strong> Everything on your profile and in your highlights is accurate, current and not misleading, including your title, credentials, experience and services. You'll update it promptly when something changes, for example if a licence expires or is suspended or revoked.</li>
+            <li><strong>You use only titles you hold.</strong> You won't call yourself a Certified Public Accountant or "CPA", or suggest that you are one, unless you are registered with the Board of Accountancy and the Professional Regulation Commission (PRC) and your registration is current. You won't claim an accreditation, membership or qualification you don't hold.</li>
+            <li><strong>You're allowed to do the work.</strong> You hold every licence, registration and accreditation the services you offer require. You follow the laws and professional standards that apply to you, including the Philippine Accountancy Act of 2004 (Republic Act No. 9298) and its rules.</li>
+            <li><strong>You are who you say you are.</strong> You won't impersonate anyone, or use another person's name, picture, credentials or licence details.</li>
+            <li><strong>Your contact details are yours to share.</strong> The contact details you publish are your own professional details, and you agree to them being shown publicly. Your profile is listed only while you give that agreement.</li>
+            <li><strong>You respect your clients' confidentiality.</strong> You won't name a client, or include details that identify one, in a highlight, a reply or anywhere else public without that client's permission. Your professional duty of confidentiality applies to everything you learn through the Site.</li>
+            <li><strong>You handle client information lawfully.</strong> You are responsible for the personal information clients share with you for your professional work. You hold it as a personal information controller under the Data Privacy Act of 2012, separately from us.</li>
+            <li><strong>Licence numbers.</strong> Don't post your PRC licence number or other government-issued numbers on your profile. Give them to clients privately if they ask.</li>
+        </ol>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(8)
+        <p>You agree that:</p>
+        <ol>
+            <li>You'll check an accountant's credentials yourself before you hire them, for example with the PRC's online licence verification. You'll agree the terms of any work directly with the accountant, preferably in writing.</li>
+            <li>You'll share only the personal information an accountant needs. Chat is for getting in touch: don't send your Taxpayer Identification Number, tax returns, government ID numbers or financial records in chat. Agree on a secure way to share them with your accountant.</li>
+            <li>Your reviews describe your own genuine experience (section 10).</li>
+        </ol>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(9)
+        <p>When you use the Site, you must not:</p>
+        <ul>
+            <li>post anything false, misleading, defamatory, obscene, hateful, threatening or harassing;</li>
+            <li>impersonate anyone, or misrepresent your identity, your credentials or your connection with anyone;</li>
+            <li>post anyone else's personal information without a lawful basis, or anything you have no right to share, including confidential information and material protected by someone else's intellectual property;</li>
+            <li>write a fake or misleading review, review yourself or someone you are connected with, or offer or accept anything in exchange for writing or changing a review;</li>
+            <li>send spam, advertising or unsolicited marketing, or use contact details from the Site to do so;</li>
+            <li>scrape, crawl, harvest or bulk-copy profiles, contact details or other content, by automated means or otherwise, except search engines indexing public pages under the instructions we publish for them;</li>
+            <li>try to reach content you aren't allowed to see, including by changing addresses or record numbers, or try to get around a block, a limit or any security measure;</li>
+            <li>upload or send malicious code, or interfere with the Site or its service providers;</li>
+            <li>send false or abusive reports;</li>
+            <li>use the Site for anything unlawful, including fraud or tax evasion.</li>
+        </ul>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(10)
+        <p><strong>Who can review.</strong> A client can review an accountant once that accountant has sent at least one message in their conversation. A review is a rating from 1 to 5 stars, with optional text of up to 1,000 characters. Each client can review each accountant once, and can change or delete that review at any time.</p>
+        <p><strong>How reviews appear.</strong> Reviews are public and show the reviewer's first name and last initial. Each profile shows the accountant's average rating and number of reviews, and the directory can be ordered by rating.</p>
+        <p><strong>Replies.</strong> The accountant can post one public reply to each review, of up to 600 characters. They can edit the reply but not delete it. An accountant can't edit, hide or delete a review.</p>
+        <p><strong>Blocking and reviews.</strong> If an accountant has blocked a client, that client can't write or edit a review of that accountant, but can still delete their own review.</p>
+        <p><strong>Standards.</strong> A review must describe your own genuine experience. State facts accurately, and make clear what is your opinion. Replies must stay professional and must not disclose a client's confidential information. We don't edit reviews or replies, but we may remove one that breaks these Terms (section 12).</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(11)
+        <p>Only a signed-in client can start a conversation, and only with an accountant listed in the directory. Each client and accountant has one ongoing conversation. Messages are plain text of up to 2,000 characters; attachments aren't supported. A conversation is visible only to its client and accountant. We don't read conversations, except as section 12 describes or when the law requires it.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(12)
+        <p><strong>Reporting.</strong> If you're signed in, you can report a profile, a review or a conversation, giving a reason. You can report each item once, and send up to 10 reports a day. We don't tell the reported person who reported them.</p>
+        <p><strong>If you don't have an account.</strong> Anyone can ask us to review content by emailing @Email, for example if their name, picture or credentials are being misused. Include the page address, what is wrong, and how to reach you.</p>
+        <p><strong>What we do.</strong> We review each report by hand within 10 working days. Reported content stays visible while we review it. If content or conduct breaks these Terms or the law, we may remove the content, ask you to correct it, restrict or close the account, keep records, and report the matter to the authorities. To handle a report about a conversation, we may read that conversation's messages, and only for that purpose. We don't check content before it is published and have no duty to monitor it, but we act on the reports we receive.</p>
+        <p><strong>Blocking.</strong> Either person in a conversation can block the other. While either has blocked the other, neither can send messages in that conversation. We don't tell the blocked person why. The person who set the block can undo it at any time.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(13)
+        <p><strong>You own it.</strong> You keep ownership of the content you post.</p>
+        <p><strong>Your licence to us.</strong> You give us a non-exclusive, royalty-free, worldwide licence to host, store, copy, adapt for display (for example, resizing a picture) and show your content on the Site. The licence lasts while the content is on the Site, and afterwards only as long as we keep the content under our Privacy Policy. We use it only to run the Site.</p>
+        <p><strong>Your promise.</strong> You have the rights and permissions needed to post your content and to give us this licence, and your content doesn't break these Terms or the law.</p>
+        <p><strong>Pictures.</strong> When you add a profile picture, we save a 400 × 400 copy and remove its location and camera data.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(14)
+        <p>The Site, including its design, logo, text and software, belongs to us or our licensors. You may use the Site as these Terms allow, but you may not otherwise copy, modify, distribute or reuse any part of it. These Terms give you no rights to our name or logo.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(15)
+        <p>Signing in uses Google, under its own terms and privacy policy. Accountants' profiles may link to their own websites. We don't control other services or websites and aren't responsible for them.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(16)
+        <p>The Site works only while you're online. We may change, suspend or stop any part of it. We try to keep it running, but we don't promise that it will always be available or free of errors.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(17)
+        <p>The Site is provided "as is" and "as available". As far as the law allows, we make no promises about:</p>
+        <ul>
+            <li>any accountant's licence, qualifications, competence, availability or conduct;</li>
+            <li>the accuracy of any profile, credential, highlight, review or reply;</li>
+            <li>the outcome of any work you agree with another user.</li>
+        </ul>
+        <p>You decide whether to deal with another user, and you do so at your own risk. Nothing in these Terms limits any right you have under Philippine law, including the Consumer Act, that can't be waived.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(18)
+        <p>As far as the law allows:</p>
+        <ul>
+            <li>we aren't liable for what users post or do, or for any work, advice, fee or dispute between a client and an accountant;</li>
+            <li>we aren't liable for indirect or consequential loss, or for lost profits, business, data or opportunities;</li>
+            <li>our total liability to you for all claims about the Site is limited to PHP 5,000.</li>
+        </ul>
+        <p>These limits don't apply to liability for our fraud, bad faith, gross negligence or wilful misconduct, or to any liability that the law doesn't allow us to limit.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(19)
+        <p>You'll compensate us for claims that others bring against us, and for the resulting losses and reasonable costs (including legal fees), to the extent they result from your content, your breach of these Terms or the law, or your dealings with other users.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(20)
+        <p><strong>By us.</strong> We may suspend or close your account, or remove your content, if you break these Terms, if the law requires it, or if we reasonably believe it is needed to protect other users or the Site. Where the law and safety allow, we'll tell you why and give you a chance to respond.</p>
+        <p><strong>Unused accounts.</strong> If you don't use your account for 2 years, we'll email you a warning and then delete it, as if you had deleted it yourself.</p>
+        <p><strong>By you.</strong> You can stop using the Site at any time. You can delete your account from your <a href="/account">Account page</a>, after confirming. Deleting it removes your name, email, picture and sign-in links, and your accountant profile, which leaves the directory at once. We also stop emailing you. You can also ask us to close your account by emailing @Email.</p>
+        <p>When an account is deleted:</p>
+        <ul>
+            <li>its conversations stay with the other person, shown as from "Deleted user";</li>
+            <li>a client's reviews are removed, and the accountants' ratings are recalculated;</li>
+            <li>an accountant's profile is removed with its reviews and replies.</li>
+        </ul>
+        <p>Documents you uploaded to a service are deleted with your account. The rest of the service work, such as requests, checklists and notes, stays with the other person, shown as from "Deleted user".</p>
+        <p><strong>What continues.</strong> Sections 13 (for content we keep), 17, 18, 19, 22 and 23 continue to apply after your account ends.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(21)
+        <p>Each version of these Terms has a version label and a date, and we record which version you agreed to. We may update the Terms, for example when we add features or the law changes, and we'll post each new version on the Site. If a change materially affects your rights, we'll tell you on the Site and by email at least 30 days before it takes effect, and ask you to agree to the new version the next time you use the Site while signed in. Changes the law requires may take effect sooner. If you don't agree, you can stop using the Site and close your account.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(22)
+        <p>These Terms are governed by the laws of the Philippines. If you have a complaint, please contact us first at @Email so we can try to resolve it, and allow us 30 days to respond. If we can't resolve it, the courts of Manila have exclusive jurisdiction. This doesn't affect your right to complain to a government agency, such as the Department of Trade and Industry or the National Privacy Commission.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(23)
+        <ul>
+            <li>These Terms and the Privacy Policy are the whole agreement between you and us about the Site.</li>
+            <li>If a court finds part of these Terms invalid, the rest still applies.</li>
+            <li>If we don't enforce a right straight away, we haven't given it up.</li>
+            <li>You can't transfer your rights under these Terms. We may transfer ours to someone who takes over the Site, and we'll tell you if we do.</li>
+            <li>These Terms are written in English.</li>
+        </ul>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(24)
+        <ul>
+            <li>@LegalText.Operator, @LegalText.OperatorPlace</li>
+            <li>@Email</li>
+        </ul>
+    </section>
 </article>
 </div>
+
+@code {
+    /// <summary>Section titles, in order; the contents list and the headings both come from here (LP02).</summary>
+    private static readonly string[] Sections =
+    [
+        "About these Terms", "Testing stage", "Who can use the Site", "Your account", "What Tax Buddy is, and what it isn't",
+        "Public content", "If you're an accountant", "If you're a client", "Rules for everyone", "Reviews and replies", "Chat",
+        "Reports, blocking and moderation", "Your content", "Our intellectual property", "Other services and websites",
+        "Availability and changes to the Site", "Disclaimers", "Limitation of liability", "Indemnity",
+        "Suspension, closure and leaving", "Changes to these Terms", "Governing law and disputes", "General", "Contact",
+    ];
+
+    private static string SectionId(int number) => "terms-" + number;
+
+    private static RenderFragment Heading(int number) => __builder =>
+    {
+        <h2 id="@SectionId(number)" tabindex="-1">@number. @Sections[number - 1]</h2>
+    };
+
+    private static RenderFragment Email => __builder =>
+    {
+        <a href="@("mailto:" + LegalText.ContactEmail)">@LegalText.ContactEmail</a>
+    };
+}

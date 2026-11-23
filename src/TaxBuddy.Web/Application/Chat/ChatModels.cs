@@ -35,6 +35,9 @@ public sealed record ThreadView(
     /// <summary>The other participant has blocked the viewer: "You can't send messages in this conversation." Not told why.</summary>
     public bool BlockedByThem { get; init; }
 
+    /// <summary>The other participant deleted their account (F12, D07): read only, shown as from "Deleted user".</summary>
+    public bool PeerDeleted { get; init; }
+
     public bool IsBlocked => BlockedByMe || BlockedByThem;
 }
 
@@ -91,7 +94,8 @@ public sealed record ThreadData(
     string PeerName,
     string? PeerPictureObject,
     AccountantId? PeerListedProfileId,
-    IReadOnlyList<ChatMessage> Messages);
+    IReadOnlyList<ChatMessage> Messages,
+    bool PeerDeleted = false);
 
 public enum StoreMessageOutcome
 {

@@ -45,7 +45,7 @@ public sealed class ReportPageTests(EmptyAppFixture app) : IClassFixture<EmptyAp
         var form = await client.GetHtmlAsync($"/report/profile/{profile}");
         Assert.Contains("Report this profile</h1>", form);
         Assert.Contains("Nina Ocampo's profile", form);
-        Assert.Contains("Reports go to the Tax Buddy team, who review them by hand. The other person isn't told who reported them.", form);
+        Assert.Contains("Reports go to the Tax Buddy team, who review them by hand within 10 working days. The other person isn't told who reported them.", form); // F11 LP12
         Assert.Equal(5, form.Split("name=\"Form.Reason\"").Length - 1);
 
         var missing = await PostReportAsync(client, $"/report/profile/{profile}", form, ("Form.Details", "Fake reviews?"));

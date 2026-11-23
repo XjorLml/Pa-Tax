@@ -10,17 +10,29 @@ namespace TaxBuddy.Web.Tests.Support;
 
 /// <summary>
 /// Hosts the app in memory against a given database (TEST-PLAN: web integration tests). Google sign-in is configured
-/// with dummy values unless <paramref name="withGoogle"/> is false; the test sign-in stands in for Google's round trip.
+/// with dummy values unless <paramref name="withGoogle"/> is false. Archived Microsoft sign-in (F15) gets dummy keys only
+/// when <paramref name="withMicrosoft"/> is true, and is switched on with them unless <paramref name="microsoftEnabled"/>
+/// says otherwise. The test sign-in stands in for the provider's round trip.
 /// </summary>
-public sealed class TaxBuddyAppFactory(string connectionString, bool withGoogle = true, bool withPictureStorage = true)
+public sealed class TaxBuddyAppFactory(
+    string connectionString, bool withGoogle = true, bool withPictureStorage = true, bool withMicrosoft = false, bool withDocumentStorage = true,
+    bool? microsoftEnabled = null)
     : WebApplicationFactory<Program>
 {
     public const string GoogleClientId = "test-client-id.apps.googleusercontent.com";
+
+    public const string MicrosoftClientId = "00000000-0000-4000-8000-000000000015";
 
     public CapturedLogs Logs { get; } = new();
 
     /// <summary>Replaces Supabase Storage (F06) unless the factory was created without picture storage.</summary>
     public InMemoryPictureStorage Pictures { get; } = new();
+
+    /// <summary>Replaces the service documents bucket (F03 stage 2) unless the factory was created without it.</summary>
+    public InMemoryDocumentStorage Documents { get; } = new();
+
+    /// <summary>Replaces the email service (F14): emails are captured, and can be told to fail.</summary>
+    public CapturingEmailSender Emails { get; } = new();
 
     /// <summary>An address where nothing listens, so every database call fails at once (FT06, TP08).</summary>
     public const string UnreachableDatabase = "Host=127.0.0.1;Port=1;Database=none;Username=none;Password=none;Timeout=3";
@@ -34,13 +46,25 @@ public sealed class TaxBuddyAppFactory(string connectionString, bool withGoogle 
         // settings rather than the app configuration below, which arrives later.
         builder.UseSetting("Authentication:Google:ClientId", withGoogle ? GoogleClientId : "");
         builder.UseSetting("Authentication:Google:ClientSecret", withGoogle ? "test-client-secret" : "");
+        builder.UseSetting("Authentication:Microsoft:ClientId", withMicrosoft ? MicrosoftClientId : "");
+        builder.UseSetting("Authentication:Microsoft:ClientSecret", withMicrosoft ? "test-microsoft-secret" : "");
+        builder.UseSetting(TaxBuddy.Web.Account.AccountSetup.MicrosoftEnabledSetting, (microsoftEnabled ?? withMicrosoft) ? "true" : "false");
+        // F14: tests run the email outbox themselves, so its background worker stays off.
+        builder.UseSetting("Email:WorkerEnabled", "false");
+        builder.UseSetting("Email:SiteAddress", "https://taxbuddy.test");
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, TestExternalSignIn>();
             services.AddSingleton<ILoggerProvider>(Logs);
+            services.AddSingleton<TaxBuddy.Web.Application.Email.IEmailSender>(Emails);
             if (withPictureStorage)
             {
                 services.AddSingleton<TaxBuddy.Web.Application.Pictures.IPictureStorage>(Pictures);
+            }
+
+            if (withDocumentStorage)
+            {
+                services.AddSingleton<TaxBuddy.Web.Application.Work.IDocumentStorage>(Documents);
             }
         });
         builder.ConfigureAppConfiguration((_, configuration) =>

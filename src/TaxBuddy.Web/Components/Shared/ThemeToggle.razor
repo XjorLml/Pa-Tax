@@ -1,0 +1,17 @@
+@* Theme toggle, always in the header (the user's instruction of 2026-11-23; prototype themeToggleHTML): beside Sign in or
+   the account in the site bar, and at the end of the phone app bar. A plain form, so it works on static pages without
+   script. Both buttons are drawn; the stylesheet shows the moon ("switch to dark") in a light theme and the sun ("switch
+   to light") in a dark one, the same way it picks the logo, so it is right for System too. The hidden button is
+   display: none, which also takes it out of the tab order and away from screen readers. *@
+<form method="post" action="@ThemePreference.EndpointPath" class="theme-toggle">
+    <AntiforgeryToken />
+    <input type="hidden" name="returnUrl" value="@LocalAddress.CurrentFor(HttpContext)" />
+    <button type="submit" name="theme" value="@ThemePreference.ValueOf(Theme.Dark)" class="icon-btn theme-to-dark"
+            aria-label="Switch to dark theme" title="Dark theme"><Icon Name="moon" Size="20" /></button>
+    <button type="submit" name="theme" value="@ThemePreference.ValueOf(Theme.Light)" class="icon-btn theme-to-light"
+            aria-label="Switch to light theme" title="Light theme"><Icon Name="sun" Size="20" /></button>
+</form>
+
+@code {
+    [CascadingParameter] public HttpContext? HttpContext { get; set; }
+}

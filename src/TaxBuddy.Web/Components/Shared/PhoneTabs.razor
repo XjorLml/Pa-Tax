@@ -1,12 +1,13 @@
 @using Microsoft.AspNetCore.Components.Sections
 @using TaxBuddy.Web.Account
-@* Phone tab bar (prototype tabbarHTML) on top-level screens. Clients / My accountants joins with service work (F03). *@
+@* Phone tab bar (prototype tabbarHTML) on top-level screens. Clients / My accountants joined with service work (F03). *@
 <SectionContent SectionName="@Section">
     <nav class="tabbar" aria-label="Main">
         <a href="/" aria-current="@(Current == "directory" ? "page" : null)"><Icon Name="search" Size="22" /><span>Accountants</span></a>
         <a href="/chats" aria-current="@(Current == "chats" ? "page" : null)"><Icon Name="chat" Size="22" /><span>Chats</span><UnreadBadge /></a>
         <AuthorizeView>
             <Authorized>
+                <a href="/workspace" aria-current="@(Current == "workspace" ? "page" : null)"><Icon Name="list" Size="22" /><span>@(context.User.IsInRole("accountant") ? "Clients" : "My accountants")</span></a>
                 <a href="/account" aria-current="@(Current == "account" ? "page" : null)"><Icon Name="user" Size="22" /><span>Account</span></a>
             </Authorized>
             <NotAuthorized>
@@ -21,6 +22,6 @@
 
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    /// <summary>"directory", "chats" or "account".</summary>
+    /// <summary>"directory", "chats", "workspace" or "account".</summary>
     [Parameter] public string? Current { get; set; }
 }

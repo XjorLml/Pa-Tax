@@ -1,4 +1,5 @@
 @page "/register"
+@attribute [TermsNotRequired]
 @using TaxBuddy.Web.Account
 @using TaxBuddy.Web.Domain
 @inject AccountService Accounts
@@ -32,7 +33,7 @@
             <label class="check agree">
                 <input type="checkbox" name="Form.Agree" value="true" checked="@Form!.Agree"
                        aria-describedby="@(agreeError is null ? null : "agree-error")" />
-                <span>I agree to the <a href="/terms">Terms of use</a> and the <a href="/privacy">Privacy policy</a>.</span>
+                <span>I agree to the <a href="/terms">Terms of use</a> and have read the <a href="/privacy">Privacy policy</a>.</span>
             </label>
             @if (agreeError is not null)
             {
@@ -99,7 +100,8 @@
 
         var role = AccountRoles.Parse(Form!.Role);
         roleError = role is null ? "Choose whether you're looking for an accountant or you are one." : null;
-        agreeError = Form.Agree ? null : "Tick the box to agree to the Terms of use and the Privacy policy.";
+        // F11 (D10, 2026-11-21): agreement to the Terms; the Privacy policy is read, not consented to.
+        agreeError = Form.Agree ? null : "Tick the box to agree to the Terms of use.";
         if (role is null || !Form.Agree)
         {
             return;

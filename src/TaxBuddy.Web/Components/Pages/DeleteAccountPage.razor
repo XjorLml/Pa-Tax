@@ -1,0 +1,117 @@
+@page "/account/delete"
+@attribute [TermsNotRequired]
+@using System.Security.Claims
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@inject AccountService Accounts
+@inject NavigationManager Navigation
+@* F12 (PRD R09, BR06, D07): delete your own account. Prototype deleteHTML: "Delete your account?" with what is removed,
+   then "Are you sure?". Static: step one is a page, step two adds ?step=confirm, and the deletion is a named form posted
+   with the page's antiforgery token. Not behind the terms agreement (F11), so a person can leave without accepting new
+   terms. Recorded deviations: no email row until R08 exists, and a "deleted" state on this page instead of the
+   prototype's toast on the directory, because static pages have no toasts. *@
+
+<SeoHead Title="Delete account · Tax Buddy" Description="Delete your Tax Buddy account." CanonicalPath="/account/delete" />
+<PhoneBar Title="Delete account" Back="@(done ? null : "/account")" />
+<DeskTitle Title="Delete account" />
+
+<div class="single-inner">
+    @if (done)
+    {
+        <StateMessage IconName="check" Title="Your account was deleted" Text="Thanks for using Tax Buddy. You're signed out.">
+            <a class="btn" href="/">Go to directory</a>
+        </StateMessage>
+    }
+    else if (user is null)
+    {
+        <StateMessage IconName="user" Title="Sign in to manage your account">
+            <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/account/delete")">Sign in</a>
+        </StateMessage>
+    }
+    else if (!confirming)
+    {
+        <div class="delete-card">
+            <h2>Delete your account?</h2>
+            <p>This removes:</p>
+            <ul>
+                <li>Your Tax Buddy sign-in. Your @provider account itself is not affected.</li>
+                @if (isAccountant)
+                {
+                    <li>Your public profile, with its reviews and your replies. It leaves the directory immediately.</li>
+                }
+                else
+                {
+                    <li>Your reviews. The accountants' ratings are recalculated.</li>
+                }
+                <li>Your profile picture.</li>
+            </ul>
+            <p class="note"><span>Your chats stay with the people you talked to, shown as from “@DeletedAccount.DisplayName”.</span></p>
+            <div class="actions">
+                <a class="btn" href="/account">Cancel</a>
+                <a class="btn btn-danger" href="/account/delete?step=confirm">Continue</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="delete-card">
+            <h2>Are you sure?</h2>
+            <p>Deleting your account can't be undone.</p>
+            @if (failed)
+            {
+                <div class="banner danger" role="alert">
+                    <Icon Name="alert" Size="18" />
+                    <div>We couldn't delete your account, so nothing was removed. You're still signed in. Please try again.</div>
+                </div>
+            }
+            <form method="post" action="/account/delete?step=confirm" @formname="delete-account" @onsubmit="DeleteAsync">
+                <AntiforgeryToken />
+                <div class="actions">
+                    <a class="btn" href="/account">Cancel</a>
+                    <button type="submit" class="btn btn-danger">Delete my account</button>
+                </div>
+            </form>
+        </div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Step { get; set; }
+
+    [SupplyParameterFromQuery] public string? Done { get; set; }
+
+    [CascadingParameter] private Task<AuthenticationState>? Authentication { get; set; }
+
+    private ClaimsPrincipal? user;
+    private bool isAccountant;
+    private bool confirming;
+    private bool failed;
+    private bool done;
+    private string provider = "Google";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var principal = Authentication is null ? null : (await Authentication).User;
+        done = Done == "1" && principal?.Identity?.IsAuthenticated != true;
+        user = principal?.Identity?.IsAuthenticated == true ? principal : null;
+        isAccountant = user?.IsInRole(AccountRoles.ValueOf(AccountRole.Accountant)) == true;
+        confirming = Step == "confirm";
+        provider = user?.FindFirst(ClaimTypes.AuthenticationMethod)?.Value ?? "Google";
+    }
+
+    private async Task DeleteAsync()
+    {
+        switch (await Accounts.DeleteAccountAsync())
+        {
+            case DeletionOutcome.Deleted:
+                Navigation.NavigateTo("/account/delete?done=1");
+                break;
+            case DeletionOutcome.NotSignedIn:
+                Navigation.NavigateTo(AccountEndpoints.SignInPageAddress("/account/delete"));
+                break;
+            default:
+                failed = true;
+                break;
+        }
+    }
+}

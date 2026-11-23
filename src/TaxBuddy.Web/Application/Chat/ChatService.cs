@@ -82,6 +82,7 @@ public sealed class ChatService(IChatStore store, IChatNotifier notifier, IClock
         {
             BlockedByMe = data.Conversation.IsBlockedBy(accountId),
             BlockedByThem = data.Conversation.IsBlockedBy(peerId),
+            PeerDeleted = data.PeerDeleted,
         };
     }
 

@@ -1,0 +1,39 @@
+@page "/for-accountants"
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@* PRD R17 (F13, 2026-11-23): prototype infoPage('for-accountants'). An accountant goes to their profile; a visitor signs
+   in and lands in the editor after registering as an accountant (F05). A signed-in client is told an account has one
+   role (D03), which the prototype doesn't show (recorded deviation). *@
+
+<SeoHead Title="For accountants · Tax Buddy" Description="Show your work, collect reviews from the clients you help, and let new clients message you directly." CanonicalPath="/for-accountants" />
+<PhoneBar Title="For accountants" Back="/" />
+
+<div class="narrow">
+<article class="panel prose" aria-labelledby="page-title">
+    <h1 id="page-title" tabindex="-1">For accountants</h1>
+    <p class="lead">Show your work, collect reviews from the clients you help, and let new clients message you directly.</p>
+    <ul class="benefits">
+        <li><strong>A portfolio, not just a listing</strong><span>Services, experience and highlights of work you're proud of.</span></li>
+        <li><strong>Ratings you earn</strong><span>Only clients you have replied to can review you, and you can answer each review once.</span></li>
+        <li><strong>No approval queue</strong><span>Your profile is listed as soon as the required details are filled in.</span></li>
+    </ul>
+    <section class="section"><h3>What becomes public</h3><p>Your name, title, city, summary, services, experience, portfolio highlights, the contact details you choose to show, and your reviews and replies.</p></section>
+    <section class="section"><h3>What it costs</h3><p>Listing and messaging are free for now. If fees are ever introduced, you'll be told in advance and never charged without agreeing.</p></section>
+    <AuthorizeView>
+        <Authorized>
+            @if (context.User.IsInRole(AccountRoles.ValueOf(AccountRole.Accountant)))
+            {
+                <div class="actions"><a class="btn btn-primary" href="/account/profile">Go to my profile</a></div>
+            }
+            else
+            {
+                <p class="note"><span>You're signed in as a client. An account is either a client or an accountant, so publish a profile with a separate Google account.</span></p>
+            }
+        </Authorized>
+        <NotAuthorized>
+            <div class="actions"><a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress("/account/profile")">Create your profile</a></div>
+        </NotAuthorized>
+    </AuthorizeView>
+</article>
+</div>

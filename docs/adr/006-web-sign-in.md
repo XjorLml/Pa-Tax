@@ -1,6 +1,6 @@
 # ADR 006: Sign in with Google or Microsoft through ASP.NET Core external authentication
 
-Status: Accepted, including ASP.NET Core Identity as the user store, which the owner approved on 2026-11-11 with the stack table in the [SDD](../SDD.md#technology-stack). Decision date: 2026-11-11. Decision owner/evidence: lumabanls. The providers were chosen on 2026-11-10 ("Google / Microsoft sign-in"); the web platform was chosen on 2026-11-11 ([ADR 005](005-web-platform-blazor.md)).
+Status: Accepted, including ASP.NET Core Identity as the user store, which the owner approved on 2026-11-11 with the stack table in the [SDD](../SDD.md#technology-stack). Decision date: 2026-11-11. Decision owner/evidence: lumabanls. The providers were chosen on 2026-11-10 ("Google / Microsoft sign-in"); the web platform was chosen on 2026-11-11 ([ADR 005](005-web-platform-blazor.md)). **Amended 2026-11-23:** the owner archived Microsoft sign-in ("google signin is enough"); it was built that day ([F15](../../specs/microsoft-sign-in/spec.md)) and stays in the code, switched off, so the site offers Google only ([PRD](../PRD.md#requirements) R04). The decision below is kept as written.
 
 ## Context
 

@@ -1,29 +1,280 @@
 @page "/privacy"
-@* PRD R16: reachable from every page. Draft outline from the prototype, updated for what F04 stores; not reviewed
-   legal text (D10, gate G13). *@
+@attribute [TermsNotRequired]
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Domain
+@* PRD R16 (F11): the Privacy policy the owner approved on 2026-11-21, without a lawyer's review (D10). The text comes from
+   docs/legal/privacy-policy.md without its [OPTIONAL] blocks for unbuilt features. F12 (2026-11-23): deletion on the site,
+   version 2026-11-23. F03 (2026-11-23): saved accountants, service work and documents switched on, version 2026-11-23.2,
+   awaiting the owner's approval. Microsoft sign-in stays out: archived by the owner on 2026-11-23 (F15). Change both together, with a new LegalText version (LP14). Layout:
+   prototype legalPage, including the cookie table, which stacks into labelled rows on phones. *@
 
-<SeoHead Title="Privacy · Tax Buddy" Description="What Tax Buddy keeps and who can see it. Draft pending legal review." CanonicalPath="/privacy" />
+<SeoHead Title="Privacy · Tax Buddy" Description="What Tax Buddy keeps, who can see it, how long it is kept, and your rights under the Data Privacy Act." CanonicalPath="/privacy" />
 
 <PhoneBar Title="Privacy" Back="/" />
 
-@* Laid out as the prototype's infoPage in a narrow panel (F02 BD10). *@
 <div class="narrow">
-<article class="panel prose" aria-labelledby="page-title">
+<article class="panel prose legal" aria-labelledby="page-title">
     <h1 id="page-title" tabindex="-1">Privacy</h1>
-    <DraftLegalNotice />
+    <p class="legal-meta">Version @LegalText.CurrentVersion · Last updated @LegalText.UpdatedOn</p>
 
-    <section class="section"><h3>What Tax Buddy keeps</h3><p>When you sign in with Google: your name and email address from Google, a Google identifier for your account, whether you're a client or an accountant, and when you agreed to these terms. Tax Buddy never sees your Google password. It also keeps your profile picture if you add one, an accountant's profile, your chats and reviews, the reports you send, and anyone you block. Later features will keep your private saved accountants and service work.</p></section>
+    <section class="legal-short" aria-labelledby="short-title">
+        <h2 id="short-title">The short version</h2>
+        <ul>
+            <li>We collect what you give us, plus what Google shares when you sign in: your name, email address and a Google account identifier.</li>
+            <li>Accountant profiles, portfolio highlights, reviews and replies are public, so anyone can see them. Chats and service work are private to the client and the accountant in them.</li>
+            <li>We use your information to run the Site, keep it safe and handle reports. We don't use advertising, analytics or tracking cookies.</li>
+            <li>Our service providers store data in Singapore, outside the Philippines, and we stay responsible for it there.</li>
+            <li>You have rights under the Data Privacy Act of 2012, including access, correction, objection and erasure. Contact our Data Protection Officer at @Email.</li>
+        </ul>
+    </section>
 
-    <section class="section"><h3>Cookies</h3><p>A sign-in cookie keeps you signed in on that browser for up to 14 days of inactivity, until you sign out. A security cookie protects the site's forms, and a theme cookie remembers light or dark if you choose one. None are used for advertising or tracking.</p></section>
+    <nav class="legal-toc" aria-labelledby="toc-title">
+        <h2 id="toc-title">Contents</h2>
+        <ol>
+            @for (var i = 0; i < Sections.Length; i++)
+            {
+                <li><a href="/privacy#@SectionId(i + 1)">@Sections[i]</a></li>
+            }
+        </ol>
+    </nav>
 
-    <section class="section"><h3>What is public</h3><p>Accountant profiles, portfolio highlights, reviews and replies. A review shows the client's first name and last initial.</p></section>
+    <section class="legal-sec">
+        @Heading(1)
+        <p>@LegalText.Operator, an individual based in @LegalText.OperatorPlace ("Tax Buddy", "we", "us" or "our"), runs the Tax Buddy website (the "Site"). Under the Data Privacy Act of 2012 (Republic Act No. 10173, the "DPA"), we are the personal information controller for the information this policy describes.</p>
+        <ul>
+            <li>Data Protection Officer: @LegalText.Operator, the owner, at @Email</li>
+            <li>National Privacy Commission registration: we are not currently registered</li>
+        </ul>
+        <p>This policy explains what we do with personal information on the Site. It doesn't cover:</p>
+        <ul>
+            <li>how Google handles your account with them. Their own privacy policies cover that;</li>
+            <li>what an accountant does with information a client gives them for professional work. The accountant is responsible for that as a separate controller (section 13).</li>
+        </ul>
+    </section>
 
-    <section class="section"><h3>What is private</h3><p>Chats are visible only to the client and accountant involved, and service work will be too. A report is seen only by the Tax Buddy team; the reported person isn't told who sent it. Your saved-accountant list is private to you. Client accounts are never publicly listed.</p></section>
+    <section class="legal-sec">
+        @Heading(2)
+        <p><strong>When you sign in.</strong> From Google, we receive your name, your email address and a Google account identifier. We never see your Google password.</p>
+        <p><strong>When you register.</strong> Your role (client or accountant), and when you agreed to our <a href="/terms">Terms of Use</a> and confirmed that you had read this policy, and to which version.</p>
+        <p><strong>Profile picture (optional).</strong> If you add one, it can be a JPEG, PNG or WebP image of up to 5 MB. We save it as a 400 × 400 picture and remove its location and camera data. Without one, your initials are shown.</p>
+        <p><strong>Accountant profiles.</strong> Your name, title, city, career summary, experience (role, company, and start and end month), services offered with short descriptions, and contact email, phone number and website. To be listed, you must agree to show your contact details publicly.</p>
+        <p><strong>Credentials.</strong> Accountants describe their credentials in their own words. Under the DPA, licence details count as sensitive personal information, for example a PRC licence number or a licence's suspension or revocation. Please don't put your licence number or other government-issued numbers on your profile; give them to clients privately if they ask. The profile editor reminds you of this.</p>
+        <p><strong>Portfolio highlights.</strong> Up to six, each with a title, the type of client, what was done and the result. A highlight must not name a client without that client's permission.</p>
+        <p><strong>Messages.</strong> The text of each chat message (up to 2,000 characters), who sent it, when, and whether it has been read. Text you have typed but not sent stays in your browser tab only (section 8).</p>
+        <p><strong>Reviews and replies.</strong> The star rating, any text, and when the review was written or changed; and the accountant's reply.</p>
+        <p><strong>Reports and blocks.</strong> For a report: who sent it, what it is about (a profile, review or conversation), the reason, any details added, and when it was sent. For a block: when each person in a conversation blocked the other.</p>
+        <p><strong>Technical information.</strong> Our application logs record only event codes, error categories, durations and correlation codes. They never record message text, email addresses, contact details or sign-in tokens. Our hosting provider may keep its own request logs, which can include IP addresses, for a limited time under its own policies.</p>
+        <p><strong>Saved accountants.</strong> The accountants a client adds to their private list.</p>
+        <p><strong>Service work.</strong> Service requests, checklists, task statuses, and shared notes with their author and time. Sending a request shares the client's name and the requested service with that accountant.</p>
+        <p><strong>Service documents.</strong> Files the client or the accountant attaches to a service they share: the file, its name, size and type, who added it, when, and the task it belongs to. A document can be a PDF, JPEG or PNG file of up to 10 MB, and we check its content before keeping it. Documents may contain sensitive personal information, such as tax returns. They are kept in private storage, reached only through the Site. We don't scan them for viruses.</p>
+        <p><strong>Notification emails.</strong> Whether you want emails about new messages, and a record of each email we queue or send, which is kept for 30 days. An email never includes the message text.</p>
+        <p><strong>Information about other people.</strong> Messages, highlights and reviews can mention other people. Share only what you have the right to share (<a href="/terms#terms-9">Terms of Use, section 9</a>).</p>
+        <p><strong>What we don't collect.</strong> We don't collect payment details. We don't use analytics or telemetry services, or advertising or tracking cookies.</p>
+    </section>
 
-    <section class="section"><h3>Emails</h3><p>Tax Buddy will email you about new messages. The emails won't include the message text, and you can turn them off.</p></section>
+    <section class="legal-sec">
+        @Heading(3)
+        <table class="legal-table">
+            <caption class="sr-only">Why we use personal information, and on what basis</caption>
+            <thead><tr><th scope="col">Purpose</th><th scope="col">Information</th><th scope="col">Lawful basis under the DPA</th></tr></thead>
+            <tbody>
+                @foreach (var (purpose, information, basis) in Purposes)
+                {
+                    <tr><td data-label="Purpose">@purpose</td><td data-label="Information">@information</td><td data-label="Lawful basis">@basis</td></tr>
+                }
+            </tbody>
+        </table>
+        <p>We don't make decisions about you by automated means alone, and we don't profile you. We don't send marketing emails. We don't sell personal information.</p>
+        <p>Where we rely on your consent, you can withdraw it at any time. For example, if an accountant withdraws their agreement to show contact details, their profile is no longer listed. Withdrawing consent doesn't affect what we did before.</p>
+    </section>
 
-    <section class="section"><h3>Deleting your data</h3><p>You'll be able to delete your account from your account page. What happens to your chats and reviews is still being decided (decision D07).</p></section>
+    <section class="legal-sec">
+        @Heading(4)
+        <p><strong>Public.</strong> Anyone can see the following, including people without an account:</p>
+        <ul>
+            <li>accountant profiles, including accountants' pictures and the contact details each accountant chooses to show;</li>
+            <li>portfolio highlights;</li>
+            <li>reviews (with the reviewer's first name and last initial), replies, average ratings and review counts.</li>
+        </ul>
+        <p>Search engines may index public pages and show them in their results. While the Site is limited to invited testers, it asks search engines not to index it. Anyone can copy public content, and we can't recall copies.</p>
+        <p><strong>Shared with specific people.</strong></p>
+        <ul>
+            <li>Your name: with the people you chat with.</li>
+            <li>A client's picture: with that client and the accountants they have a conversation with.</li>
+            <li>Messages: with the conversation's client and accountant only.</li>
+            <li>Service work and service documents: with that service's client and accountant only.</li>
+            <li>Saved accountants: with that client only.</li>
+        </ul>
+        <p><strong>Seen only by us.</strong> The email address from your Google account (unless an accountant also publishes it as their contact email), your Google identifier, your agreement record, reports and who sent them, and blocks. The other person does notice a block's effect, because they can no longer send messages.</p>
+        <p>Client accounts are never listed publicly.</p>
+    </section>
 
-    <p class="muted small mt-4">Version @TaxBuddy.Web.Domain.LegalText.CurrentVersion.</p>
+    <section class="legal-sec">
+        @Heading(5)
+        <p><strong>Service providers.</strong> They process information on our behalf:</p>
+        <table class="legal-table">
+            <caption class="sr-only">Our service providers</caption>
+            <thead><tr><th scope="col">Provider</th><th scope="col">What they do</th><th scope="col">Where</th></tr></thead>
+            <tbody>
+                <tr><td data-label="Provider">Google</td><td data-label="What they do">Sign-in</td><td data-label="Where">Where Google operates, under its own policies</td></tr>
+                <tr><td data-label="Provider">Supabase</td><td data-label="What they do">Database, and private storage for profile pictures and service documents</td><td data-label="Where">Singapore</td></tr>
+                <tr><td data-label="Provider">Render</td><td data-label="What they do">Hosting</td><td data-label="Where">Singapore</td></tr>
+                <tr><td data-label="Provider">Brevo</td><td data-label="What they do">Notification emails</td><td data-label="Where">Where Brevo operates (Brevo is based in France), under its own terms</td></tr>
+            </tbody>
+        </table>
+        <p>Each provider receives only what it needs, and processes it only to provide its service to us, under its own terms. For your account with Google, Google also acts under its own privacy policy.</p>
+        <p><strong>Other users.</strong> As section 4 describes.</p>
+        <p><strong>Authorities.</strong> When the law or a lawful order requires it.</p>
+        <p>We don't share personal information with advertisers.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(6)
+        <p>Our service providers store and process personal information outside the Philippines, mainly in Singapore. Under the DPA we remain responsible for that information, and we choose providers whose terms commit them to protecting it.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(7)
+        <ul>
+            <li><strong>Account, profile and picture:</strong> while your account exists.</li>
+            <li><strong>Unused accounts:</strong> if you don't use your account for 2 years, we email you a warning and then delete it, as below.</li>
+            <li><strong>When an account is deleted:</strong> we remove its name, email, profile picture and sign-in links, and an accountant's profile. What remains is a nameless record, shown as "Deleted user", that the other person's chats point to.</li>
+            <li><strong>Messages after an account is deleted:</strong> they stay with the other person in the conversation, shown as from "Deleted user". When both people in a conversation have deleted their accounts, the conversation is deleted.</li>
+            <li><strong>Reviews and replies after an account is deleted:</strong> a client's reviews are removed, and ratings are recalculated. An accountant's profile is removed with its reviews and replies.</li>
+            <li><strong>Service work and documents after an account is deleted:</strong> documents someone uploaded are deleted with their account. The rest of the service work, such as requests, checklists and notes, stays with the other person, shown as from "Deleted user". A client's saved accountants are deleted.</li>
+            <li><strong>Reports:</strong> kept while we handle the report and any follow-up, then for 12 months.</li>
+            <li><strong>Logs and backups:</strong> our hosting and database providers keep them for a limited time under their own policies, and older copies are replaced in turn.</li>
+            <li><strong>Cookies:</strong> see section 8.</li>
+        </ul>
+        <p>You can delete your account from your <a href="/account">Account page</a>, or ask us to by emailing @Email. We may keep information for longer where the law requires it, or to establish or defend legal claims.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(8)
+        <table class="legal-table">
+            <caption class="sr-only">Cookies Tax Buddy uses</caption>
+            <thead><tr><th scope="col">Cookie</th><th scope="col">What it does</th><th scope="col">How long it lasts</th><th scope="col">Personal information</th></tr></thead>
+            <tbody>
+                @foreach (var (name, purpose, lifetime, personal) in Cookies)
+                {
+                    <tr><td data-label="Cookie">@name</td><td data-label="What it does">@purpose</td><td data-label="How long">@lifetime</td><td data-label="Personal information">@personal</td></tr>
+                }
+            </tbody>
+        </table>
+        <p><strong>Browser storage.</strong> Text you type in a chat stays in that browser tab's session storage until you send it, so it survives a reload. It isn't sent to us until you press Send, and the browser clears it when you close the tab.</p>
+        <p>All of these are needed for the Site to work, or to remember a setting you chose. We don't use advertising, analytics or tracking cookies, and the Site serves its own fonts. During sign-in, Google's pages may set their own cookies under their own policies.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(9)
+        <ul>
+            <li>The Site is served over HTTPS, and the sign-in cookie can't be read by scripts.</li>
+            <li>We don't hold passwords. You sign in with Google.</li>
+            <li>Our server checks access to every private item. Only a conversation's two participants can read it, whatever link is used.</li>
+            <li>Profile pictures are kept in private storage, reached only through the Site, and their location and camera data is removed.</li>
+            <li>Service documents are kept in private storage, reached only through the Site. Only the service's client and accountant can download them.</li>
+            <li>Our logs leave out message text, email addresses, contact details and tokens.</li>
+            <li>We limit how often messages and reports can be sent.</li>
+        </ul>
+        <p>No system is perfectly secure, but we take these steps to protect your information.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(10)
+        <p>If a personal data breach happens that the DPA and the National Privacy Commission's rules require us to report, we'll notify the Commission and the people affected within the time those rules set.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(11)
+        <p>Under the DPA, you have the right to:</p>
+        <ul>
+            <li><strong>be informed</strong> about how we process your personal information, as this policy does;</li>
+            <li><strong>access</strong> the personal information we hold about you;</li>
+            <li><strong>object</strong> to processing, including processing based on our legitimate interests;</li>
+            <li><strong>correct</strong> inaccurate or incomplete information;</li>
+            <li><strong>erasure or blocking</strong> of information that is incomplete, outdated, false, unlawfully obtained or no longer needed;</li>
+            <li><strong>data portability</strong>, meaning a copy of your information in a commonly used electronic format;</li>
+            <li><strong>damages</strong>, if you suffer harm from inaccurate, incomplete, outdated, false or unlawfully obtained information, or from its unauthorised use;</li>
+            <li><strong>complain</strong> to the National Privacy Commission (privacy.gov.ph).</li>
+        </ul>
+        <p>Your lawful heirs and assigns may exercise these rights if you die or become incapacitated.</p>
+        <p><strong>Doing it yourself.</strong> You can edit your profile, change or remove your picture, edit or delete your reviews, block someone, and withdraw your agreement to show contact details. Withdrawing that agreement takes your profile out of the directory. You can also delete your account from your <a href="/account">Account page</a>, and turn off notification emails there or from the link in any email.</p>
+        <p><strong>Asking us.</strong> Email our Data Protection Officer at @Email. We may need to confirm your identity first, for example by asking you to write from your account's email address. We'll respond within 15 working days, free of charge.</p>
+        <p><strong>Limits.</strong> We may refuse or limit a request where the law allows, for example to protect other people's rights, such as the other person's side of a conversation, or to establish or defend legal claims. If we do, we'll tell you why.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(12)
+        <p>The Site is not for anyone under 18. We don't knowingly let anyone under that age register. If you believe someone under that age has an account, tell us at @Email and we'll remove it.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(13)
+        <p>When a client shares personal information with an accountant for professional work, the accountant decides how it is used. The accountant is responsible for it under the DPA and their professional duties. We store messages and service work so the Site can deliver them. We use their content for nothing else, apart from handling reports (section 3) and complying with the law.</p>
+        <p>Please don't send your Taxpayer Identification Number, tax returns, government ID numbers or financial records in chat; a reminder above the message box says so. To share documents for a service your accountant has accepted, attach them to that service instead, where only the two of you can download them.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(14)
+        <p>Each version of this policy has a version label and a date, and we record which version you agreed to. We'll post each new version on the Site. If a change materially affects how we use your information, we'll tell you on the Site and by email at least 30 days before it takes effect, and ask you to confirm the new version the next time you use the Site while signed in. Changes the law requires may take effect sooner.</p>
+    </section>
+
+    <section class="legal-sec">
+        @Heading(15)
+        <ul>
+            <li>Data Protection Officer: @LegalText.Operator, the owner, at @Email</li>
+            <li>@LegalText.Operator, @LegalText.OperatorPlace</li>
+            <li>If you aren't satisfied with our response, you can complain to the National Privacy Commission (privacy.gov.ph).</li>
+        </ul>
+    </section>
 </article>
 </div>
+
+@code {
+    /// <summary>Section titles, in order; the contents list and the headings both come from here (LP02).</summary>
+    private static readonly string[] Sections =
+    [
+        "Who we are", "What we collect", "Why we use it, and on what basis", "What is public, and what is private",
+        "Who we share it with", "Transfers outside the Philippines", "How long we keep it", "Cookies and browser storage",
+        "How we protect it", "If there is a data breach", "Your rights", "Children", "Accountants and their clients' information",
+        "Changes to this policy", "Contact",
+    ];
+
+    private static readonly (string Purpose, string Information, string Basis)[] Purposes =
+    [
+        ("Create your account, sign you in and keep you signed in", "Google details, role, sign-in cookie", "Needed to provide the Site under our Terms (contract)"),
+        ("Keep a record of what you agreed to, and when", "Time and version of agreement", "Our legitimate interest in showing what you agreed to"),
+        ("Show accountant profiles, pictures, highlights, ratings, reviews and replies", "Profile, picture, highlights, reviews, replies", "Contract. Consent for an accountant's public contact details"),
+        ("Show a client's picture to the accountants they chat with", "Client's picture", "Contract"),
+        ("Deliver messages and show unread marks", "Messages", "Contract"),
+        ("Check who may write a review, and show reviews", "Conversation history, reviews", "Contract; our legitimate interest in trustworthy reviews"),
+        ("Keep a client's private list of accountants", "Saved accountants", "Contract"),
+        ("Run services between a client and an accountant: requests, checklists, notes and documents", "Service work, service documents", "Contract. The accountant's own basis for professional work (section 13)"),
+        ("Handle reports and blocks and enforce our Terms, including reading a reported conversation", "Reports, blocks, reported content", "Our legitimate interest in keeping users safe; establishing or defending legal claims"),
+        ("Keep the Site secure, limit abuse and fix errors", "Logs, security cookie, sending limits", "Our legitimate interest in a secure, working Site"),
+        ("Email you about new messages while you're away", "Email address, email setting", "Contract; you can turn these emails off"),
+        ("Remember your light or dark setting", "Theme cookie (no personal information)", "Not personal information"),
+        ("Comply with the law and lawful orders", "What the law or order requires", "Legal obligation"),
+    ];
+
+    /// <summary>The cookies the site sets (SDD data and persistence; F02 BD09, F04).</summary>
+    private static readonly (string Name, string Purpose, string Lifetime, string Personal)[] Cookies =
+    [
+        ("Sign-in cookie", "Keeps you signed in. Sent only over HTTPS, and can't be read by scripts", "14 days, renewed each time you use the Site; removed when you sign out", "Identifies your account"),
+        ("First sign-in cookie", "Holds your Google sign-in while you finish registering", "A few minutes", "Identifies your sign-in"),
+        ("Security cookie", "Protects the Site's forms against forgery", "Until you close your browser", "None"),
+        ("Theme cookie (taxbuddy-theme)", "Remembers light or dark mode", "One year; not set if you choose \"System\"", "None"),
+    ];
+
+    private static string SectionId(int number) => "privacy-" + number;
+
+    private static RenderFragment Heading(int number) => __builder =>
+    {
+        <h2 id="@SectionId(number)" tabindex="-1">@number. @Sections[number - 1]</h2>
+    };
+
+    private static RenderFragment Email => __builder =>
+    {
+        <a href="@("mailto:" + LegalText.ContactEmail)">@LegalText.ContactEmail</a>
+    };
+}

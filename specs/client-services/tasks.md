@@ -10,5 +10,10 @@ Scope: [spec](spec.md). Approach: [plan](plan.md).
 - [x] Verify role guards, drafts, offline behavior and asynchronous actor changes.
 - [x] Run old/new browser checks, syntax and documentation checks; inspect responsive screenshots.
 - [x] Record exact sources, environment, observations and cleanup in [new evidence](../../docs/delivery/evidence/2026-11-11-client-services.md); update STATUS.
-- [ ] Owner resolves the remaining D24–D28 details and accepts the prototype (pending; not implied by agent work).
-- [ ] Implement and verify production persistence, storage and authorization (future application task).
+- [x] Owner decides D24–D28 enough to build: the prototype's proposals adopted for now, plus D26/D28 for documents (2026-11-23). Prototype acceptance is still pending (G9).
+- [x] Application stage 1: persistence and authorization for saved accountants, requests, checklists and notes; 8 web tests ([evidence](../../docs/delivery/evidence/2026-11-23-f03-stage1.md)).
+- [x] Application stage 2: documents (R23) in a private Supabase Storage bucket, PDF, JPEG and PNG up to 10 MB, checked by content; 8 web tests and 24 unit tests ([evidence](../../docs/delivery/evidence/2026-11-23-f03-stage2-f15.md)).
+- [x] Create the private `service-documents` bucket in the development project (2026-11-23, by SQL; [evidence](../../docs/delivery/evidence/2026-11-23-f03-stage2-f15.md#service-documents-bucket-created)).
+- [ ] Upload and download a real file through the site (needs `Supabase:Url` and `Supabase:SecretKey` in user-secrets; no automated check reaches Supabase).
+- [ ] Owner decisions: the per-service count (working value 50), quotas, and the privacy impact assessment before real documents (legal issue 2.10).
+- [ ] The signed-in workspace pages seen in a browser at phone and desktop widths.

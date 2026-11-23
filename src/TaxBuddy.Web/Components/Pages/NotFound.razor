@@ -1,12 +1,19 @@
 ﻿@page "/not-found"
+@attribute [TaxBuddy.Web.Account.TermsNotRequired]
 @layout MainLayout
 @using Microsoft.AspNetCore.Diagnostics
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
    message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
 
-<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", Kind.Report => "Report", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : "/")" />
+<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", Kind.Report => "Report", Kind.Work => "Service progress", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : kind == Kind.Work ? "/workspace" : "/")" />
 
-@if (kind == Kind.Chat)
+@if (kind == Kind.Work)
+{
+    @* F03 (BR15): someone else's service or client, or an unknown one; nothing about it is shown (prototype unavailable). *@
+    <SeoHead Title="Not available · Tax Buddy" Description="This workspace isn't available." CanonicalPath="/workspace" />
+    <WorkUnavailable />
+}
+else if (kind == Kind.Chat)
 {
     @* F07 CH07: someone else's conversation or an unknown one; nothing about it is shown. *@
     <SeoHead Title="Conversation not available · Tax Buddy" Description="This conversation isn't available." CanonicalPath="/chats" />
@@ -56,7 +63,7 @@ else
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    private enum Kind { Page, Profile, Review, Chat, NewChat, Report }
+    private enum Kind { Page, Profile, Review, Chat, NewChat, Report, Work }
 
     private Kind kind;
 
@@ -66,6 +73,8 @@ else
         var original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value;
         kind = original switch
         {
+            { } path when path.StartsWith("/work/", StringComparison.OrdinalIgnoreCase)
+                          || path.StartsWith("/clients/", StringComparison.OrdinalIgnoreCase) => Kind.Work,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase)
                           && path.TrimEnd('/').EndsWith("/review", StringComparison.OrdinalIgnoreCase) => Kind.Review,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) => Kind.Profile,

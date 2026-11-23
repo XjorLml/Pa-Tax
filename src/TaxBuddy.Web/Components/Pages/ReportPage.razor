@@ -44,7 +44,7 @@ else if (view is not null)
             default:
                 <div class="panel">
                     <h1 id="page-title" tabindex="-1">Report this @What</h1>
-                    <p class="muted small">Reports go to the Tax Buddy team, who review them by hand. The other person isn't told who reported them.</p>
+                    <p class="muted small">Reports go to the Tax Buddy team, who review them by hand within 10 working days. The other person isn't told who reported them.</p>
                     <p class="report-about">@view.Target!.Description</p>
                     <form method="post" @formname="report" @onsubmit="HandleAsync" class="form" novalidate>
                         <AntiforgeryToken />

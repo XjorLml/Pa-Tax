@@ -133,6 +133,10 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at");
 
+                    b.Property<DateTimeOffset?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("deleted_at");
+
                     b.Property<string>("DisplayName")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -147,6 +151,10 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("boolean")
                         .HasColumnName("email_confirmed");
+
+                    b.Property<bool>("EmailNotifications")
+                        .HasColumnType("boolean")
+                        .HasColumnName("email_notifications");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")
@@ -370,6 +378,57 @@ namespace TaxBuddy.Web.Data.Migrations
                     b.ToTable("conversations", (string)null);
                 });
 
+            modelBuilder.Entity("TaxBuddy.Web.Domain.EmailJob", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("integer")
+                        .HasColumnName("attempts");
+
+                    b.Property<Guid>("ConversationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("conversation_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTimeOffset>("DueAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("due_at");
+
+                    b.Property<DateTimeOffset?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("finished_at");
+
+                    b.Property<Guid>("RecipientAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("recipient_account_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_email_jobs");
+
+                    b.HasIndex("ConversationId")
+                        .HasDatabaseName("ix_email_jobs_conversation_id");
+
+                    b.HasIndex("Status", "DueAt")
+                        .HasDatabaseName("ix_email_jobs_status_due_at");
+
+                    b.HasIndex("RecipientAccountId", "ConversationId", "CreatedAt")
+                        .HasDatabaseName("ix_email_jobs_recipient_account_id_conversation_id_created_at");
+
+                    b.ToTable("email_jobs", (string)null);
+                });
+
             modelBuilder.Entity("TaxBuddy.Web.Domain.Report", b =>
                 {
                     b.Property<Guid>("Id")
@@ -479,6 +538,232 @@ namespace TaxBuddy.Web.Data.Migrations
                         {
                             t.HasCheckConstraint("ck_reviews_stars", "stars BETWEEN 1 AND 5");
                         });
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.SavedAccountant", b =>
+                {
+                    b.Property<Guid>("ClientAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_account_id");
+
+                    b.Property<Guid>("ProfileId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("profile_id");
+
+                    b.Property<DateTimeOffset>("SavedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("saved_at");
+
+                    b.HasKey("ClientAccountId", "ProfileId")
+                        .HasName("pk_saved_accountants");
+
+                    b.HasIndex("ProfileId")
+                        .HasDatabaseName("ix_saved_accountants_profile_id");
+
+                    b.ToTable("saved_accountants", (string)null);
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceEngagement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AccountantAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("accountant_account_id");
+
+                    b.Property<Guid>("ClientAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("client_account_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("Phase")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("phase");
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("service_name");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_engagements");
+
+                    b.HasIndex("AccountantAccountId")
+                        .HasDatabaseName("ix_service_engagements_accountant_account_id");
+
+                    b.HasIndex("ClientAccountId", "AccountantAccountId", "ServiceName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_engagements_client_account_id_accountant_account_id~")
+                        .HasFilter("phase <> 'Declined'");
+
+                    b.ToTable("service_engagements", (string)null);
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceFile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("content_type");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("display_name");
+
+                    b.Property<Guid>("EngagementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("engagement_id");
+
+                    b.Property<long>("Length")
+                        .HasColumnType("bigint")
+                        .HasColumnName("length");
+
+                    b.Property<string>("ObjectName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("object_name");
+
+                    b.Property<Guid>("OperationId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("operation_id");
+
+                    b.Property<Guid?>("TaskId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("task_id");
+
+                    b.Property<Guid>("UploaderAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("uploader_account_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_files");
+
+                    b.HasIndex("ObjectName")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_files_object_name");
+
+                    b.HasIndex("TaskId")
+                        .HasDatabaseName("ix_service_files_task_id");
+
+                    b.HasIndex("EngagementId", "CreatedAt")
+                        .HasDatabaseName("ix_service_files_engagement_id_created_at");
+
+                    b.HasIndex("UploaderAccountId", "OperationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_files_uploader_account_id_operation_id");
+
+                    b.ToTable("service_files", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_service_files_length", "length BETWEEN 1 AND 10485760");
+                        });
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceTask", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EngagementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("engagement_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_tasks");
+
+                    b.HasIndex("EngagementId")
+                        .HasDatabaseName("ix_service_tasks_engagement_id");
+
+                    b.ToTable("service_tasks", (string)null);
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceUpdate", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid")
+                        .HasColumnName("id");
+
+                    b.Property<Guid>("AuthorAccountId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("author_account_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<Guid>("EngagementId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("engagement_id");
+
+                    b.Property<bool>("IsNote")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_note");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("text");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_updates");
+
+                    b.HasIndex("AuthorAccountId")
+                        .HasDatabaseName("ix_service_updates_author_account_id");
+
+                    b.HasIndex("EngagementId", "CreatedAt")
+                        .HasDatabaseName("ix_service_updates_engagement_id_created_at");
+
+                    b.ToTable("service_updates", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
@@ -695,6 +980,23 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasConstraintName("fk_conversations_client_account_id");
                 });
 
+            modelBuilder.Entity("TaxBuddy.Web.Domain.EmailJob", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Domain.Conversation", null)
+                        .WithMany()
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_email_jobs_conversation_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("RecipientAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_email_jobs_recipient_account_id");
+                });
+
             modelBuilder.Entity("TaxBuddy.Web.Domain.Report", b =>
                 {
                     b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
@@ -720,6 +1022,95 @@ namespace TaxBuddy.Web.Data.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("fk_reviews_client_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.SavedAccountant", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("ClientAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_saved_accountants_client_account_id");
+
+                    b.HasOne("TaxBuddy.Web.Domain.AccountantProfile", null)
+                        .WithMany()
+                        .HasForeignKey("ProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_saved_accountants_profile_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceEngagement", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("AccountantAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_engagements_accountant_account_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("ClientAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_engagements_client_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceFile", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Domain.ServiceEngagement", null)
+                        .WithMany()
+                        .HasForeignKey("EngagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_files_engagement_id");
+
+                    b.HasOne("TaxBuddy.Web.Domain.ServiceTask", null)
+                        .WithMany()
+                        .HasForeignKey("TaskId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_service_files_task_id");
+
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("UploaderAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_files_uploader_account_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceTask", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Domain.ServiceEngagement", null)
+                        .WithMany("Tasks")
+                        .HasForeignKey("EngagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_tasks_engagement_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceUpdate", b =>
+                {
+                    b.HasOne("TaxBuddy.Web.Data.TaxBuddyUser", null)
+                        .WithMany()
+                        .HasForeignKey("AuthorAccountId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_updates_author_account_id");
+
+                    b.HasOne("TaxBuddy.Web.Domain.ServiceEngagement", null)
+                        .WithMany()
+                        .HasForeignKey("EngagementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_updates_engagement_id");
+                });
+
+            modelBuilder.Entity("TaxBuddy.Web.Domain.ServiceEngagement", b =>
+                {
+                    b.Navigation("Tasks");
                 });
 #pragma warning restore 612, 618
         }

@@ -1,10 +1,16 @@
-@* The prototype's howHTML steps. Sign-in says Google only until Microsoft (R04) is built (BD10 deviation). *@
+@using TaxBuddy.Web.Account
+@inject AccountService Accounts
+@* The prototype's howHTML steps. Sign-in names the providers this site offers (F15). *@
 <ol class="steps @(Row ? "row" : null)">
     <li><strong>Browse for free</strong><span>Read portfolios and reviews without an account.</span></li>
-    <li><strong>Message who you like</strong><span>Sign in with Google first.</span></li>
+    <li><strong>Message who you like</strong><span>Sign in with @providers first.</span></li>
     <li><strong>Rate how it went</strong><span>Once they have replied to you, you can leave a review.</span></li>
 </ol>
 
 @code {
     [Parameter] public bool Row { get; set; }
+
+    private string providers = "Google";
+
+    protected override async Task OnInitializedAsync() => providers = await Accounts.ProviderNamesAsync();
 }
