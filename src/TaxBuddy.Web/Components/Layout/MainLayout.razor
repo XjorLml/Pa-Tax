@@ -11,13 +11,13 @@
     <div class="sitebar-inner">
         <a href="/" aria-label="Tax Buddy home"><BrandLogo /></a>
         <nav class="sitenav" aria-label="Main">
-            @* F03: Clients for accountants, My accountants for clients (prototype desktopShell). *@
-            @* Current on the directory and on profiles, as the prototype's desktopShell maps profile to directory. *@
-            <a href="/" class="@(InDirectory ? "active" : null)" aria-current="@(InDirectory ? "page" : null)">Find an accountant</a>
-            <NavLink href="/chats">Chats<UnreadBadge /></NavLink>
+            @* F03: Clients for accountants, My accountants for clients (prototype desktopShell). The current item follows the
+               prototype's map (NavSection): profiles count as the directory, service requests and work as the workspace. *@
+            <a href="/" class="@Active(NavSection.Directory)" aria-current="@Current(NavSection.Directory)">Find an accountant</a>
+            <a href="/chats" class="@Active(NavSection.Chats)" aria-current="@Current(NavSection.Chats)">Chats<UnreadBadge /></a>
             <AuthorizeView>
                 <Authorized>
-                    <NavLink href="/workspace">@(context.User.IsInRole("accountant") ? "Clients" : "My accountants")</NavLink>
+                    <a href="/workspace" class="@Active(NavSection.Workspace)" aria-current="@Current(NavSection.Workspace)">@(context.User.IsInRole("accountant") ? "Clients" : "My accountants")</a>
                 </Authorized>
             </AuthorizeView>
         </nav>
@@ -57,12 +57,9 @@
 </div>
 
 @code {
-    private bool InDirectory
-    {
-        get
-        {
-            var path = "/" + Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0];
-            return path == "/" || path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase);
-        }
-    }
+    private string? Section => NavSection.Of(Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0]);
+
+    private string? Active(string section) => Section == section ? "active" : null;
+
+    private string? Current(string section) => Section == section ? "page" : null;
 }

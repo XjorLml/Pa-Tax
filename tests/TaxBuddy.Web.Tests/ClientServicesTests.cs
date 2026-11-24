@@ -210,6 +210,24 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
     }
 
     [DatabaseFact]
+    public async Task The_site_bar_marks_the_workspace_on_service_client_and_request_pages()
+    {
+        // 2026-11-24, prototype desktopShell: these pages belong to the workspace, not the directory; the review page to none.
+        var (accountant, client, service) = await AcceptedAsync("Bookkeeping");
+        var profile = (await RegisterListedAsync("Rico Santos")).ProfileId!.Value;
+        const string current = """<a href="/workspace" class="active" aria-current="page"[^>]*>""";
+
+        Assert.Matches(current, await accountant.Client.GetHtmlAsync($"/work/{service}"));
+        Assert.Matches(current, await accountant.Client.GetHtmlAsync($"/clients/{client.Id}"));
+        var request = await client.Client.GetHtmlAsync($"/accountants/{profile.Value}/request-service");
+        Assert.Matches(current, request);
+        Assert.DoesNotMatch("""class="active" aria-current="page"[^>]*>Find an accountant""", request);
+        var review = await (await client.Client.GetAsync($"/accountants/{profile.Value}/review")).ReadHtmlAsync();
+        Assert.Contains("Write a review", review);
+        Assert.DoesNotContain("""class="active" aria-current="page""", review);
+    }
+
+    [DatabaseFact]
     public async Task An_accountant_adds_a_service_for_a_client_they_already_serve()
     {
         var (accountant, client, _) = await AcceptedAsync("Bookkeeping");

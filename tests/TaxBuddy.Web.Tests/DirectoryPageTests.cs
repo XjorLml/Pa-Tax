@@ -35,6 +35,7 @@ public sealed class DirectoryPageTests(SeededAppFixture app) : IClassFixture<See
         // Prototype howHTML, in the phone toggle and the wide-screen section (2026-11-24, since For accountants exists).
         const string forAccountants = """<p class="hero-foot">Are you an accountant? <a href="/for-accountants">See how listing works</a></p>""";
         Assert.Equal(2, html.Split(forAccountants).Length - 1);
+        Assert.Matches("""<a href="/" class="active" aria-current="page"[^>]*>Find an accountant</a>""", html);
     }
 
     [DatabaseFact]

@@ -5,10 +5,11 @@
     <AuthorizeView>
         <Authorized>
             @{ var name = context.User.FindFirst(TaxBuddyClaimsFactory.DisplayNameClaim)?.Value ?? "Account"; }
-            <NavLink class="userlink" href="/account">
+            @* Current on Account, the profile editor and deletion, not on the agree page (prototype desktopShell, NavSection). *@
+            <a class="userlink @(OnAccount ? "active" : null)" href="/account" aria-current="@(OnAccount ? "page" : null)">
                 <Avatar Name="@name" Picture="@(context.User.FindFirst(TaxBuddyClaimsFactory.PictureClaim)?.Value)" Size="sm" />
                 <span>@name</span>
-            </NavLink>
+            </a>
         </Authorized>
         <NotAuthorized>
             @* F13 (R17): prototype desktopShell's "For accountants" for visitors, hidden on narrow desktops. *@
@@ -21,4 +22,9 @@
 
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
+
+    [Inject] private NavigationManager Navigation { get; set; } = default!;
+
+    private bool OnAccount => TaxBuddy.Web.Components.Layout.NavSection.Of(Navigation.ToBaseRelativePath(Navigation.Uri).Split('?', '#')[0])
+        == TaxBuddy.Web.Components.Layout.NavSection.Account;
 }
