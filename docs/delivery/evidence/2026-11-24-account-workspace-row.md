@@ -28,8 +28,28 @@
 | `dotnet test TaxBuddy.slnx -c Release -m:1` | All pass | 354 passed (188 unit, 166 web); 0 failed, 0 skipped | Pass |
 | Rendered Account pages in Edge. A temporary test signed in an accountant and a client through the test host and saved `/account`; it was then deleted. The HTML was served locally with the built `app.css`, the scoped styles, the fonts and the logos, in the dark theme. Captured at 1280 × 900 and in a 390 px frame (headless Edge won't size its window that narrow) | The row first, with the list icon, the detail line and the chevron, in the prototype's style; the pencil on the avatar for both roles | As expected for both roles at both widths. The page script wasn't loaded, so this is the without-script view | Pass |
 
+## Follow-up the same day: long addresses and the site shell row
+
+The user said "yes fix both" to the two items found above.
+
+- **Long email addresses:** `.mi-main small` now has `overflow-wrap: anywhere`. The prototype had the same style and the same overflow, since its sample address is short. The fix went into the prototype's style first, then into `src/TaxBuddy.Web/Styles/app.css`, so the two stay the same and no deviation is recorded.
+- **DESIGN's site shell row** said Clients and "For accountants" would join the navigation when built. Both joined on 2026-11-23 (F03, F13). The row now describes the site bar and the phone tabs as built, which match the prototype's `desktopShell` and `tabbarHTML`.
+
+| File | Hash (SHA-256, first 12) |
+|---|---|
+| `prototypes/index.html` | `0209225981cd` |
+| `src/TaxBuddy.Web/Styles/app.css` | `0a329911f0eb` |
+
+| Procedure / command | Expected result | Actual observation / exit code | Outcome |
+|---|---|---|---|
+| `dotnet build TaxBuddy.slnx -c Release` | 0 warnings; the rule in the built `wwwroot/app.css` | 0 Warning(s), 0 Error(s); `.mi-main small{…overflow-wrap:anywhere…}` present | Pass |
+| The same rendered Account pages with the new stylesheet, in a 390 px frame and at 1280 × 900, dark | The address wraps inside its column and "Turn off" sits clear of it; desktop unchanged | As expected for both roles; the desktop capture is the same as before | Pass |
+| `node tools/check_prototype.mjs "<Edge>"`, Windows Node 22.12.0, on a copy of `prototypes/` and `tools/` in the Windows temp folder | All pass | `PASS: 202 prototype checks; Edg/158.0.4370.33` | Pass |
+
+The test suite wasn't rerun for these two changes: a stylesheet rule and a documentation row, with no markup changed.
+
 ## Restoration and limits
 
-- Cleanup: the temporary test file was deleted before the full run, and the local server on port 5311 was stopped (it no longer answers). Edge's temporary profile was removed. The screenshots stay in the session's scratch folder, outside the repository.
-- Seen, not changed: on a 390 px page a long email address with no break points (the tests' 32-character addresses) runs under the "Turn off" button in the Email notifications row. This was there before this change; short addresses fit.
+- Cleanup: the temporary test file was deleted before the full run, and the local server on port 5311 was stopped (it no longer answers). Edge's temporary profile was removed. The checker's Windows copy and its artifacts were deleted. The screenshots stay in the session's scratch folder, outside the repository.
+- Fixed the same day (above): on a 390 px page a long email address with no break points (the tests' 32-character addresses) ran under the "Turn off" button in the Email notifications row. This was there before the workspace row was added; short addresses fit.
 - Not run: the signed-in pages in a real signed-in browser, a phone browser, the light theme, and the picture script on the client's page. The script doesn't depend on the role.

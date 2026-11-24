@@ -891,10 +891,12 @@
     min-width: 0;
   }
 
+  /* A long email address with no break points wraps instead of running under the row's button (2026-11-24). */
   .mi-main small {
     display: block;
     color: var(--muted);
     font-size: 12.5px;
+    overflow-wrap: anywhere;
   }
 
   /* Body links are underlined, as in the prototype; buttons, navigation and cards are not. */
