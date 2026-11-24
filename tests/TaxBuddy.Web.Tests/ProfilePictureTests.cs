@@ -66,6 +66,28 @@ public sealed partial class ProfilePictureTests(EmptyAppFixture app) : IClassFix
     }
 
     [DatabaseFact]
+    public async Task A_client_changes_their_picture_on_Account_with_the_same_pencil_as_an_accountant()
+    {
+        // Prototype meCardHTML is the same for both roles; only the hint about who sees the picture differs.
+        var (client, _) = await SignedInAsync(AccountRole.Client, "Lea Santos");
+
+        var account = await (await client.GetAsync("/account")).ReadHtmlAsync();
+        Assert.Contains("<div class=\"picture-area\" data-picture=\"on\">", account);
+        Assert.Contains("<a class=\"avatar-edit\" href=\"#picture\" aria-label=\"Change profile picture\" data-picture-pencil>", account);
+        Assert.Contains("<p class=\"sub\">Client · Signed in with Google</p>", account);
+        Assert.Contains("data-picture-confirm hidden", account);
+        Assert.Contains("<section class=\"picture-card \" id=\"picture\"", account);
+        Assert.Contains("Only you and the accountants you chat with see it.", account);
+        Assert.DoesNotContain("Shown on your public profile and in the directory.", account);
+
+        await UploadAsync(client, TestImages.Png());
+        var saved = await (await client.GetAsync("/account?picture=saved")).ReadHtmlAsync();
+        Assert.Contains("Picture updated.", saved);
+        Assert.Matches(PictureAddress(), saved);
+        Assert.Contains("<button type=\"submit\" form=\"picture-remove\" class=\"linkbtn pic-inline\" data-picture-remove hidden>Remove picture</button>", saved);
+    }
+
+    [DatabaseFact]
     public async Task A_clients_picture_is_shown_to_that_client_only()
     {
         var (owner, accountId) = await SignedInAsync(AccountRole.Client, "Olive Reyes");
