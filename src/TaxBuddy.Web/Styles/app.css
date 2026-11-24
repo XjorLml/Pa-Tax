@@ -1370,6 +1370,27 @@
   }
 
   /* F03 client services (prototype taxbuddy.css .work-*): intro, stats, lists, panels, checklist, progress and history. */
+  /* The workspace pages' frame (WorkFrame; prototype .workspace, .work-page-title). Phones: the app bar has the title. */
+  .workspace {
+    padding-bottom: 24px;
+  }
+
+  .work-page-title {
+    margin: 8px 0 0;
+    font-size: 22px;
+  }
+
+  @media (max-width: 47.4375rem) {
+    .work-page-title {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
   .work-intro {
     max-width: 760px;
     margin: 8px 0 24px;

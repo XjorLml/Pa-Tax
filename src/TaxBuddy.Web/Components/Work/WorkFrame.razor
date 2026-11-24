@@ -1,0 +1,30 @@
+@* F03: the workspace pages' frame (prototype desktopMain for workspace, client, work and request): the full 1040 px page
+   width, a breadcrumb that starts with Clients or My accountants, and the page's h1. On phones the app bar shows the
+   title and the back arrow, so the breadcrumb is hidden and the h1 is kept for screen readers (2026-11-24; until then
+   these pages used the 680 px single column under a heading band). *@
+<div class="workspace">
+    <nav class="crumbs" aria-label="Breadcrumb">
+        <a href="/workspace">@ListName</a>
+        @if (!IsList)
+        {
+            <span aria-hidden="true">/</span>
+            <span>@Title</span>
+        }
+    </nav>
+    <h1 id="page-title" tabindex="-1" class="work-page-title">@Title</h1>
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>"Clients" for an accountant; "My accountants" for a client or a visitor, as in the prototype.</summary>
+    [Parameter] public bool Accountant { get; set; }
+
+    /// <summary>True on the list itself, where the breadcrumb is only the list's name.</summary>
+    [Parameter] public bool IsList { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string ListName => Accountant ? "Clients" : "My accountants";
+}

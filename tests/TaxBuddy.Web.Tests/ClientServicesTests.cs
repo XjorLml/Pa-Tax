@@ -195,6 +195,21 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
     }
 
     [DatabaseFact]
+    public async Task Workspace_pages_use_the_prototype_frame()
+    {
+        // 2026-11-24: the full page width with the breadcrumb and h1 (prototype desktopMain), not the 680 px column.
+        var (accountant, client, service) = await AcceptedAsync("Bookkeeping");
+
+        var list = await client.Client.GetHtmlAsync("/workspace");
+        Assert.Contains("""<nav class="crumbs" aria-label="Breadcrumb"><a href="/workspace">My accountants</a></nav>""", list);
+        Assert.Contains("""<h1 id="page-title" tabindex="-1" class="work-page-title">My accountants</h1>""", list);
+        Assert.DoesNotContain("single-inner", list);
+
+        var work = await accountant.Client.GetHtmlAsync($"/work/{service}");
+        Assert.Matches("""<a href="/workspace">Clients</a>\s*<span aria-hidden="true">/</span>\s*<span>Service progress</span>""", work);
+    }
+
+    [DatabaseFact]
     public async Task An_accountant_adds_a_service_for_a_client_they_already_serve()
     {
         var (accountant, client, _) = await AcceptedAsync("Bookkeeping");

@@ -12,9 +12,7 @@
 
 <SeoHead Title="Request a service · Tax Buddy" Description="Request a service from an accountant on Tax Buddy." CanonicalPath="@($"/accountants/{Id}/request-service")" />
 <PhoneBar Title="Request a service" Back="@($"/accountants/{Id}")" />
-<DeskTitle Title="Request a service" />
-
-<div class="single-inner work-page">
+<WorkFrame Title="Request a service" Accountant="@WorkService.IsAccountant(viewer)">
     @if (viewer is null)
     {
         <StateMessage IconName="lock" Title="Sign in to request a service" Text="Requests and service work are private to you and the accountant.">
@@ -56,7 +54,7 @@
             </form>
         </section>
     }
-</div>
+</WorkFrame>
 
 @code {
     [Parameter] public Guid Id { get; set; }

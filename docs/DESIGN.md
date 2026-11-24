@@ -161,6 +161,7 @@ Link business rules to the PRD instead of redefining them. Keep keyboard focus w
 - Unavailable pages answer 404 with the same "This workspace is not available" message.
 
 **Aligned with the prototype on 2026-11-24** (after a [comparison](delivery/evidence/2026-11-24-prototype-site-comparison.md)):
+- **Frame:** every workspace page (My accountants or Clients, Client services, Request a service, Service progress) now uses the prototype's desktop frame: the full 1040 px page width, a breadcrumb starting with "Clients" or "My accountants", and the page's h1 (`WorkFrame`, `.workspace`, `.work-page-title` at 22 px). This includes their not-available states. Until then they used the 680 px single column under a heading band, which left the service detail's main column about 356 px wide. On phones the app bar shows the title, so the breadcrumb is hidden and the h1 is kept for screen readers.
 - **Failed saves:** "We couldn't change your list. Please try again." is the prototype's red `.work-error` alert, on the profile and in My accountants. It used to be styled as a success line. On My accountants it stays above the list, where it is seen after the page reloads; the prototype puts it under the list.
 - **Times:** history entries show "3:05 PM" today, and "Yesterday · 3:05 PM" or "Nov 16 · 3:05 PM" before that. Until then today's entries showed the time twice.
 

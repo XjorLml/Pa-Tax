@@ -10,9 +10,7 @@
 
 <SeoHead Title="Client services · Tax Buddy" Description="A client's services on Tax Buddy." CanonicalPath="@($"/clients/{ClientId}")" />
 <PhoneBar Title="Client services" Back="/workspace" />
-<DeskTitle Title="Client services" />
-
-<div class="single-inner work-page">
+<WorkFrame Title="Client services" Accountant="@WorkService.IsAccountant(viewer)">
     @if (viewer is null)
     {
         <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
@@ -66,7 +64,7 @@
             </section>
         }
     }
-</div>
+</WorkFrame>
 
 @code {
     [Parameter] public Guid ClientId { get; set; }

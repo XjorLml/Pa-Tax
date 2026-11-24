@@ -11,9 +11,7 @@
 <SeoHead Title="@($"{Title} · Tax Buddy")" Description="Your private Tax Buddy workspace." CanonicalPath="/workspace" />
 <PhoneBar Title="@Title" />
 <PhoneTabs Current="workspace" />
-<DeskTitle Title="@Title" />
-
-<div class="single-inner work-page">
+<WorkFrame Title="@Title" Accountant="@WorkService.IsAccountant(viewer)" IsList="true">
     @if (viewer is null)
     {
         <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
@@ -135,7 +133,7 @@
             </div>
         }
     }
-</div>
+</WorkFrame>
 
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }

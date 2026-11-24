@@ -20,9 +20,7 @@
 
 <SeoHead Title="Service progress · Tax Buddy" Description="Private service progress on Tax Buddy." CanonicalPath="@($"/work/{Id}")" />
 <PhoneBar Title="Service progress" Back="/workspace" />
-<DeskTitle Title="Service progress" />
-
-<div class="single-inner work-page">
+<WorkFrame Title="Service progress" Accountant="@WorkService.IsAccountant(viewer)">
     @if (viewer is null)
     {
         <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
@@ -281,7 +279,7 @@
             </aside>
         </div>
     }
-</div>
+</WorkFrame>
 
 @code {
     [Parameter] public Guid Id { get; set; }
