@@ -14,6 +14,7 @@ Scope: [spec](spec.md). Approach: [plan](plan.md).
 - [x] Application stage 1: persistence and authorization for saved accountants, requests, checklists and notes; 8 web tests ([evidence](../../docs/delivery/evidence/2026-11-23-f03-stage1.md)).
 - [x] Application stage 2: documents (R23) in a private Supabase Storage bucket, PDF, JPEG and PNG up to 10 MB, checked by content; 8 web tests and 24 unit tests ([evidence](../../docs/delivery/evidence/2026-11-23-f03-stage2-f15.md)).
 - [x] Create the private `service-documents` bucket in the development project (2026-11-23, by SQL; [evidence](../../docs/delivery/evidence/2026-11-23-f03-stage2-f15.md#service-documents-bucket-created)).
+- [x] The workspace row on Account, for both roles (CS13, 2026-11-24; [evidence](../../docs/delivery/evidence/2026-11-24-account-workspace-row.md)).
 - [ ] Upload and download a real file through the site (needs `Supabase:Url` and `Supabase:SecretKey` in user-secrets; no automated check reaches Supabase).
 - [ ] Owner decisions: the per-service count (working value 50), quotas, and the privacy impact assessment before real documents (legal issue 2.10).
 - [ ] The signed-in workspace pages seen in a browser at phone and desktop widths.

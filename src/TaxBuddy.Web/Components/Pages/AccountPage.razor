@@ -6,8 +6,9 @@
 @inject ProfileEditorService Editor
 @inject TaxBuddy.Web.Application.Pictures.ProfilePictureService Pictures
 @inject EmailPreferences EmailSettings
-@* Account (prototype meHTML; F02 BD10). Static. Rows for features not built yet are left out until they exist:
-   service work (F03) and reviews (R13). Account deletion (R09) joined in F12, email notifications (R08) in F14. *@
+@* Account (prototype meHTML; F02 BD10). Static. Rows joined as their features were built: account deletion (R09) in
+   F12, email notifications (R08) in F14, and service work (F03) on 2026-11-24. The accountant's "My reviews" row is
+   left out by the user's choice (F09, 2026-11-17; kept on 2026-11-24). *@
 
 <SeoHead Title="Account · Tax Buddy" Description="Your Tax Buddy account." CanonicalPath="/account" />
 <PhoneBar Title="Account" />
@@ -109,6 +110,14 @@
         </div>
 
         <ul class="menu">
+            @* F03 (R19, R20): the workspace, as in the site bar and the phone tabs (DESIGN workspace navigation). *@
+            <li>
+                <a class="mi" href="/workspace">
+                    <Icon Name="list" />
+                    <span class="mi-main">@(isAccountant ? "Clients and service work" : "My accountants and service progress")<small>Private checklists, shared updates and service documents</small></span>
+                    <Icon Name="chevron" />
+                </a>
+            </li>
             @if (isAccountant)
             {
                 <li>

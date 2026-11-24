@@ -208,6 +208,33 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
         Assert.DoesNotContain("href=\"/workspace\"", await app.Factory.CreateHttpsClient().GetHtmlAsync("/"));
     }
 
+    [DatabaseFact]
+    public async Task Account_opens_the_workspace_by_role_as_its_first_row()
+    {
+        // Prototype meHTML: the workspace row comes first, then the accountant's profile row; "My reviews" stays out (F09).
+        var accountant = await RegisterAsync(AccountRole.Accountant, "Nina Ocampo");
+        var client = await RegisterAsync(AccountRole.Client, "Olive Reyes");
+        const string detail = "<small>Private checklists, shared updates and service documents</small>";
+
+        var asAccountant = await accountant.Client.GetHtmlAsync("/account");
+        Assert.Contains($"<span class=\"mi-main\">Clients and service work{detail}</span>", asAccountant);
+        Assert.True(asAccountant.IndexOf("Clients and service work", StringComparison.Ordinal) < asAccountant.IndexOf("My profile and portfolio", StringComparison.Ordinal));
+        Assert.DoesNotContain("My reviews", asAccountant);
+
+        var asClient = await client.Client.GetHtmlAsync("/account");
+        Assert.Contains($"<span class=\"mi-main\">My accountants and service progress{detail}</span>", asClient);
+        Assert.DoesNotContain("Clients and service work", asClient);
+
+        foreach (var page in new[] { asAccountant, asClient })
+        {
+            Assert.Matches("""<a class="mi" href="/workspace">\s*<svg""", page);
+        }
+
+        var visitor = await app.Factory.CreateHttpsClient().GetHtmlAsync("/account");
+        Assert.Contains("You're browsing as a visitor", visitor);
+        Assert.DoesNotContain("<a class=\"mi\" href=\"/workspace\">", visitor);
+    }
+
     private sealed record Person(HttpClient Client, Guid Id, AccountantId? ProfileId = null);
 
     private async Task<Person> RegisterAsync(AccountRole role, string name)

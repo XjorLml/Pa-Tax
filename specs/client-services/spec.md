@@ -40,6 +40,14 @@ At the user's request "implement Service documents and Microsoft sign-in", with 
 
 Working value: 50 documents per service (D26 counts and quotas are open). Not done: a real Supabase bucket round trip (the `service-documents` bucket exists since 2026-11-23, but this machine has no Supabase API key for the site), the signed-in pages in a browser, and the privacy impact assessment the legal notes recommend before real documents (issue 2.10).
 
+## Account row (2026-11-24)
+
+The user asked whether the prototype's Account screen was completely implemented, and then: "yes add the clients row, keep my reviews out". The prototype's `meHTML` opens Account's menu with the workspace row, and DESIGN lists Account among the workspace's ways in, but stage 1 added only the site bar and phone tabs. "My reviews" stays out ([F09](../reviews/spec.md)).
+
+| ID / requirement | Given / when | Observable result in the application | Verification |
+|---|---|---|---|
+| CS13 / R19, R20, DESIGN | A signed-in accountant or client opens Account | The first row links to `/workspace`: "Clients and service work" or "My accountants and service progress", with "Private checklists, shared updates and service documents" and a chevron; visitors don't see it; no "My reviews" row | Web test; rendered page in Edge ([evidence](../../docs/delivery/evidence/2026-11-24-account-workspace-row.md)) |
+
 ## Decisions and evidence limits
 
 The private-save/request/accept model is confirmed. Other lifecycle, editing/completion and demo file policies remain proposals. Demo files: generated PDF/CSV/TXT, 5 MiB maximum simulated size; unsupported/oversize samples exist to exercise rejection. Actual storage provider, scanning, limits, retention, deletion and relationship termination must be decided before real documents are accepted. See [ADR 009](../../docs/adr/009-private-service-workspaces.md).

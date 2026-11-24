@@ -90,6 +90,7 @@ Use the [evidence template](evidence/TEMPLATE.md). A template/procedure is not a
 | [F14 email notifications](evidence/2026-11-23-f14-email.md) | 2026-11-23 | `1565e69` plus uncommitted work; source SHA-256 prefixes in the record | WSL2 with .NET SDK 11.0.100; development database (throwaway schemas; migration applied) | Agent-observed | 301 tests (16 new for email). No real email (no Brevo account); no browser check of the signed-in email row |
 | [F12 account deletion and F13 information pages](evidence/2026-11-23-f12-f13.md) | 2026-11-23 | `1565e69` plus uncommitted work; source SHA-256 prefixes in the record | WSL2 with .NET SDK 11.0.100; development database (throwaway schemas; migration applied); Windows Node 22.12.0; Edge 158.0.4370.33 | Agent-observed | 285 tests (one earlier run had 10 unexplained setup failures, not reproduced); 202 prototype checks; new pages in Edge with no overflow. Signed-in deletion not seen in a browser |
 | [F02 theme toggle in the header](evidence/2026-11-23-f02-theme-toggle.md) | 2026-11-23 | `1565e69` plus uncommitted work; source SHA-256 prefixes in the record | WSL2 with .NET SDK 11.0.100; the user's running site (Debug); Windows Node 22.12.0; Edge 158.0.4370.33 | Agent-observed | 269 tests; 202 prototype checks; toggle seen and pressed at 320–1440 px with the device light and dark. No keyboard, screen-reader or other-browser checks |
+| [Account workspace row and picture pencil for both roles](evidence/2026-11-24-account-workspace-row.md) | 2026-11-24 | `ff4f0df` plus uncommitted work; source SHA-256 prefixes in the record | WSL2 with .NET SDK 11.0.100; development database (throwaway schemas); headless Edge 158.0.4370.33 | Agent-observed | Release build; 354 tests (2 new). Rendered Account pages for both roles viewed at 1280 and 390 px, dark theme, without script. No signed-in browser session |
 
 ## Remaining gates and decisions
 
@@ -365,4 +366,8 @@ The subsequent F03 expansion added PRD R19–R23, ADR 009, private workspace con
   - **Checked:** 352 tests pass (188 unit, 164 web, 3 of them new); the published files ran locally with the container's settings; the migration bundle ran against the development database ([evidence](evidence/2026-11-24-oci-docker.md)).
   - **Not done:** building the image (no Docker on this PC) and deploying (no VM yet).
   - **Privacy text:** the hosting provider is now Oracle Cloud Infrastructure, Singapore, in pending version `2026-11-23.2`.
+  - Committed on 2026-11-24.
+- 2026-11-24, after the user asked whether the prototype's Account screen was completely implemented: "yes add the clients row, keep my reviews out also consider the edit profile picture for both account and client based on the prototype".
+  - **Built:** Account's first row now opens the workspace: "Clients and service work" for an accountant, "My accountants and service progress" for a client ([F03 CS13](../../specs/client-services/spec.md#account-row-2026-11-24)). "My reviews" stays out.
+  - **Checked:** picture editing on Account was already the same for both roles; a new test now covers the client's pencil. 354 tests pass (188 unit, 166 web, 2 of them new). Both roles' rendered Account pages were viewed in Edge at desktop and phone widths ([evidence](evidence/2026-11-24-account-workspace-row.md)).
   - Committed on 2026-11-24.

@@ -46,5 +46,6 @@ Pick, preview, save, 2026-11-19 (PP10):
 - [x] Prototype: E is the default design; the checker follows (202 checks).
 - [x] Update DESIGN, the SDD's Account row, STATUS, the documentation index and the prototype README.
 - [x] Release build and all tests; the script run in Edge against the rendered Account page in six states ([evidence](../../docs/delivery/evidence/2026-11-19-f06-picture-option-e.md)).
+- [x] Both roles checked against the prototype's `meCardHTML` (2026-11-24): a client's Account has the same pencil, preview controls and panel as an accountant's, with the client's hint; a web test covers it and the rendered page was seen in Edge ([evidence](../../docs/delivery/evidence/2026-11-24-account-workspace-row.md)). The editor's pencil is for accountants only, since clients have no profile editor.
 - [ ] A real upload through the pencil on the running site in a signed-in browser, including on a phone, where the chooser offers the camera.
 - [ ] Owner walkthrough (G9).

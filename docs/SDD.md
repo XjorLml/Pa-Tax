@@ -212,7 +212,7 @@ Proposed same-site routes: `/workspace` (role-aware private list), `/clients/{cl
 - **Code:** `WorkService` (Application/Work) checks the participant on every operation, and `WorkStore` (Data) runs each change in one context, with `Version` as the concurrency token. A stale checklist save returns Stale, and the page shows the posted choices with "Saved now: …".
 - **Pages, all static with named forms** (C04 closed for service work): `/workspace` (My accountants or Clients), `/clients/{clientId}` (an accountant's services with one client, and adding one), `/accountants/{id}/request-service`, `/work/{id}` (request, checklist, notes, history). Saving posts to `POST /my-accountants` (an endpoint, so the static profile page needs no named form).
 - **Unavailable:** an unknown or someone else's service or client answers 404, and the not-found page shows "This workspace is not available" for `/work/` and `/clients/`. Visitors are asked to sign in.
-- **Navigation:** "My accountants" or "Clients" in the site bar and the phone tabs.
+- **Navigation:** "My accountants" or "Clients" in the site bar and the phone tabs, and since 2026-11-24 a row on Account ("My accountants and service progress" or "Clients and service work"), as in the prototype's `meHTML` and [DESIGN](DESIGN.md#service-workspace-presentation).
 - **Not yet:** live updates between open tabs (a reload shows changes).
 
 **As built, F03 stage 2, documents (2026-11-23):** R23 with D26/D28 as decided; [evidence](delivery/evidence/2026-11-23-f03-stage2-f15.md).
