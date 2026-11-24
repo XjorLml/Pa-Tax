@@ -37,7 +37,8 @@ public sealed class AccountDeletionTests(EmptyAppFixture app) : IClassFixture<Em
         Assert.Contains("Your chats stay with the people you talked to, shown as from “Deleted user”.", clientPage);
         Assert.Contains("""<a class="btn btn-danger" href="/account/delete?step=confirm">Continue</a>""", clientPage);
         Assert.Contains("""<a class="btn" href="/account">Cancel</a>""", clientPage);
-        Assert.DoesNotContain("email", clientPage.ToLowerInvariant().Split("<main")[1].Split("</main>")[0]); // R08 isn't built.
+        // Prototype deleteHTML; the email clause joined on 2026-11-24, since R08 is built (F14).
+        Assert.Contains("<li>Your profile picture and email notifications for this account.</li>", clientPage);
 
         var accountantPage = await accountant.Client.GetHtmlAsync(DeletePage);
         Assert.Contains("Your public profile, with its reviews and your replies. It leaves the directory immediately.", accountantPage);

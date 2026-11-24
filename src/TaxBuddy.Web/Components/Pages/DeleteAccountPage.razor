@@ -8,8 +8,8 @@
 @* F12 (PRD R09, BR06, D07): delete your own account. Prototype deleteHTML: "Delete your account?" with what is removed,
    then "Are you sure?". Static: step one is a page, step two adds ?step=confirm, and the deletion is a named form posted
    with the page's antiforgery token. Not behind the terms agreement (F11), so a person can leave without accepting new
-   terms. Recorded deviations: no email row until R08 exists, and a "deleted" state on this page instead of the
-   prototype's toast on the directory, because static pages have no toasts. *@
+   terms. Recorded deviation: a "deleted" state on this page instead of the prototype's toast on the directory, because
+   static pages have no toasts. The list names email notifications since 2026-11-24 (R08 is built, F14). *@
 
 <SeoHead Title="Delete account · Tax Buddy" Description="Delete your Tax Buddy account." CanonicalPath="/account/delete" />
 <PhoneBar Title="Delete account" Back="@(done ? null : "/account")" />
@@ -43,7 +43,7 @@
                 {
                     <li>Your reviews. The accountants' ratings are recalculated.</li>
                 }
-                <li>Your profile picture.</li>
+                <li>Your profile picture and email notifications for this account.</li>
             </ul>
             <p class="note"><span>Your chats stay with the people you talked to, shown as from “@DeletedAccount.DisplayName”.</span></p>
             <div class="actions">

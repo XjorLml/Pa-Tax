@@ -21,7 +21,7 @@ A signed-in person deletes their own account on the site, after confirming. The 
 - **Coming back:** signing in again with the same Google account starts a new registration.
 
 **Exclusions:**
-- Notification email settings (R08 isn't built; the page doesn't mention emails yet).
+- Notification email settings: R08 wasn't built when this was written, so the page didn't mention emails. Since 2026-11-24 (R08 built in F14) the list says "Your profile picture and email notifications for this account.", as in the prototype.
 - Service work and documents (F03, D27).
 - Undoing a deletion.
 - An admin page; the RELEASE moderation steps still cover closing accounts by hand.
