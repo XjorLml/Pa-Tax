@@ -306,6 +306,15 @@
     width: 100%;
   }
 
+  /* A sign-in provider's button with its mark (GoogleMark): Google's spacing between the mark and the text. */
+  .btn-provider {
+    gap: 10px;
+  }
+
+  .btn-provider .provider-mark {
+    flex: none;
+  }
+
   /* Site bar (desktopShell). Hidden on phones, where the app bar and tab bar take over (phoneShell). */
   .sitebar {
     display: none;

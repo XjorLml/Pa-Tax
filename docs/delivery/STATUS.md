@@ -359,3 +359,4 @@ The subsequent F03 expansion added PRD R19–R23, ADR 009, private workspace con
   - **Also:** Help now has the prototype's service, documents and email questions.
   - **Waiting on the user:** `Supabase:Url` and `Supabase:SecretKey` in user-secrets on this machine, so the site can reach the bucket; the open G14 items; approval of the legal text.
   - Not staged or committed.
+- 2026-11-24, at the user's request "add google logo on the sigin button": Google's "G" on "Continue with Google" ([evidence](evidence/2026-11-24-google-mark.md)); a recorded deviation from the prototype in DESIGN. The database was unreachable from the first network that day; on another network all 349 tests passed, two classes only on a rerun after a fixture-start failure whose cause wasn't captured. Committed on 2026-11-24.

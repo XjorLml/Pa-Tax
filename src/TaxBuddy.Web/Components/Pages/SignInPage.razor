@@ -41,7 +41,7 @@ else
                         <AntiforgeryToken />
                         <input type="hidden" name="provider" value="@AccountSetup.GoogleScheme" />
                         <input type="hidden" name="returnUrl" value="@returnUrl" />
-                        <button type="submit" class="btn btn-block">Continue with Google</button>
+                        <button type="submit" class="btn btn-block btn-provider"><GoogleMark />Continue with Google</button>
                     </form>
                 }
                 @if (microsoftAvailable)

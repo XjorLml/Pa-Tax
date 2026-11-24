@@ -220,6 +220,8 @@ public sealed class SignInWithoutDatabaseTests : IDisposable
         Assert.Contains("""name="provider" value="Google" """.Trim(), html);
         Assert.Contains("""name="returnUrl" value="/accountants/x" """.Trim(), html);
         Assert.Contains("Continue with Google", html);
+        // Google's "G" sits before the text and is hidden from screen readers; the text names the provider (2026-11-24).
+        Assert.Matches("""<button type="submit" class="btn btn-block btn-provider"><svg class="provider-mark"[^>]*aria-hidden="true"[\s\S]*?</svg>\s*Continue with Google</button>""", html);
         Assert.Contains("name=\"__RequestVerificationToken\"", html);
     }
 

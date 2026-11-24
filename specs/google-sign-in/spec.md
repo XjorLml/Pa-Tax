@@ -42,6 +42,7 @@ A visitor signs in with their Google account. On the first sign-in they choose t
 | GS06 / R04 | A signed-in person presses "Sign out" | The session ends in that browser; the header shows "Sign in" again | Web.Tests, browser |
 | GS07 / R16 | Any page | Footer links to Terms of use and Privacy. Both pages load without sign-in and say plainly that they are a draft, not reviewed legal text | Web.Tests |
 | GS08 / SETUP | The site runs with no Google client ID or secret configured | The sign-in page says Google sign-in isn't set up and offers no broken button; the rest of the site works | Web.Tests |
+| GS10a / DESIGN | A visitor opens `/signin` (added 2026-11-24 at the owner's request) | "Continue with Google" starts with Google's four-colour "G", hidden from screen readers, in light and dark themes | Web.Tests; screenshots ([evidence](../../docs/delivery/evidence/2026-11-24-google-mark.md)) |
 | GS09 / R04, TP07 | The owner runs the site locally with real Google credentials | Real round trip: Google's page, back to the site, registration, then a returning sign-in | Manual, owner or agent with the owner's credentials |
 | GS10 / R11, SDD diagnostics | Any of the above | No email address or name is written to the logs. Client accounts appear on no public page. Accountant registration lists nothing | Code review, Web.Tests |
 
