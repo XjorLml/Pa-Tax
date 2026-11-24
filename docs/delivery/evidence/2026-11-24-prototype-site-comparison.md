@@ -14,6 +14,15 @@ Classes used below:
 - **Stale:** recorded as "left out until X is built", but X is built.
 - **Docs:** documents that disagree with the code or with each other.
 
+**Fixed later the same day** at the user's "yes fix the first two" ([evidence](2026-11-24-prototype-alignment-fixes.md)):
+- the two bugs: history times printed twice, and a failed add or remove shown as success;
+- the four Stale items;
+- the workspace frame;
+- the current site bar item;
+- the not-available states: chat panes, the review panel, workspace frames, and Request a service's 404.
+
+The rows below are kept as found.
+
 **Correction (same day):** an earlier version listed DESIGN:66 ("Read their story") as out of date. It isn't: both the prototype and the site add that text through CSS (`.card-foot::before`).
 
 Recorded deviations (R) aren't repeated in the tables; they stay in DESIGN's screen table and the specs. Every page has some, mostly because static pages work without script.
