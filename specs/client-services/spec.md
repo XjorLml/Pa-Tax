@@ -57,6 +57,7 @@ After a [comparison](../../docs/delivery/evidence/2026-11-24-prototype-site-comp
 | CS14 / DESIGN | A signed-in user opens any workspace page on a wide screen | The full page width, a breadcrumb starting with "Clients" or "My accountants", and the page's h1; the site bar marks Clients or My accountants, including on Request a service | Web test |
 | CS15 / R20 | Adding or removing an accountant fails | "We couldn't change your list. Please try again." as a red alert, on the profile and in My accountants | Web test |
 | CS16 / R22 | A history entry from today, yesterday or earlier | "10:42 AM", "Yesterday · 10:42 AM", "Nov 16 · 10:42 AM"; the time is never shown twice | Unit test |
+| CS17 / BR15 | An accountant opens Request a service, or the profile is unknown or unlisted; or a workspace address is malformed | 404 with "This workspace is not available" in the workspace frame; a visitor is asked to sign in | Web test |
 
 ## Decisions and evidence limits
 

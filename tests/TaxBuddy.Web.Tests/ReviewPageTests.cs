@@ -166,10 +166,15 @@ public sealed class ReviewPageTests(EmptyAppFixture app) : IClassFixture<EmptyAp
     [DatabaseFact]
     public async Task An_unknown_accountant_has_no_review_page()
     {
-        var response = await app.Factory.CreateHttpsClient().GetAsync($"/accountants/{AccountantId.New()}/review");
+        var id = AccountantId.New();
+        var response = await app.Factory.CreateHttpsClient().GetAsync($"/accountants/{id}/review");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        Assert.Contains("This accountant is no longer available", await response.ReadHtmlAsync());
+        var html = await response.ReadHtmlAsync();
+        Assert.Contains("This accountant is no longer available", html);
+        // 2026-11-24: inside the "Write a review" panel under "Back to profile", as in the prototype's d-review.
+        Assert.Contains($"""<nav class="crumbs" aria-label="Breadcrumb"><a href="/accountants/{id}">Back to profile</a></nav>""", html);
+        Assert.Contains("""<h1 id="page-title" tabindex="-1">Write a review</h1>""", html);
     }
 
     [DatabaseFact]

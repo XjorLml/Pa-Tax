@@ -228,6 +228,28 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
     }
 
     [DatabaseFact]
+    public async Task Unavailable_requests_and_malformed_addresses_keep_the_workspace_frame()
+    {
+        var accountant = await RegisterAsync(AccountRole.Accountant, "Nina Ocampo");
+        var profile = (await RegisterListedAsync("Rico Santos")).ProfileId!.Value;
+
+        // An accountant can't request a service: the workspace's own 404 answer (DESIGN), not a page of its own.
+        var asAccountant = await accountant.Client.GetAsync($"/accountants/{profile.Value}/request-service");
+        Assert.Equal(HttpStatusCode.NotFound, asAccountant.StatusCode);
+        Assert.Contains("This workspace is not available", await asAccountant.ReadHtmlAsync());
+
+        // A malformed address keeps the frame; a visitor is asked to sign in first (SDD private workspaces).
+        var malformed = await accountant.Client.GetAsync("/clients/not-an-id");
+        var malformedHtml = await malformed.ReadHtmlAsync();
+        Assert.Equal(HttpStatusCode.NotFound, malformed.StatusCode);
+        Assert.Contains("""<h1 id="page-title" tabindex="-1" class="work-page-title">Client services</h1>""", malformedHtml);
+        Assert.Contains("This workspace is not available", malformedHtml);
+        var visitor = await app.Factory.CreateHttpsClient().GetAsync("/work/not-an-id");
+        Assert.Equal(HttpStatusCode.NotFound, visitor.StatusCode);
+        Assert.Contains("Sign in to see your workspace", await visitor.ReadHtmlAsync());
+    }
+
+    [DatabaseFact]
     public async Task An_accountant_adds_a_service_for_a_client_they_already_serve()
     {
         var (accountant, client, _) = await AcceptedAsync("Bookkeeping");

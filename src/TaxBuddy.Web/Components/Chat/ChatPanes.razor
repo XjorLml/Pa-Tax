@@ -96,6 +96,19 @@
                 </div>
             </div>
         }
+        else if (Mode == UnavailableMode)
+        {
+            @* Prototype desktopMain panes for a thread or compose state: the list stays, and the state sits in the detail
+               pane under its head (2026-11-24). Rendered statically by the page; nothing here is live. *@
+            <div class="pane-head">
+                <h1 tabindex="-1">@DetailTitle</h1>
+            </div>
+            <div class="pane-scroll pad">
+                <StateMessage IconName="@StateIcon" Title="@StateTitle" Text="@StateText">
+                    <a class="btn" href="@StateHref">@StateLink</a>
+                </StateMessage>
+            </div>
+        }
         else
         {
             <div class="pane-head">
@@ -276,6 +289,9 @@
     public const string ThreadMode = "thread";
     public const string NewMode = "new";
 
+    /// <summary>A state in place of a conversation ("isn't available", "Only clients can start chats"), drawn statically.</summary>
+    public const string UnavailableMode = "unavailable";
+
     /// <summary>The prototype's message ideas (STARTERS).</summary>
     private static readonly string[] Starters =
     [
@@ -286,8 +302,21 @@
 
     [CascadingParameter] public Task<AuthenticationState>? AuthenticationState { get; set; }
 
-    /// <summary><see cref="ListMode"/>, <see cref="ThreadMode"/> or <see cref="NewMode"/>.</summary>
+    /// <summary><see cref="ListMode"/>, <see cref="ThreadMode"/>, <see cref="NewMode"/> or <see cref="UnavailableMode"/>.</summary>
     [Parameter, EditorRequired] public string Mode { get; set; } = ListMode;
+
+    /// <summary>For <see cref="UnavailableMode"/>: the detail pane's title ("Chat" or the accountant's name) and its state.</summary>
+    [Parameter] public string DetailTitle { get; set; } = "Chat";
+
+    [Parameter] public string StateIcon { get; set; } = "alert";
+
+    [Parameter] public string StateTitle { get; set; } = "";
+
+    [Parameter] public string? StateText { get; set; }
+
+    [Parameter] public string StateHref { get; set; } = "/chats";
+
+    [Parameter] public string StateLink { get; set; } = "Back to chats";
 
     [Parameter] public Guid? ConversationId { get; set; }
 

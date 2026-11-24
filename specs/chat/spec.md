@@ -63,6 +63,7 @@ A signed-in client starts a text chat with an accountant from the accountant's p
 - The connection notice is the prototype's offline banner, fixed to the top of the window.
 - New state, not in the prototype: a listed profile with no account behind it (the development seed) says "This accountant can't receive messages yet".
 - Left out until their features existed: the accountant's email note in the list (R08, joined 2026-11-24), the deleted-account notes (D07, came with F12). "Report" and "Block" came with F10 (R15).
+- Since 2026-11-24, states in place of a conversation ("isn't available", "Only clients can start chats", "This accountant is no longer available", "can't receive messages yet") keep the conversation list beside them on wide screens, as in the prototype's panes; they are drawn without a live connection. A visitor at a malformed conversation address is asked to sign in ([comparison](../../docs/delivery/evidence/2026-11-24-prototype-site-comparison.md)).
 
 ## Evidence limits
 

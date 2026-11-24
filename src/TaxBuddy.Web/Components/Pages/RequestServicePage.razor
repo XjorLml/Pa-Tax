@@ -25,9 +25,8 @@
     }
     else if (accountant is null)
     {
-        <StateMessage IconName="lock" Title="This isn't available" Text="Only clients can request services, from an accountant who can take them.">
-            <a class="btn" href="/workspace">Back to my workspace</a>
-        </StateMessage>
+        @* An accountant, or an unknown or unlisted profile: a 404 with the same answer as every workspace page, drawn by
+           the not-found page (prototype requestHTML's unavailable(); DESIGN, 2026-11-24). *@
     }
     else
     {
@@ -80,6 +79,10 @@
         try
         {
             accountant = await Work.RequestTargetAsync(viewer, new AccountantId(Id));
+            if (accountant is null)
+            {
+                Navigation.NotFound(); // The not-found page draws "This workspace is not available" in this page's frame.
+            }
         }
         catch (DataUnavailableException)
         {

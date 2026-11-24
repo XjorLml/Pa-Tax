@@ -2,32 +2,69 @@
 @attribute [TaxBuddy.Web.Account.TermsNotRequired]
 @layout MainLayout
 @using Microsoft.AspNetCore.Diagnostics
+@using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Work
+@using TaxBuddy.Web.Components.Chat
 @* PRD R18: "Page not found" for unknown addresses, with a way back. For a profile address (R03, FT05) the
-   message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error. *@
+   message is "This profile is no longer available": a removed, unlisted or mistyped profile, not an error.
+   Since 2026-11-24 the other variants keep their prototype frames: workspace states sit under the workspace breadcrumb
+   and h1, chat states in the detail pane beside the conversation list, and the review state in the "Write a review"
+   panel. A visitor at a workspace or chat address is asked to sign in first, as on those pages. *@
 
-<PhoneBar Title="@(kind switch { Kind.Profile => "Profile", Kind.Chat or Kind.NewChat => "Chat", Kind.Review => "Write a review", Kind.Report => "Report", Kind.Work => "Service progress", _ => "Page not found" })" Back="@(kind == Kind.Chat ? "/chats" : kind == Kind.Work ? "/workspace" : "/")" />
+<PhoneBar Title="@PhoneTitle" Back="@PhoneBack" />
 
-@if (kind == Kind.Work)
+@if (kind is Kind.Work or Kind.Request)
 {
     @* F03 (BR15): someone else's service or client, or an unknown one; nothing about it is shown (prototype unavailable). *@
     <SeoHead Title="Not available · Tax Buddy" Description="This workspace isn't available." CanonicalPath="/workspace" />
-    <WorkUnavailable />
+    <WorkFrame Title="@WorkTitle" Accountant="@WorkService.IsAccountant(viewer)">
+        @if (viewer is null)
+        {
+            <StateMessage IconName="lock" Title="Sign in to see your workspace" Text="Client lists, service progress and documents are private.">
+                <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(original)">Sign in</a>
+            </StateMessage>
+        }
+        else
+        {
+            <WorkUnavailable />
+        }
+    </WorkFrame>
+}
+else if (kind == Kind.Chat && viewer is null)
+{
+    @* The same state as a visitor at a conversation address (ChatThreadPage). *@
+    <SeoHead Title="Chat · Tax Buddy" Description="A conversation on Tax Buddy." CanonicalPath="/chats" />
+    <StateMessage IconName="chat" HeadingLevel="1" Title="Sign in to see this chat">
+        <a class="btn btn-primary" href="@AccountEndpoints.SignInPageAddress(original)">Sign in</a>
+    </StateMessage>
 }
 else if (kind == Kind.Chat)
 {
     @* F07 CH07: someone else's conversation or an unknown one; nothing about it is shown. *@
     <SeoHead Title="Conversation not available · Tax Buddy" Description="This conversation isn't available." CanonicalPath="/chats" />
-    <StateMessage IconName="alert" HeadingLevel="1" Title="This conversation isn't available" Text="It may have been removed, or it belongs to a different account.">
-        <a class="btn" href="/chats">Back to chats</a>
-    </StateMessage>
+    <ChatPanes Mode="@ChatPanes.UnavailableMode" DetailTitle="Chat" StateTitle="This conversation isn't available"
+               StateText="It may have been removed, or it belongs to a different account." StateHref="/chats" StateLink="Back to chats" />
 }
-else if (kind is Kind.NewChat or Kind.Review)
+else if (kind == Kind.NewChat)
 {
-    @* F07 CH08 and F09 (prototype threadParts, reviewPageHTML): the accountant's profile is unlisted, removed or unknown. *@
+    @* F07 CH08 (prototype threadParts "compose"): the accountant's profile is unlisted, removed or unknown. *@
     <SeoHead Title="Accountant not available · Tax Buddy" Description="This accountant is no longer available." CanonicalPath="/" />
-    <StateMessage IconName="alert" HeadingLevel="1" Title="This accountant is no longer available">
-        <a class="btn" href="/">Back to directory</a>
-    </StateMessage>
+    <ChatPanes Mode="@ChatPanes.UnavailableMode" DetailTitle="Chat" StateTitle="This accountant is no longer available"
+               StateHref="/" StateLink="Back to directory" />
+}
+else if (kind == Kind.Review)
+{
+    @* F09 (prototype d-review and reviewPageHTML): the state sits in the "Write a review" panel, under "Back to profile". *@
+    <SeoHead Title="Accountant not available · Tax Buddy" Description="This accountant is no longer available." CanonicalPath="/" />
+    <div class="narrow">
+        <nav class="crumbs" aria-label="Breadcrumb"><a href="@ReviewedProfilePath">Back to profile</a></nav>
+        <div class="panel titled">
+            <h1 id="page-title" tabindex="-1">Write a review</h1>
+            <StateMessage IconName="alert" Title="This accountant is no longer available">
+                <a class="btn" href="/">Back to directory</a>
+            </StateMessage>
+        </div>
+    </div>
 }
 else if (kind == Kind.Report)
 {
@@ -63,20 +100,51 @@ else
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
-    private enum Kind { Page, Profile, Review, Chat, NewChat, Report, Work }
+    private enum Kind { Page, Profile, Review, Chat, NewChat, Report, Work, Request }
 
     private Kind kind;
+    private string original = "/";
+    private TaxBuddy.Web.Application.Chat.ChatViewer? viewer;
+
+    private bool OnClients => original.StartsWith("/clients/", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>The prototype's workspace titles (service-workspace.js page).</summary>
+    private string WorkTitle => kind == Kind.Request ? "Request a service" : OnClients ? "Client services" : "Service progress";
+
+    /// <summary>"/accountants/{id}/review" → "/accountants/{id}".</summary>
+    private string ReviewedProfilePath => original.TrimEnd('/')[..^"/review".Length];
+
+    private string PhoneTitle => kind switch
+    {
+        Kind.Profile => "Profile",
+        Kind.Chat or Kind.NewChat => "Chat",
+        Kind.Review => "Write a review",
+        Kind.Report => "Report",
+        Kind.Work or Kind.Request => WorkTitle,
+        _ => "Page not found",
+    };
+
+    private string PhoneBack => kind switch
+    {
+        Kind.Chat => "/chats",
+        Kind.Work or Kind.Request => viewer is null ? "/" : "/workspace",
+        Kind.Review => ReviewedProfilePath,
+        _ => "/",
+    };
 
     protected override void OnInitialized()
     {
         // Re-executed for a 404: the feature holds the address the visitor asked for. Rendered in place: the request path is it.
-        var original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value;
+        original = HttpContext?.Features.Get<IStatusCodeReExecuteFeature>()?.OriginalPath ?? HttpContext?.Request.Path.Value ?? "/";
+        viewer = ChatDisplay.ViewerOf(HttpContext?.User);
         kind = original switch
         {
             { } path when path.StartsWith("/work/", StringComparison.OrdinalIgnoreCase)
                           || path.StartsWith("/clients/", StringComparison.OrdinalIgnoreCase) => Kind.Work,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase)
                           && path.TrimEnd('/').EndsWith("/review", StringComparison.OrdinalIgnoreCase) => Kind.Review,
+            { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase)
+                          && path.TrimEnd('/').EndsWith("/request-service", StringComparison.OrdinalIgnoreCase) => Kind.Request,
             { } path when path.StartsWith("/accountants/", StringComparison.OrdinalIgnoreCase) => Kind.Profile,
             { } path when path.StartsWith("/chats/new/", StringComparison.OrdinalIgnoreCase) => Kind.NewChat,
             { } path when path.StartsWith("/report/", StringComparison.OrdinalIgnoreCase) => Kind.Report,

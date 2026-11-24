@@ -98,6 +98,9 @@ public sealed class ChatPageTests(EmptyAppFixture app) : IClassFixture<EmptyAppF
             var html = await response.ReadHtmlAsync();
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
             Assert.Contains("This conversation isn't available", html);
+            // 2026-11-24: the list stays beside the state, as in the prototype's panes.
+            Assert.Contains("""<section class="pane-list" aria-label="Conversations">""", html);
+            Assert.Contains("""<h1 tabindex="-1">Chat</h1>""", html);
             Assert.DoesNotContain("Something private", html);
             Assert.DoesNotContain("Olive Reyes", html);
             Assert.DoesNotContain("Nina Ocampo", html);
@@ -113,14 +116,24 @@ public sealed class ChatPageTests(EmptyAppFixture app) : IClassFixture<EmptyAppF
         var profile = await ListProfileAsync(accountantId, "Nina Ocampo");
         var (client, _) = await SignedInAsync(AccountRole.Client, "Olive Reyes");
 
-        Assert.Contains("Only clients can start chats", await (await accountant.GetAsync($"/chats/new/{profile}")).ReadHtmlAsync());
+        var notAClient = await (await accountant.GetAsync($"/chats/new/{profile}")).ReadHtmlAsync();
+        Assert.Contains("Only clients can start chats", notAClient);
+        Assert.Contains("""<section class="pane-list" aria-label="Conversations">""", notAClient); // Prototype panes.
+        Assert.Contains("""<h1 tabindex="-1">Nina Ocampo</h1>""", notAClient);
         Assert.Contains("No client messages yet", await (await accountant.GetAsync("/chats")).ReadHtmlAsync());
         Assert.Contains("No chats yet", await (await client.GetAsync("/chats")).ReadHtmlAsync());
 
         var unknown = await client.GetAsync($"/chats/new/{Guid.NewGuid()}");
         Assert.Equal(HttpStatusCode.NotFound, unknown.StatusCode);
-        Assert.Contains("This accountant is no longer available", await unknown.ReadHtmlAsync());
+        var unknownHtml = await unknown.ReadHtmlAsync();
+        Assert.Contains("This accountant is no longer available", unknownHtml);
+        Assert.Contains("No chats yet", unknownHtml); // The client's own list stays beside the state.
         Assert.Equal(HttpStatusCode.NotFound, (await client.GetAsync("/chats/new/not-an-id")).StatusCode);
+
+        // A visitor at a malformed conversation address is asked to sign in, as at any conversation address.
+        var visitor = await app.Factory.CreateHttpsClient().GetAsync("/chats/not-an-id");
+        Assert.Equal(HttpStatusCode.NotFound, visitor.StatusCode);
+        Assert.Contains("Sign in to see this chat", await visitor.ReadHtmlAsync());
     }
 
     [DatabaseFact]

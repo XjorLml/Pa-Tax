@@ -20,17 +20,17 @@
         </PhoneBar>
         <ChatPanes @rendermode="InteractiveServer" Mode="@ChatPanes.NewMode" ProfileId="profileId.Value" />
         break;
+    @* These two states keep the conversation list beside them on wide screens, as the prototype's panes do (2026-11-24). *@
     case NewChatOutcome.NotAClient:
         <PhoneBar Title="@Name" Back="@Display.ProfilePath(profileId)" />
-        <StateMessage IconName="chat" HeadingLevel="1" Title="Only clients can start chats" Text="You're signed in as an accountant.">
-            <a class="btn" href="@Display.ProfilePath(profileId)">Back to profile</a>
-        </StateMessage>
+        <ChatPanes Mode="@ChatPanes.UnavailableMode" DetailTitle="@Name" StateIcon="chat" StateTitle="Only clients can start chats"
+                   StateText="You're signed in as an accountant." StateHref="@Display.ProfilePath(profileId)" StateLink="Back to profile" />
         break;
     case NewChatOutcome.NoAccount:
         <PhoneBar Title="@Name" Back="@Display.ProfilePath(profileId)" />
-        <StateMessage IconName="chat" HeadingLevel="1" Title="This accountant can't receive messages yet" Text="Their profile isn't connected to a Tax Buddy account. Their contact details are on their profile.">
-            <a class="btn" href="@Display.ProfilePath(profileId)">Back to profile</a>
-        </StateMessage>
+        <ChatPanes Mode="@ChatPanes.UnavailableMode" DetailTitle="@Name" StateIcon="chat" StateTitle="This accountant can't receive messages yet"
+                   StateText="Their profile isn't connected to a Tax Buddy account. Their contact details are on their profile."
+                   StateHref="@Display.ProfilePath(profileId)" StateLink="Back to profile" />
         break;
     case null when loadFailed:
         <PhoneBar Title="Chat" Back="/" />
