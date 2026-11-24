@@ -48,6 +48,14 @@ The user asked whether the prototype's Account screen was completely implemented
 |---|---|---|---|
 | CS13 / R19, R20, DESIGN | A signed-in accountant or client opens Account | The first row links to `/workspace`: "Clients and service work" or "My accountants and service progress", with "Private checklists, shared updates and service documents" and a chevron; visitors don't see it; no "My reviews" row | Web test; rendered page in Edge ([evidence](../../docs/delivery/evidence/2026-11-24-account-workspace-row.md)) |
 
+## Prototype alignment (2026-11-24)
+
+After a [comparison](../../docs/delivery/evidence/2026-11-24-prototype-site-comparison.md), the user said "yes fix the first two" (its bugs and lapsed items, then the layout problems). Presentation: [DESIGN](../../docs/DESIGN.md#service-workspace-presentation).
+
+| ID / requirement | Given / when | Observable result in the application | Verification |
+|---|---|---|---|
+| CS16 / R22 | A history entry from today, yesterday or earlier | "10:42 AM", "Yesterday · 10:42 AM", "Nov 16 · 10:42 AM"; the time is never shown twice | Unit test |
+
 ## Decisions and evidence limits
 
 The private-save/request/accept model is confirmed. Other lifecycle, editing/completion and demo file policies remain proposals. Demo files: generated PDF/CSV/TXT, 5 MiB maximum simulated size; unsupported/oversize samples exist to exercise rejection. Actual storage provider, scanning, limits, retention, deletion and relationship termination must be decided before real documents are accepted. See [ADR 009](../../docs/adr/009-private-service-workspaces.md).

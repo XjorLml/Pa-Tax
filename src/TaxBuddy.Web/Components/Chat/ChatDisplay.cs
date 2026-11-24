@@ -38,6 +38,13 @@ public static class ChatDisplay
         _ => ManilaTime.ToManila(instant).ToString("MMM d", English),
     };
 
+    /// <summary>
+    /// A service history time: "3:05 PM" today, otherwise "Yesterday · 3:05 PM" or "Nov 16 · 3:05 PM" (prototype
+    /// work timeline: the time is added only when the short form has none).
+    /// </summary>
+    public static string ShortWithTime(DateTimeOffset instant, DateTimeOffset now) =>
+        DayOffset(instant, now) == 0 ? Time(instant) : $"{Short(instant, now)} · {Time(instant)}";
+
     /// <summary>The thread's day separator: "Today", "Yesterday", otherwise "Mon, Nov 16" (prototype <c>dayLabel</c>).</summary>
     public static string Day(DateTimeOffset instant, DateTimeOffset now) => DayOffset(instant, now) switch
     {

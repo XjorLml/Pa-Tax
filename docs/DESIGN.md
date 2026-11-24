@@ -160,6 +160,9 @@ Link business rules to the PRD instead of redefining them. Keep keyboard focus w
 - "Remove from my list" is a button on each saved accountant in My accountants.
 - Unavailable pages answer 404 with the same "This workspace is not available" message.
 
+**Aligned with the prototype on 2026-11-24** (after a [comparison](delivery/evidence/2026-11-24-prototype-site-comparison.md)):
+- **Times:** history entries show "3:05 PM" today, and "Yesterday · 3:05 PM" or "Nov 16 · 3:05 PM" before that. Until then today's entries showed the time twice.
+
 **Built in the site, F03 stage 2, documents (2026-11-23):** the prototype's `filesHTML` panel under the checklist, with the `.work-files`, `.work-upload` and `.work-field` styles ported and the prototype's file icon. A real file input replaces the sample selector, with the hint "PDF, JPEG or PNG, up to 10 MB. Both of you can download it." and the "Attach to" menu. Each document shows its name, "Available · uploader · time · task or Whole service · size", Download, and Remove for its uploader. Recorded deviations:
 - No upload progress bar or "Uploading…" state: the page has no script, so the browser shows its own progress while the form posts.
 - After a failed or refused upload the message shows above the button, which reads "Retry upload", and the chosen task is kept; the file must be chosen again, because browsers don't keep a file choice across pages.

@@ -273,7 +273,7 @@
                     {
                         <li>
                             <strong>@update.AuthorName</strong>
-                            <time datetime="@update.At.ToString("O")">@ChatDisplay.Short(update.At, Clock.UtcNow) · @ChatDisplay.Time(update.At)</time>
+                            <time datetime="@update.At.ToString("O")">@ChatDisplay.ShortWithTime(update.At, Clock.UtcNow)</time>
                             <p>@update.Text</p>
                         </li>
                     }
