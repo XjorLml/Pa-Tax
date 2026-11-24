@@ -32,6 +32,9 @@ public sealed class DirectoryPageTests(SeededAppFixture app) : IClassFixture<See
         // (F04 spec, recorded clarification); no text asks the visitor to sign in to browse.
         Assert.DoesNotContain("Sign in to", html, StringComparison.OrdinalIgnoreCase);
         Assert.Contains(">Sign in</a>", html);
+        // Prototype howHTML, in the phone toggle and the wide-screen section (2026-11-24, since For accountants exists).
+        const string forAccountants = """<p class="hero-foot">Are you an accountant? <a href="/for-accountants">See how listing works</a></p>""";
+        Assert.Equal(2, html.Split(forAccountants).Length - 1);
     }
 
     [DatabaseFact]

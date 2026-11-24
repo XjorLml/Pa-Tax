@@ -907,8 +907,16 @@
   .banner a,
   .prose a:not(.btn),
   .check a,
-  .center-col p a {
+  .center-col p a,
+  .hero-foot a {
     text-decoration: underline;
+  }
+
+  /* "Are you an accountant? See how listing works" under the How it works steps (prototype howHTML, .hero-foot). */
+  .hero-foot {
+    margin: 10px 0 0;
+    font-size: 13.5px;
+    color: var(--text);
   }
 
   /* Heading band of single-column pages (prototype .single-wrap .pane-head). Screen-reader only on phones. */

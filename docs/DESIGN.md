@@ -120,7 +120,7 @@ As built in F01, 2026-11-13 ([evidence](delivery/evidence/2026-11-13-f01-browse-
   - "Choose a reason." sits under the chips.
 - **A blocked client's profile** says "You can't review {first}." (BR19).
 - **The search box's × clear button** needs script; the "Clear" link in the meta row replaces it.
-- **"How it works"** says "Sign in with Google first." (it names the providers the site offers; Microsoft is archived, so it stays "Google" where the prototype says "Google or Microsoft"), and leaves out "See how listing works" until the For accountants page (R17) exists.
+- **"How it works"** says "Sign in with Google first." (it names the providers the site offers; Microsoft is archived, so it stays "Google" where the prototype says "Google or Microsoft"). It ends with "Are you an accountant? See how listing works", in the phone toggle and the wide-screen section, as in the prototype; that line was left out until the For accountants page (R17) existed, and joined on 2026-11-24.
 - **State headings** are the page's h1 where the state is the whole page; they look the same as the prototype's h2.
 
 Directory pages lead with a short introduction and labelled search, followed by comparable cards. The desktop introduction uses an original decorative ledger illustration rather than fabricated statistics or portraits. Cards show initials, career title, rating/count, location/experience, services, summary and profile action in a consistent order. Profiles keep a clearly separated contact panel; mobile keeps its contact action below the scrolling content. Serif display type is limited to brand/headings; controls, forms, messages and dense facts stay in the body face.
