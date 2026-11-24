@@ -128,7 +128,12 @@ else if (profile is not null)
             @* F09 (prototype reviewsHTML; PRD R13, R14, BR09–BR11). *@
             <section class="section" aria-labelledby="reviews-heading">
                 <h2 id="reviews-heading" class="section-title" tabindex="-1">Reviews</h2>
-                @if (SavedText is { } saved)
+                @if (Saved == "failed")
+                {
+                    @* F03: the prototype's red .work-error for a failed add or remove (2026-11-24; it was green). *@
+                    <p class="work-error" role="alert">We couldn't change your list. Please try again.</p>
+                }
+                else if (SavedText is { } saved)
                 {
                     <p class="save-status ok" role="status">@saved</p>
                 }
@@ -394,7 +399,6 @@ else if (profile is not null)
         "review-deleted" => "Your review was deleted.",
         "reply" => "Your reply was posted.",
         "added" => "Accountant added to your private list.",
-        "failed" => "We couldn't change your list. Please try again.",
         _ => null,
     };
 

@@ -179,6 +179,22 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
     }
 
     [DatabaseFact]
+    public async Task A_failed_add_or_remove_is_shown_as_an_error()
+    {
+        // 2026-11-24: the prototype's red .work-error, on My accountants and on the profile; it was a green success line.
+        var client = await RegisterAsync(AccountRole.Client, "Olive Reyes");
+        var profile = (await RegisterListedAsync("Rico Santos")).ProfileId!.Value;
+        const string failedLine = """<p class="work-error" role="alert">We couldn't change your list. Please try again.</p>""";
+
+        foreach (var page in new[] { "/workspace?saved=failed", $"/accountants/{profile.Value}?saved=failed" })
+        {
+            var html = await client.Client.GetHtmlAsync(page);
+            Assert.Contains(failedLine, html);
+            Assert.DoesNotContain("save-status ok", html);
+        }
+    }
+
+    [DatabaseFact]
     public async Task An_accountant_adds_a_service_for_a_client_they_already_serve()
     {
         var (accountant, client, _) = await AcceptedAsync("Bookkeeping");
@@ -244,6 +260,12 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
         await TestAccounts.RegisterAsync(client, role, name, email);
         await using var db = app.Schema.CreateContext();
         return new Person(client, (await db.Users.SingleAsync(u => u.Email == email)).Id);
+    }
+
+    private async Task<Person> RegisterListedAsync(string name)
+    {
+        var accountant = await RegisterAsync(AccountRole.Accountant, name);
+        return accountant with { ProfileId = await ListProfileAsync(accountant.Id, name) };
     }
 
     private async Task<AccountantId> ListProfileAsync(Guid owner, string name)

@@ -54,6 +54,7 @@ After a [comparison](../../docs/delivery/evidence/2026-11-24-prototype-site-comp
 
 | ID / requirement | Given / when | Observable result in the application | Verification |
 |---|---|---|---|
+| CS15 / R20 | Adding or removing an accountant fails | "We couldn't change your list. Please try again." as a red alert, on the profile and in My accountants | Web test |
 | CS16 / R22 | A history entry from today, yesterday or earlier | "10:42 AM", "Yesterday · 10:42 AM", "Nov 16 · 10:42 AM"; the time is never shown twice | Unit test |
 
 ## Decisions and evidence limits

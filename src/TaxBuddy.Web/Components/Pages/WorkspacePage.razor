@@ -60,7 +60,12 @@
     else if (clientView is { } cv)
     {
         <WorkIntro Title="Your people. Your next steps." Text="Accountants you have added, with your service progress in one place." />
-        @if (SavedText is { } saved)
+        @if (Saved == "failed")
+        {
+            @* The prototype's red .work-error (2026-11-24; it was green). Kept above the list, where it is seen after the redirect. *@
+            <p class="work-error" role="alert">We couldn't change your list. Please try again.</p>
+        }
+        else if (SavedText is { } saved)
         {
             <p class="save-status ok" role="status">@saved</p>
         }
@@ -147,7 +152,6 @@
     private string? SavedText => Saved switch
     {
         "removed" => "Removed from your list. Existing service work stays here.",
-        "failed" => "We couldn't change your list. Please try again.",
         _ => null,
     };
 
