@@ -908,7 +908,8 @@
   .prose a:not(.btn),
   .check a,
   .center-col p a,
-  .hero-foot a {
+  .hero-foot a,
+  .conv-note a {
     text-decoration: underline;
   }
 
@@ -2540,6 +2541,11 @@
     min-width: 0;
     min-height: 0;
     background: var(--surface);
+  }
+
+  /* The accountant's email note above the conversation list (prototype convListHTML: margin 0 0 10px). */
+  .conv-note {
+    margin: 0 0 10px;
   }
 
   .pane-scroll {

@@ -7,6 +7,7 @@
 @inject IClock Clock
 @inject IJSRuntime JS
 @inject NavigationManager Navigation
+@inject EmailPreferences EmailSettings
 @* F07 chat (prototype convListHTML, messagesHTML, composerHTML, threadParts and the desktop panes). The one interactive
    part of the chat pages (SDD render modes): it receives only IDs, takes the viewer from the sign-in, and reloads from
    the database whenever the notifier says a conversation changed. The composer's text and its message ID live in the
@@ -53,6 +54,11 @@
             }
             else if (conversations is not null)
             {
+                @if (emailOn is { } on)
+                {
+                    @* F14 (R08): prototype convListHTML's note for accountants (joined 2026-11-24). *@
+                    <p class="muted small conv-note">@(on ? "New client messages are also emailed to you." : "Email notifications are off.") <a href="/account">Change</a></p>
+                }
                 <ul class="convs">
                     @foreach (var c in conversations)
                     {
@@ -307,7 +313,7 @@
     /// the same page instead of an empty one while it loads again.</summary>
     public sealed record ChatSnapshot(
         DateTimeOffset Now, IReadOnlyList<ConversationSummary>? Conversations, bool ListFailed, ThreadView? Thread, NewChat? NewChat,
-        bool ThreadFailed);
+        bool ThreadFailed, bool? EmailOn = null);
 
     [PersistentState] public ChatSnapshot? Snapshot { get; set; }
 
@@ -319,6 +325,7 @@
     private DateTimeOffset now;
     private IReadOnlyList<ConversationSummary>? conversations;
     private bool listFailed;
+    private bool? emailOn;
     private ThreadView? thread;
     private NewChat? newChat;
     private bool threadFailed;
@@ -359,13 +366,13 @@
         viewer = AuthenticationState is null ? null : ChatDisplay.ViewerOf((await AuthenticationState).User);
         if (RendererInfo.IsInteractive && Snapshot is { } loaded)
         {
-            (now, conversations, listFailed, thread, newChat, threadFailed) =
-                (loaded.Now, loaded.Conversations, loaded.ListFailed, loaded.Thread, loaded.NewChat, loaded.ThreadFailed);
+            (now, conversations, listFailed, thread, newChat, threadFailed, emailOn) =
+                (loaded.Now, loaded.Conversations, loaded.ListFailed, loaded.Thread, loaded.NewChat, loaded.ThreadFailed, loaded.EmailOn);
         }
         else
         {
             await LoadAsync();
-            Snapshot = new ChatSnapshot(now, conversations, listFailed, thread, newChat, threadFailed);
+            Snapshot = new ChatSnapshot(now, conversations, listFailed, thread, newChat, threadFailed, emailOn);
         }
 
         if (RendererInfo.IsInteractive && viewer is not null)
@@ -431,6 +438,19 @@
             catch (Application.Directory.DataUnavailableException)
             {
                 listFailed = true;
+            }
+
+            // F14 (R08): the accountant's note above the list says whether new messages are emailed. Read once per page.
+            if (!viewer.IsClient && emailOn is null)
+            {
+                try
+                {
+                    emailOn = (await EmailSettings.GetAsync(viewer.AccountId))?.On;
+                }
+                catch (Exception ex) when (ex is System.Data.Common.DbException or TimeoutException or InvalidOperationException)
+                {
+                    emailOn = null; // The note is left out when the database is down, as the email row on Account is.
+                }
             }
         }
 

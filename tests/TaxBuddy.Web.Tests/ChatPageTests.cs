@@ -124,6 +124,28 @@ public sealed class ChatPageTests(EmptyAppFixture app) : IClassFixture<EmptyAppF
     }
 
     [DatabaseFact]
+    public async Task An_accountant_is_told_above_the_list_whether_new_messages_are_emailed()
+    {
+        // F14 (R08), prototype convListHTML: the note joined on 2026-11-24. Clients don't get it.
+        var (accountant, accountantId) = await SignedInAsync(AccountRole.Accountant, "Nina Ocampo");
+        var profile = await ListProfileAsync(accountantId, "Nina Ocampo");
+        var (client, clientId) = await SignedInAsync(AccountRole.Client, "Olive Reyes");
+        await SendAsync(clientId, profile, "Hello");
+
+        Assert.Contains("""<p class="muted small conv-note">New client messages are also emailed to you. <a href="/account">Change</a></p>""",
+            await (await accountant.GetAsync("/chats")).ReadHtmlAsync());
+        Assert.DoesNotContain("conv-note", await (await client.GetAsync("/chats")).ReadHtmlAsync());
+
+        await using (var db = app.Schema.CreateContext())
+        {
+            await db.Users.Where(u => u.Id == accountantId).ExecuteUpdateAsync(s => s.SetProperty(u => u.EmailNotifications, false));
+        }
+
+        Assert.Contains("""<p class="muted small conv-note">Email notifications are off. <a href="/account">Change</a></p>""",
+            await (await accountant.GetAsync("/chats")).ReadHtmlAsync());
+    }
+
+    [DatabaseFact]
     public async Task An_accountant_can_see_the_picture_of_a_client_they_chat_with()
     {
         var (accountant, accountantId) = await SignedInAsync(AccountRole.Accountant, "Nina Ocampo");

@@ -62,7 +62,7 @@ A signed-in client starts a text chat with an accountant from the accountant's p
 - On wide screens the panes fill the window below the site bar; the site footer (Privacy, Terms: R16) stays below them instead of being left out.
 - The connection notice is the prototype's offline banner, fixed to the top of the window.
 - New state, not in the prototype: a listed profile with no account behind it (the development seed) says "This accountant can't receive messages yet".
-- Left out until their features exist: the accountant's email note in the list (R08), the deleted-accountant note (D07). "Report" and "Block" came with F10 (R15).
+- Left out until their features existed: the accountant's email note in the list (R08, joined 2026-11-24), the deleted-accountant note (D07). "Report" and "Block" came with F10 (R15).
 
 ## Evidence limits
 
