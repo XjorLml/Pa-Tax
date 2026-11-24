@@ -1,0 +1,6 @@
+# HTTPS in front of the site (ADR 012). Caddy gets and renews the certificate for SITE_ADDRESS (deploy/oci/.env),
+# passes WebSockets through for live chat, and sets X-Forwarded-Proto and X-Forwarded-For for the app.
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	reverse_proxy web:8080
+}

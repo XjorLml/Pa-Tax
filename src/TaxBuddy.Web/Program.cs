@@ -21,6 +21,9 @@ var builder = WebApplication.CreateBuilder(seedCommand ? args[1..] : args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// ADR 012: kept data-protection keys when the container gives a folder for them (RELEASE).
+builder.AddTaxBuddyDeployment();
+
 // SDD: one short-lived context per operation, from a factory. The connection string is read when a context is
 // first configured, so test hosts can supply their own.
 builder.Services.AddDbContextFactory<TaxBuddyDbContext>((services, options) =>
@@ -140,6 +143,7 @@ app.UseTermsAgreement();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapHealth();
 app.MapThemePreference();
 app.MapAccountEndpoints();
 app.MapEmailPreferences();

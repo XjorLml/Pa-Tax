@@ -491,3 +491,7 @@ local.signing.props
 
 # Tax Buddy: Tailwind output is generated at build (SETUP)
 src/TaxBuddy.Web/wwwroot/app.css
+
+# Deployment settings with secrets (deploy/oci/*.example are the templates).
+deploy/oci/.env
+deploy/oci/.env.web

@@ -92,7 +92,7 @@ One table for the whole stack. The owner approved every choice in this table on 
 | Email | Brevo, called from a background service in the application | Decided 2026-11-11 (ADR 007) |
 | Background work | ASP.NET Core's built-in hosted services | Decided 2026-11-11 |
 | Tests | xUnit; `WebApplicationFactory` for integration tests; bUnit for components where useful | Decided 2026-11-11 |
-| Hosting | Render, as a container, in its Singapore region | Decided 2026-11-11 (ADR 007); the plan and its price are still to confirm |
+| Hosting | Docker on an Oracle Cloud Infrastructure Compute VM in Singapore, with Caddy for HTTPS ([ADR 012](adr/012-oci-compute-docker-host.md)) | Decided 2026-11-24, replacing Render (ADR 007); the VM's shape is still to confirm |
 | Editor | VS Code with C# Dev Kit | Owner asked to use it, 2026-11-11 ([SETUP](SETUP.md#reproducibility-record)) |
 | CI | GitHub Actions, once the repository has a remote | Decided 2026-11-11 |
 
@@ -106,7 +106,7 @@ Exact SDK versions are in SETUP.
 |---|---|---|---|---|
 | Desktop browsers: Chrome, Edge, Firefox, Brave, Safari | Current versions (PRD D17). Blazor's supported list names Chrome, Edge, Firefox and Safari ([REFERENCES](REFERENCES.md#toolchain-and-platforms)). Brave is built on the same engine as Chrome and is tested separately, with its tracking protection left on | HTTPS, cookies; JavaScript and WebSockets for interactive pages | Without JavaScript, the directory and profile pages still work and signed-in pages show a notice. Without WebSockets, behavior is to be verified at implementation | Pending ([STATUS](delivery/STATUS.md)) |
 | Phone browsers: Chrome and Brave on Android, Safari on iOS | Same | Same, plus a layout that works from the smallest supported width (D15) | Same | Pending |
-| Server host | ASP.NET Core on .NET 11, in a container on Render in its Singapore region ([ADR 007](adr/007-supabase-brevo-container-host.md)) | WebSockets, persisted data-protection keys, outbound email, the database | — | Pending |
+| Server host | ASP.NET Core on .NET 11, in a Docker container on an OCI Compute VM in Singapore, behind Caddy ([ADR 012](adr/012-oci-compute-docker-host.md); [Dockerfile](../Dockerfile), [deploy/oci](../deploy/oci/compose.yaml)) | WebSockets, persisted data-protection keys, outbound email, the database | — | Pending: the image is written, not built or deployed |
 | Native Android, Windows, iOS, Mac apps | Not targeted ([ADR 005](adr/005-web-platform-blazor.md)) | — | — | Not applicable |
 
 ## Data and persistence contracts
@@ -170,7 +170,7 @@ A record ID in an address or a form is never proof of access. Hiding a button is
 - Google is registered only when its client ID and secret are both configured. Otherwise the sign-in page says it isn't set up.
 - **F15 (2026-11-23), archived the same day by the owner:** the code stays but is off. It registers only with `Authentication:Microsoft:Enabled` set to `true` (default off) as well as `Authentication:Microsoft:ClientId` and `ClientSecret`, so stored keys alone change nothing; switching it on also needs the legal text's Microsoft blocks and a new legal version. When on, it is registered through `AddMicrosoftAccount` (the Microsoft identity platform's `common` endpoint: personal, work and school accounts). The sign-in page shows "Continue with Microsoft" under Google, and the pages that name the providers say "Google", "Microsoft" or "Google or Microsoft" from what is registered. The same registration, session, cancel and failure handling apply; the login is stored with provider `Microsoft`. A person who signs in with both providers gets two accounts, because accounts are matched by provider and identifier, not by email.
 - Pages use `AccountService`, never Identity's managers, so components don't depend on the data layer.
-- Data-protection keys are not persisted outside the app yet. That is needed before the first deployment (keys and secrets, below).
+- Data-protection keys are kept in `DataProtection:KeysPath` when it is set: the container's `/keys` volume (2026-11-24, ADR 012). Locally they stay where ASP.NET Core puts them by default.
 
 Provider client secrets stay on the server: user-secrets in development, the host's secret store in production ([SETUP](SETUP.md#local-development)).
 
@@ -430,7 +430,9 @@ Interactive components read the signed-in user from the authentication state the
 - **Diagnostics:** `System.Net.Http.HttpClient` logs at Warning, so picture storage addresses (with account IDs) are not logged (F06). Event IDs, error category, duration and correlation ID only. Message text, email addresses, contact details and tokens are never logged. No telemetry service in release 1.
 - **Transport and forms:** HTTPS everywhere, with HSTS in production. Antiforgery protection on every form. All input is validated on the server.
 - **Abuse limits:** rate limits on sign-in, message sending and directory search, counted per server instance. Message length and profile field lengths are capped so a connection can't make the server hold unbounded data.
-- **Keys and secrets:** data-protection keys are persisted outside the app's files, so sessions survive restarts and redeployments. No secrets in the repository or in `appsettings*.json`.
+- **Keys and secrets:** data-protection keys are persisted outside the app's files, so sessions survive restarts and redeployments. As built (2026-11-24): a Docker volume on the VM, unencrypted at rest on the private VM. No secrets in the repository or in `appsettings*.json`; the deployed settings live in `deploy/oci/.env.web`, which git ignores.
+- **Behind the proxy:** the container sets `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`, so the app trusts Caddy's `X-Forwarded-Proto` and `X-Forwarded-For` and builds `https` callback addresses. The app's port isn't published, so only Caddy can send those headers.
+- **Health:** `GET /health` answers `{"status":"ok","version":"<git commit>"}` without touching the database (`Site:Version`, set when the image is built).
 - **Search engines:** public pages are built to be indexed. Each one gives its full content in the first response, with its own title, description and canonical address, and a sitemap can list the listed profiles. Whether indexing is switched on is PRD [D19](PRD.md#open-decisions). Until it is decided, and always on the invite-only test site (D20), public pages ask not to be indexed.
 
 ## Traceability and decisions
@@ -453,6 +455,6 @@ Interactive components read the signed-in user from the authentication state the
 Significant rationale: [ADR index](adr/README.md). Conflicts: C04 open; C03 resolved 2026-11-12 ([docs index](README.md#history-and-unresolved-conflicts)). Remaining technical risks, owner lumabanls:
 - Restarts and deployments drop interactive connections (TP15 checks what users see).
 - Email delivery depends on Brevo and on setting up a sender domain (D18).
-- Render's free service sleeps after 15 minutes without traffic, and Supabase's Free plan pauses a project after a week without activity. Either takes the test site down until it wakes, so both need paid plans before testers rely on the site.
+- Supabase's Free plan pauses a project after a week without activity, which takes the test site down until it is resumed, so it needs a paid plan before testers rely on the site. (Render's sleeping free service no longer applies: the host is an OCI VM, ADR 012.)
 
 Verified state belongs in [STATUS](delivery/STATUS.md).

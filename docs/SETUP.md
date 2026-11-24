@@ -18,7 +18,7 @@ State on 2026-11-13: the solution exists, and F01 builds, tests and runs in WSL2
 | EF command-line tool | `dotnet-ef` 10.0.15 as a local tool in `dotnet-tools.json` at the repository root; `dotnet tool restore` installs it | Scaffold, 2026-11-13 |
 | Tests | xUnit 2.9.3, xunit.runner.visualstudio 3.1.5, Microsoft.NET.Test.Sdk 17.14.1 (the template's versions); Microsoft.AspNetCore.Mvc.Testing 11.0.0 | Project files, 2026-11-13 |
 | Styles | Tailwind CSS **4.3.3** with `@tailwindcss/cli` 4.3.3 through npm (lock file `src/TaxBuddy.Web/package-lock.json`). 4.3.5 was a week old on 2026-11-13, so the older stable release was pinned. Node 24.16.0 and npm 11.13.0 in WSL; Node 22+ is enough | `npm view`, 2026-11-13 |
-| Container tooling | Docker is not installed. Not needed for development or tests: data tests use throwaway schemas in the development database | 2026-11-13 |
+| Container tooling | Docker is not installed (WSL or Windows, checked 2026-11-24). Not needed for development or tests: data tests use throwaway schemas in the development database. The image ([Dockerfile](../Dockerfile)) is built on the OCI VM ([ADR 012](adr/012-oci-compute-docker-host.md), [RELEASE](RELEASE.md#publish-recipe)) | 2026-11-13; 2026-11-24 |
 
 ### Windows inventory (2026-11-11, for reference)
 

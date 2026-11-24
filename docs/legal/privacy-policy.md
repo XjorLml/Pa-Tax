@@ -1,6 +1,6 @@
 # Privacy Policy
 
-> **Owner-approved text, not reviewed by a lawyer.** Written on 2026-11-21 from the [drafting prompt](terms-privacy-drafting-prompt.md) and the owner's decisions, and approved by the owner the same day without a lawyer's review (PRD D10, STATUS G13). Version 2026-11-23 replaced "email us until deletion is available" with deletion on the site (F12). **Version 2026-11-23.2 is not yet approved by the owner:** it switches on the blocks for saved accountants and service work (F03), fills in service documents as decided in D26 and D28, and says what happens to the rest of the service work when an account is deleted, as the site does it. The Microsoft blocks stay off: the owner archived Microsoft sign-in on 2026-11-23 (F15). The site's `/privacy` page shows this text (F11). `[OPTIONAL — …]` blocks cover features that aren't built yet and stay off the site until they launch; `[DECISION …]` marks what is still open. Remaining questions are in the [drafting notes](drafting-notes.md). This box isn't part of the published text.
+> **Owner-approved text, not reviewed by a lawyer.** Written on 2026-11-21 from the [drafting prompt](terms-privacy-drafting-prompt.md) and the owner's decisions, and approved by the owner the same day without a lawyer's review (PRD D10, STATUS G13). Version 2026-11-23 replaced "email us until deletion is available" with deletion on the site (F12). **Version 2026-11-23.2 is not yet approved by the owner:** it switches on the blocks for saved accountants and service work (F03), fills in service documents as decided in D26 and D28, and says what happens to the rest of the service work when an account is deleted, as the site does it. The Microsoft blocks stay off: the owner archived Microsoft sign-in on 2026-11-23 (F15). On 2026-11-24 the hosting provider changed from Render to Oracle Cloud Infrastructure, still in Singapore (ADR 012). The site's `/privacy` page shows this text (F11). `[OPTIONAL — …]` blocks cover features that aren't built yet and stay off the site until they launch; `[DECISION …]` marks what is still open. Remaining questions are in the [drafting notes](drafting-notes.md). This box isn't part of the published text.
 
 Version: 2026-11-23.2 · Last updated: 23 November 2026
 
@@ -110,7 +110,7 @@ Client accounts are never listed publicly.
 |---|---|---|
 | Google | Sign-in | Where Google operates, under its own policies |
 | Supabase | Database, and private storage for profile pictures and service documents | Singapore |
-| Render | Hosting | Singapore |
+| Oracle Cloud Infrastructure | Hosting | Singapore |
 | [OPTIONAL] Microsoft | Sign-in | Where Microsoft operates, under its own policies |
 | Brevo | Notification emails | Where Brevo operates (Brevo is based in France), under its own terms |
 

@@ -1,0 +1,52 @@
+# Tax Buddy on an OCI Compute VM (ADR 012; steps in docs/RELEASE.md). Run from this folder:
+#   docker compose --profile migrate run --rm migrate   # apply database changes first
+#   VERSION=$(git rev-parse --short HEAD) docker compose up -d --build
+# Settings: .env (site address, for Compose) and .env.web (the app's secrets). Neither is committed; copy the
+# *.example files and fill them in on the VM.
+name: taxbuddy
+
+services:
+  web:
+    build:
+      context: ../..
+      target: runtime
+      args:
+        VERSION: ${VERSION:-unknown}
+    image: taxbuddy-web:${VERSION:-latest}
+    env_file: .env.web
+    volumes:
+      - dpkeys:/keys
+    # Not published to the host: only Caddy reaches it, so the forwarded headers it trusts come from Caddy.
+    expose:
+      - "8080"
+    restart: unless-stopped
+
+  caddy:
+    image: caddy:2
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    environment:
+      SITE_ADDRESS: ${SITE_ADDRESS:?Set SITE_ADDRESS in deploy/oci/.env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  # RELEASE step 3, run by hand before starting a new build: docker compose --profile migrate run --rm migrate
+  migrate:
+    build:
+      context: ../..
+      target: migrations
+    env_file: .env.web
+    profiles:
+      - migrate
+
+volumes:
+  dpkeys:
+  caddy_data:
+  caddy_config:

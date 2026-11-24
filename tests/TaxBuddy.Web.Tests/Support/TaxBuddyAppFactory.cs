@@ -16,7 +16,7 @@ namespace TaxBuddy.Web.Tests.Support;
 /// </summary>
 public sealed class TaxBuddyAppFactory(
     string connectionString, bool withGoogle = true, bool withPictureStorage = true, bool withMicrosoft = false, bool withDocumentStorage = true,
-    bool? microsoftEnabled = null)
+    bool? microsoftEnabled = null, IReadOnlyDictionary<string, string>? settings = null)
     : WebApplicationFactory<Program>
 {
     public const string GoogleClientId = "test-client-id.apps.googleusercontent.com";
@@ -52,6 +52,10 @@ public sealed class TaxBuddyAppFactory(
         // F14: tests run the email outbox themselves, so its background worker stays off.
         builder.UseSetting("Email:WorkerEnabled", "false");
         builder.UseSetting("Email:SiteAddress", "https://taxbuddy.test");
+        foreach (var (key, value) in settings ?? new Dictionary<string, string>())
+        {
+            builder.UseSetting(key, value); // e.g. the container's settings (ADR 012)
+        }
         builder.ConfigureServices(services =>
         {
             services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, TestExternalSignIn>();

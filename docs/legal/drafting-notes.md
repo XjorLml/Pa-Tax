@@ -70,7 +70,7 @@ To publish, the agent filled the remaining minor placeholders with the defaults 
 | 16 | D14: retention periods; inactive accounts | P7 | Inactive accounts decided 2026-11-21: deleted after 2 years, following a warning email. Service documents follow D27 |
 | 17 | D11: backups | P7 | State how long backups are kept once the database plan is chosen |
 | 18 | Report retention | P7 | Keep for the time needed to handle the report and any follow-up, then a fixed period |
-| 19 | Log retention; what the hosting provider logs, including IP addresses | P2, P7 | Check Render's request-log contents and retention |
+| 19 | Log retention; what the hosting provider logs, including IP addresses | P2, P7 | Check the hosting provider's request-log contents and retention. Since 2026-11-24 the site runs on its own OCI VM behind Caddy (ADR 012), so request logs are the site's own: Caddy keeps none by default, and Docker keeps the app's logs on the VM |
 | 20 | Live Supabase region; Brevo and Google processing locations | P5, P6 | Confirm when the test-site project is created |
 | 21 | Processor agreements | P5, P6 | Accept each provider's data processing terms and record them |
 | 22 | Confirmations: no automated decisions, no marketing email, no sale of data | P3 | Confirm, or remove the sentence |
@@ -107,7 +107,7 @@ To publish, the agent filled the remaining minor placeholders with the defaults 
 
 **2.10 Sensitive information in chat and service documents.** Clients are likely to send TINs, tax returns and financial records. Tax returns are sensitive personal information (DPA Section 3(l)), and TINs arguably are too. Chat is plain text and isn't designed for documents. Service documents (F03, PLANNED) will hold them. *Recommendations:* the chat warning (placeholder 14); a privacy impact assessment and the NPC security requirements before F03 accepts real files; a Section 13 basis for service documents.
 
-**2.11 Transfers outside the Philippines.** Data is held in Singapore (Render; Supabase's development project), and Google and Brevo may process it elsewhere. DPA Section 21 keeps Tax Buddy accountable. *Recommendation:* outsourcing or processing agreements with Supabase, Render and Brevo. Google acts as an independent controller for sign-in.
+**2.11 Transfers outside the Philippines.** Data is held in Singapore (Oracle Cloud Infrastructure since 2026-11-24, earlier Render; Supabase's development project), and Google and Brevo may process it elsewhere. DPA Section 21 keeps Tax Buddy accountable. *Recommendation:* outsourcing or processing agreements with Supabase, Oracle and Brevo. Google acts as an independent controller for sign-in.
 
 **2.12 Minimum age.** 18 is recommended: contracts made by minors are voidable, and accountants offer professional services. If a lower age is chosen, review the NPC's guidance on transparency for children.
 

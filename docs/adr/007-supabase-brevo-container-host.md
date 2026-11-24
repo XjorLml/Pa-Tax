@@ -4,6 +4,8 @@ Status: Accepted. The owner approved the proposed parts on 2026-11-11 with the s
 
 Amended 2026-11-16 by [ADR 011](011-profile-pictures-supabase-storage.md): Supabase Storage also holds profile pictures, in a private bucket reached only from the server.
 
+**Host superseded 2026-11-24 by [ADR 012](012-oci-compute-docker-host.md):** the site runs in Docker on an Oracle Cloud Infrastructure Compute VM in Singapore, not on Render. The database and email decisions below stand; the Render text is kept as the record.
+
 ## Context
 
 [ADR 005](005-web-platform-blazor.md) made AccApp one Blazor Web App whose signed-in pages hold a long-lived server connection, with an in-process chat notifier and a background email worker ([SDD](../SDD.md#live-chat-and-email-notifications)). That design needs a host that keeps the application running.

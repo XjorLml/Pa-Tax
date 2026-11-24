@@ -12,7 +12,7 @@ State on 2026-11-11: no build, host or domain exists. The first audience is invi
 | Environments | Local development, and one test site for invited testers. A separate production site is decided before public launch (PRD D11) |
 | Who can use the test site | Invited testers only; the mechanism is open (PRD D20) |
 | Version identity | Proposed: each deployment records its git commit, shown on a health or about page, so a tester's report can be tied to a build |
-| Hosting | Render, as a container in its Singapore region ([ADR 007](adr/007-supabase-brevo-container-host.md)). The plan is not chosen, and the free service sleeps when idle; owner lumabanls |
+| Hosting | Docker on one Oracle Cloud Infrastructure Compute VM in Singapore (`ap-singapore-1`), with Caddy for HTTPS ([ADR 012](adr/012-oci-compute-docker-host.md), 2026-11-24, replacing Render). Files: [Dockerfile](../Dockerfile) and [deploy/oci](../deploy/oci/compose.yaml). The test site's address is the VM's IP as an sslip.io name until a domain is chosen (D01). Owner lumabanls |
 | Database | Supabase, with a separate project for the test site in the region closest to its users. The plan and backups are decided with the host |
 | Sign-in registrations | One Google app registration per environment, with that environment's redirect address `https://<site>/signin-google` ([ADR 006](adr/006-web-sign-in.md)). Microsoft sign-in is archived (2026-11-23): leave `Authentication:Microsoft:Enabled` unset and register nothing at Microsoft |
 | Email service and sender | Brevo; built in F14 (2026-11-23) with a development sender. Before real emails: create a Brevo account, verify a sender domain, and put `Email:Brevo:ApiKey`, `Email:SenderAddress` and `Email:SiteAddress` (the site's public HTTPS address) in the host's secret store. Without them a deployed site skips emails and logs event 1504 (G11) |
@@ -22,36 +22,63 @@ There is no app package, store listing or code-signing certificate: nothing is i
 
 ## Publish recipe
 
-No recipe yet. After the scaffold step, record the exact publish command and its output here, starting from:
+The image is the published build ([ADR 012](adr/012-oci-compute-docker-host.md)). From the repository root, on a machine with Docker (the VM itself, so the image matches its Arm processor):
 
-```powershell
-dotnet publish src/TaxBuddy.Web/TaxBuddy.Web.csproj -c Release
+```bash
+docker build --build-arg VERSION=$(git rev-parse --short HEAD) -t taxbuddy-web .
 ```
 
-This command has not been executed. The project builds since 2026-11-13 (F01). A publish build also needs Node 22+ and `npm ci` in `src/TaxBuddy.Web` to generate the Tailwind styles ([SETUP](SETUP.md#local-development)). Alternatively, a container can build the CSS in a separate Node stage and pass `-p:SkipTailwind=true` to the .NET stage. If the chosen host takes a container image, record the Dockerfile and the image build as well. Record the configuration, the runtime the host needs (framework-dependent or self-contained), the output path, and how the output reaches the host.
+The [Dockerfile](../Dockerfile) has four stages:
+1. Node builds the Tailwind styles.
+2. The .NET SDK 11.0.100 (as `global.json` pins) publishes the app with `SkipTailwind=true` and makes the EF migration bundle with the pinned `dotnet-ef` 10.0.15.
+3. `migrations` holds that bundle.
+4. `runtime` (the default) runs the framework-dependent app on `mcr.microsoft.com/dotnet/aspnet:11.0.0` as a non-root user, on port 8080.
+
+On 2026-11-24 the image itself wasn't built, because the development PC has no Docker. The same publish (`SkipTailwind=true dotnet publish … -c Release`) and migration bundle were run locally, and the published files served `/health`, `/signin` and the styles with the container's settings ([evidence](delivery/evidence/2026-11-24-oci-docker.md)).
 
 ## Deployment
 
-Host requirements, each to be confirmed against the chosen host ([REFERENCES](REFERENCES.md#implementation-and-hosting)):
+Host requirements, and how the OCI set-up ([ADR 012](adr/012-oci-compute-docker-host.md)) meets each:
 
 | Need | Why |
 |---|---|
-| HTTPS with a valid certificate; HSTS | Sign-in and session cookies require it |
-| WebSockets enabled | Interactive pages work best over WebSockets |
-| Forwarded-headers set-up, if behind a proxy | So the site sees the real scheme and address; sign-in redirects depend on it |
-| Data-protection keys stored outside the app's files | Otherwise sessions and form tokens can break after a redeploy |
-| Production secrets in the host's secret store | The Google client secret, the database connection, the email service key. Rotation owner: lumabanls |
-| One server instance, or session affinity plus a shared chat notifier | Live chat updates are in-process ([SDD](SDD.md#live-chat-and-email-notifications)) |
+| HTTPS with a valid certificate; HSTS | Sign-in and session cookies require it. Caddy gets and renews the certificate for `SITE_ADDRESS`; the app adds HSTS |
+| WebSockets enabled | Interactive pages work best over WebSockets. Caddy passes them through |
+| Forwarded-headers set-up, if behind a proxy | So the site sees the real scheme and address; sign-in redirects depend on it. The image sets `ASPNETCORE_FORWARDEDHEADERS_ENABLED=true`; only Caddy can reach the app |
+| Data-protection keys stored outside the app's files | Otherwise sessions and form tokens can break after a redeploy. The `dpkeys` volume at `/keys` |
+| Production secrets in the host's secret store | The Google client secret, the database connection, the Supabase key, the email service key: in `deploy/oci/.env.web` on the VM, readable only by its owner (`chmod 600`), never committed. Rotation owner: lumabanls |
+| One server instance, or session affinity plus a shared chat notifier | Live chat updates are in-process ([SDD](SDD.md#live-chat-and-email-notifications)). One VM, one `web` container |
 | Outbound email allowed | R08 |
-| A health address and logs without personal data | To verify a deployment and diagnose failures. Log retention follows PRD D14 |
+| A health address and logs without personal data | To verify a deployment and diagnose failures. `GET /health` names the deployed commit; `docker compose logs web` reads the logs. Log retention follows PRD D14 |
+
+### The OCI VM (first time)
+
+1. In the OCI console, region Singapore: create a Compute instance (Ubuntu, an Ampere A1 shape if Always Free is wanted), with your SSH key and a public IP.
+2. Open ports 80 and 443: in the subnet's security list (or a network security group) add ingress rules for TCP 80 and 443 from `0.0.0.0/0`, and on the VM allow them in its firewall too (Oracle's Ubuntu images ship with iptables rules that block them).
+3. On the VM, install Docker Engine with the Compose plugin, and add your user to the `docker` group.
+4. Clone the repository on the VM. In `deploy/oci`, copy `env.example` to `.env` and `env.web.example` to `.env.web`, fill them in, and run `chmod 600 .env.web`. `SITE_ADDRESS` is the public IP as an sslip.io name, for example `152-67-1-2.sslip.io`.
+5. In Google Cloud, add `https://<SITE_ADDRESS>/signin-google` to the OAuth client's redirect URIs, and set `Email__SiteAddress` to `https://<SITE_ADDRESS>`.
+6. The test site's Supabase project needs the `profile-pictures` and `service-documents` buckets ([SETUP](SETUP.md#local-development)).
+
+### Each release, on the VM
+
+```bash
+cd deploy/oci
+git pull
+docker compose --profile migrate run --rm --build migrate           # database changes first (step 3 below)
+VERSION=$(git rev-parse --short HEAD) docker compose up -d --build  # then the new build
+curl -s https://<SITE_ADDRESS>/health                                # names the commit just deployed
+```
+
+Rolling back: check out the previous commit and run the second command again; a schema change follows that release's rollback plan.
 
 Sequence:
 
 1. Identify the source revision and any uncommitted changes; resolve required gates in TEST-PLAN and record remaining limitations.
 2. Publish with SETUP's SDK. Keep secrets out of command history, logs, source files and build output.
-3. Apply database changes with a migration bundle or a reviewed SQL script, before the new build needs them. Migrating at app startup needs a recorded decision.
+3. Apply database changes with the migration bundle (`docker compose --profile migrate run --rm migrate`) or a reviewed SQL script, before the new build needs them. Migrating at app startup needs a recorded decision.
 4. Deploy. Open chat pages lose their connection during a restart, so users see a reconnecting notice (TP15).
-5. Verify the deployed site: health address, one public page, sign-in with each provider, one message, and one notification email (TP07, TP12).
+5. Verify the deployed site: `/health` names the deployed commit, one public page, sign-in with Google, one message, and one notification email (TP07, TP12).
 6. Record the release decision, the deployed revision, the environment and the smoke results as evidence.
 
 Schema changes follow a two-step rule. First add the new shape while the old one keeps working. Remove the old one in a later release. This keeps a rollback to the previous build from breaking on newly written data.
