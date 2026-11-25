@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design options · Tax Buddy prototype</title>
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<!-- Design options for the client's flow after sign-in (2026-11-24). Each option is the real prototype
+     (index.html?embed=1&opt=page-x) in a frame, so it can be clicked. Proposals only: index.html keeps the current
+     design by default until the owner chooses, and the choice is then recorded in docs/DESIGN.md and the feature spec. -->
+<style>
+:root{--bg:#F4F5F2;--surface:#FFFFFF;--text:#1D2420;--muted:#5B655F;--border:#D5DAD4;--accent:#245A46;--on-accent:#FFFFFF;--soft:#E3EEE8;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#121513;--surface:#1B201D;--text:#E7ECE8;--muted:#A8B3AC;--border:#333B36;--accent:#8FD1B0;--on-accent:#0D2A1F;--soft:#21342B;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border)}
+.top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:12px 20px 0}
+.top strong{font-size:15px}
+.top span{color:var(--muted);font-size:12.5px}
+.top a{margin-left:auto;font-size:13px}
+.steps{display:flex;gap:4px;margin:0;padding:8px 16px 0;overflow-x:auto;list-style:none}
+.steps a{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-bottom:3px solid transparent;color:var(--text);text-decoration:none;white-space:nowrap}
+.steps a:hover{background:var(--bg)}
+.steps a[aria-current="step"]{border-bottom-color:var(--accent);font-weight:700}
+.steps .n{display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);font-size:12px;font-weight:700}
+.steps a[aria-current="step"] .n{background:var(--accent);color:var(--on-accent)}
+main{padding:16px 20px 40px}
+.bar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin-bottom:14px}
+.group{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.group>span{color:var(--muted);font-size:12.5px;margin-right:2px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:8px;overflow:hidden;background:var(--surface)}
+.seg button{min-height:38px;padding:0 14px;border:0;border-right:1px solid var(--border);background:none;color:var(--text);font:inherit;cursor:pointer}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent);font-weight:700}
+.nav{margin-left:auto;display:flex;gap:6px}
+.btn{display:inline-flex;align-items:center;min-height:38px;padding:0 14px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;text-decoration:none;cursor:pointer}
+.btn[disabled]{opacity:.45;cursor:default}
+select{min-height:38px;padding:0 8px;border:1px solid var(--border);border-radius:8px;background:var(--surface);color:var(--text);font:inherit}
+.info{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 24px;margin-bottom:16px;padding:16px 18px;border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.info h1{margin:0;font-size:20px}
+.info h1 small{display:block;color:var(--muted);font-size:12.5px;font-weight:400}
+.info dl{display:grid;grid-template-columns:max-content minmax(0,1fr);gap:4px 14px;margin:10px 0 0;grid-column:1/-1}
+.info dt{color:var(--muted);font-size:12.5px;font-weight:600}
+.info dd{margin:0}
+.info .links{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+.tag{display:inline-block;padding:2px 8px;border-radius:6px;background:var(--soft);font-size:12px;font-weight:700}
+.stage{display:flex;flex-wrap:wrap;justify-content:center;gap:24px}
+.cell{display:grid;gap:8px;justify-items:start}
+.cell figcaption{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px}
+.frame{position:relative;overflow:hidden;border-radius:12px}
+.frame iframe{position:absolute;top:0;left:0;border:0;transform-origin:0 0;background:transparent}
+.decide{max-width:900px;margin:24px auto 0;color:var(--muted);font-size:13px;text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <div class="top"><strong>Tax Buddy design options</strong><span>The client's flow after sign-in · proposals for review, not approved · synthetic data</span><a href="index.html">Open the full prototype</a></div>
+  <nav aria-label="Pages in the client's flow"><ol class="steps" id="steps"></ol></nav>
+</header>
+<main>
+  <div class="bar">
+    <div class="group" role="group" aria-labelledby="lbl-opt"><span id="lbl-opt">Option</span><div class="seg" id="opts"></div></div>
+    <div class="group" role="group" aria-labelledby="lbl-frame"><span id="lbl-frame">Frame</span><div class="seg" id="frames"><button type="button" data-frame="desktop">Desktop</button><button type="button" data-frame="phone">Phone</button></div></div>
+    <label class="group"><span>Theme</span><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+    <div class="nav"><button type="button" class="btn" id="prev">← Previous page</button><button type="button" class="btn" id="next">Next page →</button></div>
+  </div>
+  <section class="info" id="info" aria-live="polite"></section>
+  <div class="stage" id="stage"></div>
+  <p class="decide">Current stays the default in the prototype and on the site until you choose. When you choose an option for a page, it's recorded in DESIGN and the feature spec, made the prototype's default, and the others are kept as "not chosen", like the Picture design options.</p>
+</main>
+<script>
+'use strict';
+/* Pages and options. Each option is rendered by index.html with opt=<page>-<option>; the texts are the review notes. */
+const PAGES = [
+  { key: 'directory', name: 'Directory', route: { desktop: '#/directory', phone: '#/directory' }, options: {
+    current: { name: 'Current', idea: 'A big "Find an accountant" search band with service buttons, then accountants as cards in two columns.',
+      tradeoff: 'Friendly and familiar; a returning client scrolls past the same band every time.', noscript: 'Works: a plain search form, and each service button submits it (C03).' },
+    a: { name: 'Slim search, rows', idea: 'A signed-in client gets a one-row search bar, and accountants appear as full-width rows.',
+      changes: 'The search band shrinks to one row with the service buttons under it. Cards become rows: name, title, rating, city, experience, services, and the summary cut to one line.',
+      tradeoff: 'More people per screen and quicker scanning; less room for each person\'s story. Visitors keep the current band.', noscript: 'Works: the same form and links.',
+      phone: 'The search box, then the service menu and Search on one row; rows leave out the summary.' },
+    b: { name: 'Filter column', idea: 'Search and the service list sit in a column on the left, results on the right.',
+      changes: 'The band becomes a heading. A left column holds Search and every service as a list; the cards stay in two columns on the right.',
+      tradeoff: 'Filters stay in view while scrolling; the results get narrower.', noscript: 'Works: each service is a submit button, as today.',
+      phone: 'Same as Current: phones keep the search card with the service menu.' },
+    c: { name: 'Welcome back', idea: 'A small "Your accountants" strip above the usual search and cards.',
+      changes: 'A signed-in client sees each accountant they added or work with, with the newest news (new messages or a service status). Each links straight there.',
+      tradeoff: 'A quick way back to ongoing work. It puts personal content on a public page (the page then can\'t be cached publicly), and it repeats part of My accountants.', noscript: 'Works: plain links drawn on the server.',
+      phone: 'The strip scrolls sideways above the search card.' } } },
+  { key: 'profile', name: 'Accountant profile', route: { desktop: '#/profile/a1', phone: '#/profile/a1' }, options: {
+    current: { name: 'Current', idea: 'Details on the left; a card on the right with Open chat, Add, Request a service and contact details stays in view as you scroll.',
+      tradeoff: 'Actions are always visible on wide screens; on phones they sit in a bar at the bottom.', noscript: 'Works: a static page with links and posted forms.' },
+    a: { name: 'Section links', idea: 'Same layout, plus a row of links under the header that jump down the page.',
+      changes: 'About, Services, Highlights, Experience and Reviews links, which stay at the top while you scroll.',
+      tradeoff: 'Lowest risk and helps on long profiles; one more row to read past.', noscript: 'Works: in-page anchor links (#about and so on).',
+      try: 'Press a section link to jump to it.' },
+    b: { name: 'Actions in the header', idea: 'One wide column with the actions under the name.',
+      changes: 'Open chat, Add and Request a service become a row of buttons under the name, with the contact details beside them. The side card and the phone\'s bottom bar go.',
+      tradeoff: 'Clean and simple; the actions scroll out of view on long profiles.', noscript: 'Works.',
+      phone: 'The buttons stack under the name, with the contact details below them.' } } },
+  { key: 'chats', name: 'Chats', route: { desktop: '#/thread/c1', phone: '#/chats' }, options: {
+    current: { name: 'Current', idea: 'The conversation list with previews on the left, the conversation on the right, Report and Block above the messages.',
+      tradeoff: 'Familiar messaging layout; nothing about your service work with the accountant is shown.', noscript: 'The page is static and the conversation panel is live (Interactive Server), as built in F07.' },
+    a: { name: 'Details panel', idea: 'A third column with the accountant and your services with them.',
+      changes: 'From about 1000 px: the accountant\'s name, title and rating, your services with them and their status, Request a service and View profile. Narrower screens and phones get an "About Andrea" disclosure above the messages.',
+      tradeoff: 'Context without leaving the chat; the conversation gets narrower.', noscript: 'Works: the panel is drawn on the server, and the disclosure is a plain details element.',
+      phone: 'Open a conversation: the "About" disclosure sits above the messages.', phoneRoute: '#/thread/c1' },
+    b: { name: 'Focused conversation', idea: 'A narrower list, a wider conversation, and the safety actions in a More menu.',
+      changes: 'The list shows names and unread counts only. Report and Block move into More in the conversation\'s header.',
+      tradeoff: 'Calmer to read; previews and the safety actions are one step further away. They still sit at the top of every chat (R15).', noscript: 'Works: More is a details disclosure.',
+      try: 'Open More in the conversation header.', phone: 'The list shows names and unread counts; open a conversation to see More.' },
+    c: { name: 'Sorted list', idea: 'The list splits into New messages and Earlier, and shows your service status with each accountant.',
+      changes: 'Section headings in the list; each row adds a line such as "Bookkeeping · Waiting for client".',
+      tradeoff: 'Easier to see what needs a reply; taller rows, so fewer per screen.', noscript: 'Works.' } } },
+  { key: 'myacc', name: 'My accountants', route: { desktop: '#/workspace', phone: '#/workspace' }, options: {
+    current: { name: 'Current', idea: 'A heading, three number tiles, then a card for each accountant with services, progress, Request a service and Open chat.',
+      tradeoff: 'Everything on one page; the number tiles don\'t say what to do next.', noscript: 'Works: static pages with named forms (F03).' },
+    a: { name: 'Next steps first', idea: 'What needs you comes first.',
+      changes: 'The number tiles become "Next steps": services waiting for you, new messages, and requests awaiting acceptance, each linking straight there. The accountant cards follow.',
+      tradeoff: 'Focused on actions; the top changes as work moves, and it repeats the Chats count.', noscript: 'Works.' },
+    b: { name: 'All services list', idea: 'One list of every service, filtered by status.',
+      changes: 'Tabs All, In progress, Requested and Completed; each row shows the service, accountant, status, progress and last update. Your accountants become a compact list below.',
+      tradeoff: 'Best when there are many services; less about the people.', noscript: 'Works: the tabs are links (/workspace?status=…).',
+      try: 'Switch between the tabs.' },
+    c: { name: 'List and details', idea: 'Your accountants on the left, the chosen one\'s work on the right, as in Chats.',
+      changes: 'Choosing an accountant shows their services, Request a service, Open chat and Remove saved. It matches the Side list proposal for service pages.',
+      tradeoff: 'One accountant at a time; a new address form (/workspace?accountant=…).', noscript: 'Works: each accountant is a link.',
+      phone: 'The list of accountants; each opens on its own screen with Back.', try: 'Choose the other accountant.' } } }
+];
+const FRAMES = { desktop: { w: 1120, h: 860 }, phone: { w: 430, h: 820 } };
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+const q = new URLSearchParams(location.search);
+const st = {
+  page: PAGES.some(p => p.key === q.get('page')) ? q.get('page') : 'directory',
+  option: q.get('option') || 'current',
+  frame: q.get('frame') === 'phone' || q.get('frame') === 'desktop' ? q.get('frame') : (innerWidth >= 900 ? 'desktop' : 'phone'),
+  theme: ['light', 'dark'].includes(q.get('theme')) ? q.get('theme') : 'system'
+};
+const page = () => PAGES.find(p => p.key === st.page);
+const keys = () => Object.keys(page().options);
+const label = k => k === 'current' ? 'Current' : k.toUpperCase();
+function src(k, embed) {
+  const p = page(), o = p.options[k], route = (st.frame === 'phone' && o.phoneRoute) || p.route[st.frame];
+  return 'index.html?' + (embed ? 'embed=1&' : '') + 'notes=0&role=client&device=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme) + (k === 'current' ? '' : '&opt=' + p.key + '-' + k) + route;
+}
+function frameHTML(k, scale, caption) {
+  const f = FRAMES[st.frame], p = page();
+  return '<figure class="cell" style="margin:0">' + (caption ? '<figcaption><span class="tag">' + label(k) + '</span>' + (k === 'current' ? '' : '<strong>' + esc(p.options[k].name) + '</strong>') + '<button type="button" class="btn" data-view="' + k + '">View this one</button></figcaption>' : '') +
+    '<div class="frame" style="width:' + Math.round(f.w * scale) + 'px;height:' + Math.round(f.h * scale) + 'px"><iframe title="' + esc(p.name + ', ' + (k === 'current' ? 'current design' : 'option ' + label(k) + ', ' + p.options[k].name) + ', ' + st.frame) + '" src="' + esc(src(k, true)) + '" style="width:' + f.w + 'px;height:' + f.h + 'px;transform:scale(' + scale + ')"></iframe></div></figure>';
+}
+function infoHTML() {
+  const p = page(), i = PAGES.indexOf(p);
+  if (st.option === 'compare') return '<h1>' + esc(p.name) + '<small>Step ' + (i + 1) + ' of ' + PAGES.length + ' · all options side by side, smaller. Each frame works; choose "View this one" for its notes.</small></h1>';
+  const o = p.options[st.option], rows = [['Idea', o.idea], ['What changes', o.changes || 'Nothing: this is the design the site follows today.'], ['Trade-off', o.tradeoff], ['Without script', o.noscript]];
+  if (o.phone) rows.push(['On phones', o.phone]);
+  if (o.try) rows.push(['Try', o.try]);
+  return '<h1>' + esc(p.name) + ' · ' + (st.option === 'current' ? 'Current design' : 'Option ' + label(st.option) + ': ' + esc(o.name)) + '<small>Step ' + (i + 1) + ' of ' + PAGES.length + (st.option === 'current' ? ' · the default until you choose' : ' · proposal, not adopted') + '</small></h1>' +
+    '<div class="links"><a class="btn" href="' + esc(src(st.option, false)) + '" target="_blank" rel="noopener">Open in the full prototype</a></div>' +
+    '<dl>' + rows.map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl>';
+}
+function layout() {
+  const avail = $('stage').clientWidth || innerWidth - 40, f = FRAMES[st.frame];
+  if (st.option !== 'compare') { $('stage').innerHTML = frameHTML(st.option, Math.min(1, avail / f.w), false); return; }
+  const ks = keys(), cols = st.frame === 'desktop' ? Math.min(2, ks.length) : Math.min(4, ks.length), gap = 24;
+  const scale = Math.min(1, (avail - gap * (cols - 1)) / cols / f.w);
+  $('stage').innerHTML = ks.map(k => frameHTML(k, scale, true)).join('');
+}
+function render() {
+  const p = page(), i = PAGES.indexOf(p);
+  if (st.option !== 'compare' && !p.options[st.option]) st.option = 'current';
+  $('steps').innerHTML = PAGES.map((x, n) => '<li><a href="?page=' + x.key + '&frame=' + st.frame + '" data-page="' + x.key + '"' + (x === p ? ' aria-current="step"' : '') + '><span class="n">' + (n + 1) + '</span>' + esc(x.name) + '</a></li>').join('');
+  $('opts').innerHTML = keys().map(k => '<button type="button" data-opt="' + k + '" aria-pressed="' + (st.option === k) + '"' + (k === 'current' ? '' : ' title="' + esc(p.options[k].name) + '"') + '>' + (k === 'current' ? 'Current' : label(k) + ' · ' + esc(p.options[k].name)) + '</button>').join('') +
+    '<button type="button" data-opt="compare" aria-pressed="' + (st.option === 'compare') + '">Compare all</button>';
+  document.querySelectorAll('#frames button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.frame === st.frame)));
+  $('theme').value = st.theme;
+  $('prev').disabled = i === 0; $('next').disabled = i === PAGES.length - 1;
+  $('info').innerHTML = infoHTML();
+  document.title = p.name + ' · ' + (st.option === 'compare' ? 'Compare' : st.option === 'current' ? 'Current' : 'Option ' + label(st.option)) + ' · Tax Buddy design options';
+  history.replaceState(null, '', '?page=' + st.page + '&option=' + st.option + '&frame=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme));
+  layout();
+}
+const keepFocus = sel => { const el = document.querySelector(sel); if (el) el.focus(); };
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-page],[data-opt],[data-frame],[data-view]');
+  if (!t) return;
+  if (t.dataset.page) { e.preventDefault(); st.page = t.dataset.page; st.option = 'current'; render(); keepFocus('[data-page="' + st.page + '"]'); }
+  else if (t.dataset.opt) { st.option = t.dataset.opt; render(); keepFocus('[data-opt="' + st.option + '"]'); }
+  else if (t.dataset.frame) { st.frame = t.dataset.frame; render(); keepFocus('[data-frame="' + st.frame + '"]'); }
+  else if (t.dataset.view) { st.option = t.dataset.view; render(); keepFocus('[data-opt="' + st.option + '"]'); }
+});
+$('theme').addEventListener('change', e => { st.theme = e.target.value; render(); });
+$('prev').addEventListener('click', () => { const i = PAGES.indexOf(page()); if (i > 0) { st.page = PAGES[i - 1].key; st.option = 'current'; render(); } });
+$('next').addEventListener('click', () => { const i = PAGES.indexOf(page()); if (i < PAGES.length - 1) { st.page = PAGES[i + 1].key; st.option = 'current'; render(); } });
+let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(layout, 150); });
+render();
+</script>
+</body>
+</html>

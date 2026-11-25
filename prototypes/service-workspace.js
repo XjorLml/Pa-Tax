@@ -61,12 +61,50 @@ window.createServiceWorkspace = function (ctx) {
         (ids.length?'<ul class="work-people">'+ids.map(id=>{const es=all.filter(e=>e.clientId===id),name=clients[id]||'Client';return '<li><a class="work-person" href="#/clients/'+id+'"><span class="avatar '+tone(name)+'" aria-hidden="true">'+initials(name)+'</span><div><h3>'+esc(name)+'</h3><p>'+es.length+' service'+(es.length===1?'':'s')+' · '+es.filter(e=>e.phase==='requested').length+' awaiting acceptance</p><span>'+esc(es.map(e=>e.service).join(' · '))+'</span></div>'+icon('chevron',18)+'</a></li>';}).join('')+'</ul>':stateHTML('user','No clients yet','A client appears here after they request one of your services. Saving your profile alone does not share their details.',''));
     }
     const savedIds=api.dataMode==='empty'?[]:(saved[S.me.clientId]||[]), ids=[...new Set([...savedIds,...all.map(e=>e.accountantId)])];
+    const accPanel = id => {const p=getListed(id),es=all.filter(e=>e.accountantId===id);return '<section class="work-panel"><div class="work-row"><div><h3>'+(p?'<a href="#/profile/'+id+'">'+esc(p.name)+'</a>':'Accountant no longer listed')+'</h3><p class="muted small">'+(p?esc(p.title):'Existing service work stays private; account-deletion policy remains open.')+'</p></div>'+(savedIds.includes(id)?'<button class="btn ghost sm" data-action="ws-unsave" data-id="'+id+'">Remove saved<span class="sr-only"> accountant '+esc(p?p.name:'')+'</span></button>':'<span class="work-status">Service history</span>')+'</div>'+
+        (es.length?'<ul class="work-services">'+es.map(workCard).join('')+'</ul>':'<p class="work-quiet">No services requested yet. You can browse their profile or request a service.</p>')+
+        '<div class="actions">'+(p?'<a class="btn primary sm" href="#/request/'+id+'">Request a service</a>':'')+chatLink(S.me.clientId,id)+'</div></section>';};
+    const empty = stateHTML('user','No accountants added yet','Explore the directory and add an accountant from their profile.','<a class="btn primary" href="#/directory">Find an accountant</a>');
+    const note = '<p class="muted small">Adding is private. A shared client relationship starts when an accountant accepts a service request (confirmed workflow).</p>';
+    const opt = S.opt ? S.opt.myacc : 'current';
+    if (opt === 'a') return heading('Your people. Your next steps.','Accountants you have added, with your service progress in one place.')+nextStepsHTML(all)+note+(ids.length?'<div class="work-accountants">'+ids.map(accPanel).join('')+'</div>':empty)+errorHTML('list');
+    if (opt === 'b') return heading('Your people. Your next steps.','Accountants you have added, with your service progress in one place.')+allServicesHTML(all,ids,savedIds)+errorHTML('list');
+    if (opt === 'c') return accountantSplitHTML(all,ids,accPanel,empty,note)+errorHTML('list');
     return heading('Your people. Your next steps.','Accountants you have added, with your service progress in one place.')+
       '<div class="work-stats">'+summaryCard('Added accountants',savedIds.length,'Your private saved list')+summaryCard('Active services',all.filter(e=>e.phase==='active'&&status(e)!==states[3]).length,'Shared with each accountant')+summaryCard('Completed',all.filter(e=>status(e)===states[3]).length,'All checklist tasks complete')+'</div>'+
-      '<p class="muted small">Adding is private. A shared client relationship starts when an accountant accepts a service request (confirmed workflow).</p>'+
-      (ids.length?'<div class="work-accountants">'+ids.map(id=>{const p=getListed(id),es=all.filter(e=>e.accountantId===id);return '<section class="work-panel"><div class="work-row"><div><h3>'+(p?'<a href="#/profile/'+id+'">'+esc(p.name)+'</a>':'Accountant no longer listed')+'</h3><p class="muted small">'+(p?esc(p.title):'Existing service work stays private; account-deletion policy remains open.')+'</p></div>'+(savedIds.includes(id)?'<button class="btn ghost sm" data-action="ws-unsave" data-id="'+id+'">Remove saved<span class="sr-only"> accountant '+esc(p?p.name:'')+'</span></button>':'<span class="work-status">Service history</span>')+'</div>'+
-        (es.length?'<ul class="work-services">'+es.map(workCard).join('')+'</ul>':'<p class="work-quiet">No services requested yet. You can browse their profile or request a service.</p>')+
-        '<div class="actions">'+(p?'<a class="btn primary sm" href="#/request/'+id+'">Request a service</a>':'')+chatLink(S.me.clientId,id)+'</div></section>';}).join('')+'</div>':stateHTML('user','No accountants added yet','Explore the directory and add an accountant from their profile.','<a class="btn primary" href="#/directory">Find an accountant</a>'))+errorHTML('list');
+      note+(ids.length?'<div class="work-accountants">'+ids.map(accPanel).join('')+'</div>':empty)+errorHTML('list');
+  }
+  /* Design options for My accountants (options.html, 2026-11-24): proposals, not adopted. S.opt.myacc picks one. */
+  const accName = id => getListed(id)?.name || 'Accountant no longer listed';
+  const avatarFor = name => '<span class="avatar sm '+tone(name)+'" aria-hidden="true">'+initials(name)+'</span>';
+  /* A · Next steps first: what needs the client, or is waiting on the accountant, before the cards. */
+  function nextStepsHTML(all) {
+    const items=[];
+    all.filter(e=>e.phase==='active'&&status(e)===states[2]).forEach(e=>items.push({tag:'Waiting for you',text:e.service+' with '+accName(e.accountantId),href:'#/work/'+e.id,cta:'Open service'}));
+    CONVS.filter(c=>c.clientId===S.me.clientId&&(c.unread.client||0)>0).forEach(c=>items.push({tag:c.unread.client+' new',text:'New message from '+accName(c.accountantId),href:'#/thread/'+c.id,cta:'Open chat'}));
+    all.filter(e=>e.phase==='requested').forEach(e=>items.push({tag:'Awaiting acceptance',text:e.service+' request to '+accName(e.accountantId),href:'#/work/'+e.id,cta:'View request',quiet:true}));
+    return '<section class="opt-next" aria-labelledby="opt-next-t"><h3 id="opt-next-t">Next steps</h3>'+(items.length?'<ul>'+items.map(i=>'<li'+(i.quiet?' class="quiet"':'')+'><span class="opt-next-tag">'+esc(i.tag)+'</span><span class="opt-next-text">'+esc(i.text)+'</span><a class="btn sm'+(i.quiet?' ghost':'')+'" href="'+i.href+'">'+i.cta+'</a></li>').join('')+'</ul>':'<p class="work-quiet">You\'re all caught up. Nothing is waiting for you.</p>')+'</section>';
+  }
+  /* B · All services in one list, with status tabs that live in the address (?status=). */
+  function allServicesHTML(all,ids,savedIds) {
+    const f={all:()=>true,active:e=>e.phase==='active'&&status(e)!==states[3],requested:e=>e.phase==='requested',completed:e=>status(e)===states[3]};
+    const parts=(location.hash||'').replace(/^#/,'').split('/').filter(Boolean), tab=f[parts[1]]?parts[1]:'all', rows=all.filter(f[tab]);
+    const tabs='<nav class="opt-tabs" aria-label="Filter services">'+[['all','All'],['active','In progress'],['requested','Requested'],['completed','Completed']].map(([k,l])=>'<a href="#/workspace/'+k+'"'+(k===tab?' aria-current="page"':'')+'>'+l+'<span class="opt-count">'+all.filter(f[k]).length+'</span></a>').join('')+'</nav>';
+    const list=rows.length?'<ul class="opt-svc-rows">'+rows.map(e=>{const p=progress(e),u=e.updates[0];return '<li><a class="opt-svc-row" href="#/work/'+e.id+'"><span class="opt-svc-name"><strong>'+esc(e.service)+'</strong><small>'+esc(accName(e.accountantId))+'</small></span>'+badge(e)+
+      '<span class="opt-svc-meter"><progress max="'+(p.total||1)+'" value="'+p.done+'" aria-label="Completed tasks"></progress><small>'+p.done+' of '+p.total+' tasks</small></span><span class="opt-svc-upd"><small>Last update</small>'+(u?esc(fmtShort(u.at)):'None yet')+'</span>'+icon('chevron',16)+'</a></li>';}).join('')+'</ul>'
+      :'<p class="work-quiet">No services here.</p>';
+    const people=ids.length?'<section class="opt-acc-compact" aria-labelledby="opt-acc-t"><h3 id="opt-acc-t">Your accountants</h3><ul>'+ids.map(id=>{const p=getListed(id),name=accName(id);return '<li>'+avatarFor(name)+'<div><strong>'+(p?'<a href="#/profile/'+id+'">'+esc(name)+'</a>':esc(name))+'</strong><small>'+(p?esc(p.title):'Service history only')+'</small></div><div class="actions">'+(p?'<a class="btn sm" href="#/request/'+id+'">Request a service</a>':'')+chatLink(S.me.clientId,id)+(savedIds.includes(id)?'<button class="btn ghost sm" data-action="ws-unsave" data-id="'+id+'">Remove saved<span class="sr-only"> accountant '+esc(name)+'</span></button>':'')+'</div></li>';}).join('')+'</ul></section>'
+      :stateHTML('user','No accountants added yet','Explore the directory and add an accountant from their profile.','<a class="btn primary" href="#/directory">Find an accountant</a>');
+    return tabs+list+people;
+  }
+  /* C · List and details: accountants on the left, the chosen one on the right (?accountant=). Phones show one or the other. */
+  function accountantSplitHTML(all,ids,accPanel,empty,note) {
+    if(!ids.length)return note+empty;
+    const parts=(location.hash||'').replace(/^#/,'').split('/').filter(Boolean), sel=ids.includes(parts[1])?parts[1]:'';
+    const summary=id=>{const es=all.filter(e=>e.accountantId===id),w=es.filter(e=>e.phase==='active'&&status(e)===states[2]).length;return es.length?es.length+' service'+(es.length===1?'':'s')+(w?' · '+w+' waiting for you':''):'Added · no services yet';};
+    const list='<nav class="opt-acc-list" aria-label="Your accountants"><ul>'+ids.map(id=>{const name=accName(id);return '<li><a href="#/workspace/'+id+'"'+(id===(sel||(S.device==='desktop'?ids[0]:''))?' aria-current="page"':'')+'>'+avatarFor(name)+'<span><strong>'+esc(name)+'</strong><small>'+summary(id)+'</small></span>'+icon('chevron',16)+'</a></li>';}).join('')+'</ul></nav>';
+    if(S.device==='phone')return sel?accPanel(sel):note+list;
+    return note+'<div class="opt-acc-split">'+list+'<div class="opt-acc-detail">'+accPanel(sel||ids[0])+'</div></div>';
   }
   function clientHTML(id) {
     if (S.me.role!=='accountant') return unavailable();
@@ -117,7 +155,47 @@ window.createServiceWorkspace = function (ctx) {
     if(!S.me)return {title,back:'#/directory',body:stateHTML('lock','Sign in to see your workspace','Client lists, service progress and documents are private.',signinBtn(location.hash))};
     if(api.dataMode==='error')return {title,back:'#/workspace',body:stateHTML('alert','Could not load your workspace','Try again. Your work has not been changed.','<button class="btn primary" data-action="ws-retry-load">Try again</button>')};
     if(api.dataMode==='loading')return {title,body:'<div class="state" aria-busy="true">Loading your workspace…</div>'};
-    return {title,back:r.name==='workspace'?null:'#/workspace',tabs:r.name==='workspace',body:r.name==='workspace'?listHTML():r.name==='client'?clientHTML(r.id):r.name==='request'?requestHTML(r.accId):detailHTML(r.id)};
+    const e=r.name==='work'&&S.wsNav==='side'&&S.me.role==='accountant'?find(r.id):null;
+    /* Design option C for My accountants: on phones, /workspace?accountant=… is its own screen with Back to the list. */
+    const one=r.name==='workspace'&&S.opt?.myacc==='c'&&S.device==='phone'&&S.me.role==='client'&&r.sub&&getListed(r.sub)?getListed(r.sub):null;
+    if(one)return {title:one.name,back:'#/workspace',tabs:false,body:listHTML()};
+    return {title,back:r.name==='workspace'?null:e?'#/clients/'+e.clientId:'#/workspace',tabs:r.name==='workspace',body:r.name==='workspace'?listHTML():r.name==='client'?clientHTML(r.id):r.name==='request'?requestHTML(r.accId):detailHTML(r.id)};
+  };
+  /* Proposed workspace navigation (2026-11-24, not adopted; the "Workspace navigation" control, S.wsNav === 'side').
+     trail(): the breadcrumb names the client and the service; for an accountant a service sits under its client.
+     sideHTML(): on wide desktop frames, the viewer's clients (or accountants) and their services beside the client and
+     service pages, as the conversation list sits beside a chat. Plain links, the open one marked aria-current. */
+  /* For the design options on other pages: the client's saved state and their services with one accountant. */
+  api.isSaved = id => !!S.me && S.me.role==='client' && (saved[S.me.clientId]||[]).includes(id);
+  api.servicesWith = accId => !S.me||S.me.role!=='client'||api.dataMode!=='normal' ? [] : ownWork().filter(e=>e.accountantId===accId).map(e=>({id:e.id,service:e.service,status:status(e),phase:e.phase}));
+  api.myAccountants = () => !S.me||S.me.role!=='client'||api.dataMode!=='normal' ? [] : [...new Set([...(saved[S.me.clientId]||[]),...ownWork().map(e=>e.accountantId)])];
+  api.trail = r => {
+    const isAcc=S.me?.role==='accountant', root={label:isAcc?'Clients':'My accountants',href:'#/workspace'};
+    if(r.name==='workspace')return [{label:root.label}];
+    if(!S.me||api.dataMode!=='normal')return [root,{label:api.page(r).title}];
+    const e=r.name==='work'?find(r.id):null;
+    if(e&&isAcc)return [root,{label:clients[e.clientId]||'Client',href:'#/clients/'+e.clientId},{label:e.service}];
+    if(e)return [root,{label:e.service}];
+    if(r.name==='client'&&isAcc&&ownWork().some(x=>x.clientId===r.id))return [root,{label:clients[r.id]||'Client'}];
+    return [root,{label:api.page(r).title}];
+  };
+  api.sideHTML = r => {
+    if(!S.me||api.dataMode!=='normal'||!['client','work'].includes(r.name))return '';
+    const all=ownWork(), isAcc=S.me.role==='accountant', open=r.name==='work'?r.id:'';
+    const cur = on => on?' aria-current="page"':'';
+    const services = es => es.length?'<ul class="work-side-services">'+es.map(e=>'<li><a href="#/work/'+e.id+'"'+cur(e.id===open)+'><span>'+esc(e.service)+'</span><small'+(e.phase==='requested'?' class="req"':'')+'>'+esc(status(e))+'</small></a></li>').join('')+'</ul>':'<p class="work-side-quiet">No services yet</p>';
+    const count = es => { const n=es.filter(e=>e.phase==='requested').length; return es.length+' service'+(es.length===1?'':'s')+(n?' · '+n+' new request'+(n===1?'':'s'):''); };
+    let groups;
+    if (isAcc) {
+      groups=[...new Set(all.map(e=>e.clientId))].map(id=>{const es=all.filter(e=>e.clientId===id),name=clients[id]||'Client';
+        return '<li class="work-side-group"><a class="work-side-person" href="#/clients/'+id+'"'+cur(r.name==='client'&&r.id===id)+'><span class="avatar sm '+tone(name)+'" aria-hidden="true">'+initials(name)+'</span><span><strong>'+esc(name)+'</strong><small>'+count(es)+'</small></span></a>'+services(es)+'</li>';});
+    } else {
+      groups=[...new Set([...(saved[S.me.clientId]||[]),...all.map(e=>e.accountantId)])].map(id=>{const p=getListed(id),es=all.filter(e=>e.accountantId===id),name=p?p.name:'Accountant no longer listed';
+        return '<li class="work-side-group">'+(p?'<a class="work-side-person" href="#/profile/'+id+'">':'<div class="work-side-person">')+'<span class="avatar sm '+tone(name)+'" aria-hidden="true">'+(p?initials(name):'?')+'</span><span><strong>'+esc(name)+'</strong><small>'+(es.length?count(es):'Added · no services yet')+'</small></span>'+(p?'</a>':'</div>')+(es.length?services(es):'')+'</li>';});
+    }
+    const label=isAcc?'Clients':'My accountants';
+    return '<nav class="work-side" aria-label="'+label+' and services"><div class="work-side-inner"><p class="work-side-title"><span>'+label+'</span><a href="#/workspace">Overview</a></p>'+
+      (groups.length?'<ul>'+groups.join('')+'</ul>':'<p class="work-side-quiet">Nothing here yet</p>')+'</div></nav>';
   };
   api.profileAction = id => {
     if(!S.me||S.me.role!=='client')return '';

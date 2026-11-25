@@ -24,6 +24,10 @@ Double-click `index.html`, keeping `taxbuddy.css`, `service-workspace.js` and th
 - the palette of the Tax Buddy look: Paper & Forest, chosen by the user on 2026-11-13, or four proposals added on 2026-11-12 for comparison, kept as history ([DESIGN-DIRECTIONS](DESIGN-DIRECTIONS.md#palette-options));
 - who is signed in (visitor, client, accountant, or a new accountant);
 - the picture design: how the pencil on the Account avatar changes the profile picture. E (pick, preview, save) is the current design, chosen by the owner on 2026-11-19; A is what the site shows without script; B, C and D were not chosen and are kept for comparison ([F06](../specs/profile-pictures/spec.md#picture-design-options-2026-11-19));
+- the workspace navigation: "Breadcrumb only" is the current design. "Side list" is a proposal of 2026-11-24, not adopted. Its parts:
+  - from 960 px, a list of the viewer's clients (or accountants) and their services beside the client and service pages, like the conversation list beside a chat;
+  - a breadcrumb that names the client and the service;
+  - on phones, Back from a service goes to its client;
 - online or offline;
 - the theme;
 - simulated failures;
@@ -41,12 +45,46 @@ Optional URL settings, useful for sharing a specific state:
 | `palette` | `forest` (default, current), `ink`, `lagoon`, `plum`, `marigold`; applies to the `taxbuddy` look only |
 | `role` | `client`, `accountant`, `newAccountant` (default is a visitor) |
 | `picture` | `e` (default, current), `a` (used without script), `b`, `c`, `d` (not chosen) |
+| `wsnav` | `current` (default, breadcrumb only), `side` (side list, proposed 2026-11-24, not adopted) |
+| `opt` | A design option per page, for example `directory-a` or `directory-a,chats-b`. Pages: `directory`, `profile`, `chats`, `myacc`; options `a`, `b`, `c`. Left out, every page shows the current design. See [design options](#design-options-for-the-clients-flow) |
+| `embed` | `1` shows the simulated browser alone, without the bar or notes; used by `options.html` |
 | `theme` | `light`, `dark` (default follows the system) |
 | `offline` | `1` |
 | `email` | `off` to start with email notifications turned off |
 | `notes` | `0` to hide the notes panel |
 
 Example: `index.html?device=desktop&look=taxbuddy&theme=dark&role=accountant#/chats`.
+
+## Design options for the client's flow
+
+[options.html](options.html) (2026-11-24, at the user's request) compares design options for the pages a client uses after signing in, in this order:
+1. Directory
+2. Accountant profile
+3. Chats
+4. My accountants
+
+Open it directly or with **Design options** in the prototype bar. For each page it shows the current design and the options the user kept from a one-line list. Every option is the real prototype in a frame (`index.html?embed=1&opt=…`), signed in as the client Maria Santos, so it can be clicked.
+
+How it's laid out:
+- A step bar and Previous/Next move between the pages.
+- Tabs pick Current or an option, and **Compare all** shows them side by side at a smaller size.
+- Phone/Desktop and a theme switch change the frames.
+- Each option has notes: the idea, what changes, the trade-off, how it works without script, and phones where they differ.
+- The address keeps the page, option, frame and theme (`options.html?page=chats&option=a&frame=phone`), so a link can point to one option.
+
+| Page | Options (none adopted) |
+|---|---|
+| Directory | A · Slim search, rows; B · Filter column; C · Welcome back |
+| Accountant profile | A · Section links; B · Actions in the header |
+| Chats | A · Details panel; B · Focused conversation; C · Sorted list |
+| My accountants | A · Next steps first; B · All services list; C · List and details |
+
+These are proposals. Without `opt`, the prototype shows the current design, which the site follows. When the owner chooses an option for a page:
+- the choice is recorded in [DESIGN](../docs/DESIGN.md) and the feature spec;
+- the prototype's default changes to it;
+- the other options stay, marked "not chosen", as with the Picture design options.
+
+None of them adds a feature: they rearrange data the pages already show. Directory C and Chats A show a client's own data in new places; for Directory C that's a public page, so it would be drawn only for that client and not cached publicly.
 
 ## What it covers
 

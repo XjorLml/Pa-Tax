@@ -519,6 +519,9 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
     <label class="pctl">Picture design
       <select id="sel-picture"><option value="e">E · Pick, preview, save (current)</option><option value="a">A · Inline panel (current without script)</option><option value="b">B · One-tap upload (not chosen)</option><option value="c">C · Small menu (not chosen)</option><option value="d">D · Separate page (not chosen)</option></select>
     </label>
+    <label class="pctl">Workspace navigation
+      <select id="sel-wsnav"><option value="current">Breadcrumb only (current)</option><option value="side">Side list (proposed)</option></select>
+    </label>
     <label class="pctl">Palette
       <select id="sel-palette"><option value="forest">Paper &amp; Forest (current)</option><option value="ink">Ink &amp; Ledger Blue (option)</option><option value="lagoon">Lagoon Teal (option)</option><option value="plum">Plum &amp; Blush (option)</option><option value="marigold">Marigold &amp; Charcoal (option)</option></select>
     </label>
@@ -574,6 +577,7 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
     </label>
     <label class="pchk"><input type="checkbox" id="chk-notes"> Show notes</label>
     <button type="button" class="pbtn" id="btn-reset">Reset</button>
+    <a class="pbtn" href="options.html">Design options</a>
   </div>
  </details>
 </header>
@@ -716,7 +720,9 @@ const S = {
   dir: { status: 'idle', data: [], search: '', service: '', sort: 'name', page: 1, typed: '', svcDraft: '' },
   drafts: {}, composeErr: {},
   signin: null, editor: null, del: null,
-  emailOn: true, emailNote: null, picMode: 'e', pic: { open: false, file: null, pending: null, menu: false, msg: null, ok: false }, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
+  emailOn: true, emailNote: null, picMode: 'e', wsNav: 'current',
+  /* Design options per page (options.html, 2026-11-24): 'current' unless the address names a proposal (opt=directory-a). */
+  opt: { directory: 'current', profile: 'current', chats: 'current', myacc: 'current' }, pic: { open: false, file: null, pending: null, menu: false, msg: null, ok: false }, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
   route: null, routeChanged: false, guardTarget: null, focusSel: null
 };
 const qs = new URLSearchParams(location.search);
@@ -732,6 +738,11 @@ if (['taxbuddy', 'modern', 'ledger', 'neighbourly', 'clear'].indexOf(qs.get('loo
 const PALETTES = { forest: 'Paper & Forest', ink: 'Ink & Ledger Blue', lagoon: 'Lagoon Teal', plum: 'Plum & Blush', marigold: 'Marigold & Charcoal' };
 if (PALETTES[qs.get('palette')]) S.palette = qs.get('palette');
 if (['a', 'b', 'c', 'd', 'e'].indexOf(qs.get('picture')) >= 0) S.picMode = qs.get('picture');
+/* Workspace navigation: 'current' (breadcrumb only) or 'side', the proposal of 2026-11-24 (not adopted). */
+if (['current', 'side'].indexOf(qs.get('wsnav')) >= 0) S.wsNav = qs.get('wsnav');
+/* Design options: opt=directory-a,profile-b,chats-c,myacc-a. options.html also passes embed=1 to show the frame alone. */
+(qs.get('opt') || '').split(',').forEach(x => { const [k, v] = x.split('-'); if (k in S.opt && ['a', 'b', 'c'].includes(v)) S.opt[k] = v; });
+if (qs.get('embed') === '1') document.documentElement.classList.add('embed');
 
 /* ---------- Helpers ---------- */
 const $id = id => document.getElementById(id);
@@ -845,7 +856,7 @@ function parseRoute() {
     case 'signin': return { name: 'signin' };
     case 'agree': return { name: 'agree' };
     case 'chats': return { name: 'chats' };
-    case 'workspace': return { name: 'workspace' };
+    case 'workspace': return { name: 'workspace', sub: b || '' };
     case 'clients': return { name: 'client', id: b || '' };
     case 'work': return { name: 'work', id: b || '' };
     case 'request': return { name: 'request', accId: b || '' };
@@ -903,7 +914,7 @@ const offlineBanner = () => S.online ? '' : '<div class="banner warn" role="stat
 const signinBtn = next => '<button class="btn primary" data-action="start-signin" data-next="' + esc(next) + '">Sign in</button>';
 /* Proposed page addresses, shown in the simulated browser bar. */
 const PATHS = {
-  workspace: () => '/workspace', client: r => '/clients/' + r.id, work: r => '/work/' + r.id, request: r => '/accountants/' + r.accId + '/request-service',
+  workspace: r => '/workspace' + (!r.sub ? '' : S.opt.myacc === 'b' ? '?status=' + r.sub : S.opt.myacc === 'c' ? '?accountant=' + r.sub : ''), client: r => '/clients/' + r.id, work: r => '/work/' + r.id, request: r => '/accountants/' + r.accId + '/request-service',
   directory: () => '/', profile: r => '/accountants/' + r.id, review: r => '/accountants/' + r.accId + '/review', compose: r => '/chats/new/' + r.accId, thread: r => '/chats/' + r.id,
   signin: () => '/signin', agree: () => '/account/agree', chats: () => '/chats', me: () => '/account', editor: () => '/account/profile', 'delete': () => '/account/delete', picture: () => '/account/picture',
   info: r => r.page === 'notfound' ? '/' + location.hash.replace(/^#\/?/, '') : r.page === 'email-off' ? '/email/off' : '/' + r.page
@@ -998,7 +1009,7 @@ function dirResultsHTML(sel) {
   const pageLink = (n, t) => '<a href="#/directory" class="btn sm" data-action="page" data-val="' + n + '" data-fkey="page-' + t.toLowerCase() + '">' + t + '</a>';
   return '<div class="meta-row"><span>' + what + (q || d.service ? ' <button type="button" class="linkbtn" data-action="clear-search" data-fkey="clear-inline">Clear</button>' : '') + '</span>' +
     '<span class="sortctl" role="group" aria-label="Sort">Sort: ' + sortLink('name', 'Name (A–Z)') + sortLink('rating', 'Highest rated') + '</span></div>' +
-    '<ul class="cards">' + shown.map(p => cardHTML(p, sel)).join('') + '</ul>' +
+    (S.opt.directory === 'a' ? '<ul class="dir-rows">' + shown.map(rowHTML).join('') + '</ul>' : '<ul class="cards">' + shown.map(p => cardHTML(p, sel)).join('') + '</ul>') +
     (pages > 1 ? '<nav class="pager" aria-label="Result pages">' + (page > 1 ? pageLink(page - 1, 'Previous') : '') +
       '<span>Page ' + page + ' of ' + pages + '</span>' + (page < pages ? pageLink(page + 1, 'Next') : '') + '</nav>' : '');
 }
@@ -1018,25 +1029,39 @@ function profileAction(p) {
   return '<a class="btn primary block" href="' + (conv ? '#/thread/' + conv.id : '#/compose/' + p.id) + '" data-fkey="msg-btn">' + icon('chat', 18) + ' ' +
     (conv ? 'Open chat' : 'Message ' + esc(firstName(p.name))) + '</a>' + (hint ? '<p class="cta-hint">' + hint + '</p>' : '') + W.profileAction(p.id);
 }
+/* Profile option B: the same actions as the side card, as one row of buttons. */
+function headActionsHTML(p) {
+  if (S.me && S.me.role === 'accountant') return profileAction(p);
+  const conv = S.me ? CONVS.find(c => c.clientId === S.me.clientId && c.accountantId === p.id) : null;
+  const chat = '<a class="btn primary" href="' + (conv ? '#/thread/' + conv.id : '#/compose/' + p.id) + '" data-fkey="msg-btn">' + icon('chat', 18) + ' ' + (conv ? 'Open chat' : 'Message ' + esc(firstName(p.name))) + '</a>';
+  const more = S.me ? (W.isSaved(p.id) ? '<a class="btn" href="#/workspace">Added · My accountants</a>' : '<button class="btn" data-action="ws-save" data-id="' + p.id + '">Add accountant</button>') + '<a class="btn ghost" href="#/request/' + p.id + '">Request a service</a>' : '';
+  return '<div class="opt-head-actions">' + chat + more + '</div>';
+}
 function profileBodyHTML(id, desktop) {
   const p = getListed(id);
   if (!p) return stateHTML('alert', 'This profile is no longer available', 'The accountant may have removed their profile, or the link is wrong.', '<a class="btn" href="#/directory">Back to directory</a>');
   if (!S.online) return stateHTML('wifiOff', 'Can\'t load this profile', 'You\'re offline. Connect and try again.', '<button class="btn primary" data-action="rerender">Try again</button>');
   const titleAttr = desktop ? ' id="screen-title" tabindex="-1"' : '';
   const yrs = yearsExp(p), rt = ratingOf(p.id);
-  const head = '<div class="profile-head"><span class="avatar lg ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span><div><h2' + titleAttr + '>' + esc(p.name) + '</h2><p class="sub">' + esc(p.title) + '</p>' +
+  /* Design option A (2026-11-24, not adopted): section links under the header; the headings take ids to jump to. */
+  const hid = k => S.opt.profile === 'a' ? ' id="sec-' + k + '" tabindex="-1"' : '';
+  const headTop = '<div class="profile-head"><span class="avatar lg ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span><div><h2' + titleAttr + '>' + esc(p.name) + '</h2><p class="sub">' + esc(p.title) + '</p>' +
     (p.city ? '<p class="sub">' + icon('pin', 14) + ' ' + esc(p.city) + '</p>' : '') +
-    '<p class="rating"><button class="rating-link" data-action="goto-reviews" data-fkey="goto-reviews">' + ratingLine(p.id) + '</button></p></div></div>' +
-    '<ul class="facts-row">' + (rt.count ? '<li><strong>' + rt.avg.toFixed(1) + '</strong> average from ' + countText(rt.count) + '</li>' : '') +
+    '<p class="rating"><button class="rating-link" data-action="goto-reviews" data-fkey="goto-reviews">' + ratingLine(p.id) + '</button></p></div></div>';
+  const facts = '<ul class="facts-row">' + (rt.count ? '<li><strong>' + rt.avg.toFixed(1) + '</strong> average from ' + countText(rt.count) + '</li>' : '') +
     (yrs ? '<li><strong>' + yrs + '</strong> ' + (yrs === 1 ? 'year' : 'years') + ' of experience</li>' : '') +
     '<li><strong>' + p.services.length + '</strong> ' + (p.services.length === 1 ? 'service' : 'services') + '</li></ul>';
-  const about = '<section class="section"><h3>About</h3><p>' + esc(p.summary) + '</p></section>';
-  const services = '<section class="section"><h3>Services</h3><ul class="svc">' + p.services.map(s => '<li><strong>' + esc(s.name) + '</strong><span class="muted small">' + esc(s.desc) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Prices aren\'t listed. Ask in chat.</p></section>';
-  const portfolio = p.portfolio.length ? '<section class="section"><h3>Portfolio highlights</h3><ul class="pf">' + p.portfolio.map(x =>
+  const secNav = S.opt.profile !== 'a' ? '' : '<nav class="opt-sections" aria-label="On this page">' +
+    [['sec-about', 'About'], ['sec-services', 'Services']].concat(p.portfolio.length ? [['sec-highlights', 'Highlights']] : []).concat([['sec-experience', 'Experience'], ['reviews-h', 'Reviews']])
+      .map(x => '<a href="#/profile/' + p.id + '" data-action="opt-jump" data-target="' + x[0] + '">' + x[1] + '</a>').join('') + '</nav>';
+  const head = headTop + facts + secNav;
+  const about = '<section class="section"><h3' + hid('about') + '>About</h3><p>' + esc(p.summary) + '</p></section>';
+  const services = '<section class="section"><h3' + hid('services') + '>Services</h3><ul class="svc">' + p.services.map(s => '<li><strong>' + esc(s.name) + '</strong><span class="muted small">' + esc(s.desc) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Prices aren\'t listed. Ask in chat.</p></section>';
+  const portfolio = p.portfolio.length ? '<section class="section"><h3' + hid('highlights') + '>Portfolio highlights</h3><ul class="pf">' + p.portfolio.map(x =>
     '<li><div class="pf-top"><strong>' + esc(x.title) + '</strong>' + (x.sector ? '<span class="tag">' + esc(x.sector) + '</span>' : '') + '</div><p>' + esc(x.work) + '</p>' +
     (x.result ? '<p class="pf-result"><span class="muted small">Result</span> ' + esc(x.result) + '</p>' : '') + '</li>').join('') +
     '</ul><p class="muted small" style="margin-top:8px">Described by the accountant. Client names are left out.</p></section>' : '';
-  const experience = '<section class="section"><h3>Experience</h3>' + (p.experience.length ? '<ol class="timeline">' + p.experience.map(e =>
+  const experience = '<section class="section"><h3' + hid('experience') + '>Experience</h3>' + (p.experience.length ? '<ol class="timeline">' + p.experience.map(e =>
     '<li><strong>' + esc(e.role) + '</strong>' + esc(e.org) + '<br><span class="muted small">' + fmtMonth(e.start) + ' – ' + fmtMonth(e.current ? '' : e.end) + '</span></li>').join('') + '</ol>' : '<p class="muted">No experience listed.</p>') + '</section>';
   const contacts = [p.email ? ['mail', p.email] : null, p.phone ? ['phone', p.phone] : null, p.website ? ['globe', p.website] : null].filter(Boolean);
   const contactList = '<ul class="contact">' + contacts.map(c => '<li>' + icon(c[0], 18) + '<span>' + esc(c[1]) + '</span></li>').join('') + '</ul><p class="muted small" style="margin-top:8px">Shown publicly by the accountant.</p>';
@@ -1044,6 +1069,13 @@ function profileBodyHTML(id, desktop) {
   const own = S.me && S.me.role === 'accountant' && S.me.accountantId === p.id;
   const report = own ? '' : '<p class="report-row"><button class="linkbtn" data-action="report" data-kind="profile" data-id="' + p.id + '" data-fkey="report-profile">Report this profile</button></p>';
   const main = about + services + portfolio + experience + reviewsHTML(p);
+  /* Design option B (2026-11-24, not adopted): one column, the actions as buttons under the name with the contact
+     details beside them; no side card and no phone action bar. */
+  if (S.opt.profile === 'b') {
+    const bar = '<div class="opt-head-bar">' + headActionsHTML(p) + '<div class="opt-head-contact"><ul class="contact" aria-label="Contact">' + contacts.map(c => '<li>' + icon(c[0], 18) + '<span>' + esc(c[1]) + '</span></li>').join('') + '</ul><p class="muted small">Shown publicly by the accountant.</p></div></div>';
+    const one = headTop + bar + facts + main + note + report;
+    return desktop ? '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/directory">Accountants</a><span aria-hidden="true">/</span><span>' + esc(p.name) + '</span></nav><div class="opt-prof-one"><div class="profile-main">' + one + '</div></div>' : one;
+  }
   if (desktop) {
     return '<nav class="crumbs" aria-label="Breadcrumb"><a href="#/directory">Accountants</a><span aria-hidden="true">/</span><span>' + esc(p.name) + '</span></nav>' +
       '<div class="profile-grid"><div class="profile-main">' + head + main + '</div>' +
@@ -1062,14 +1094,36 @@ function convListHTML(selId) {
       : stateHTML('chat', 'No client messages yet', 'When a client messages you, the conversation appears here.', '');
   }
   const note = S.me.role === 'accountant' ? '<p class="muted small" style="margin:0 0 10px">' + (S.emailOn ? 'New client messages are also emailed to you.' : 'Email notifications are off.') + ' <a href="#/me">Change</a></p>' : '';
-  return note + '<ul class="convs">' + list.map(c => {
-    const u = unreadFor(c), l = lastMsg(c), mine = l && l.from === S.me.role, name = peerName(c);
-    return '<li><a class="conv' + (u ? ' unread' : '') + '" href="#/thread/' + c.id + '"' + (selId === c.id ? ' aria-current="true"' : '') + '>' +
+  const row = c => {
+    const u = unreadFor(c), l = lastMsg(c), mine = l && l.from === S.me.role, name = peerName(c), o = S.opt.chats;
+    /* Design option B: names and unread only. Option C: the client's service status with this accountant. */
+    const svc = o === 'c' && S.me.role === 'client' ? W.servicesWith(c.accountantId)[0] : null;
+    return '<li><a class="conv' + (u ? ' unread' : '') + (o === 'b' ? ' opt-slim-conv' : '') + '" href="#/thread/' + c.id + '"' + (selId === c.id ? ' aria-current="true"' : '') + '>' +
       '<span class="avatar ' + tone(name) + '" aria-hidden="true">' + initials(name) + '</span><span class="conv-main">' +
-      '<span class="conv-top"><span class="conv-name">' + esc(name) + '</span><span class="time">' + (l ? fmtShort(l.at) : '') + '</span></span>' +
-      '<span class="conv-bottom"><span class="conv-prev">' + (l ? (mine ? 'You: ' : '') + esc(l.text) : '') + '</span>' + (u ? '<span class="badge">' + u + ' new</span>' : '') + '</span>' +
+      (o === 'b' ? '<span class="conv-top"><span class="conv-name">' + esc(name) + '</span>' + (u ? '<span class="badge">' + u + ' new</span>' : '') + '</span>'
+        : '<span class="conv-top"><span class="conv-name">' + esc(name) + '</span><span class="time">' + (l ? fmtShort(l.at) : '') + '</span></span>' +
+          '<span class="conv-bottom"><span class="conv-prev">' + (l ? (mine ? 'You: ' : '') + esc(l.text) : '') + '</span>' + (u ? '<span class="badge">' + u + ' new</span>' : '') + '</span>' +
+          (svc ? '<span class="opt-conv-svc">' + icon('list', 14) + esc(svc.service) + ' · ' + esc(svc.status) + '</span>' : '')) +
       '</span></a></li>';
-  }).join('') + '</ul>';
+  };
+  if (S.opt.chats === 'c') {
+    const group = (t, cs) => cs.length ? '<h2 class="opt-conv-h">' + t + '</h2><ul class="convs">' + cs.map(row).join('') + '</ul>' : '';
+    return note + group('New messages', list.filter(c => unreadFor(c))) + group('Earlier', list.filter(c => !unreadFor(c)));
+  }
+  return note + '<ul class="convs">' + list.map(row).join('') + '</ul>';
+}
+/* ---------- Design options for chats (options.html, 2026-11-24): proposals, not adopted ---------- */
+/* A · Details panel: the accountant and the client's services with them, beside (or above) the conversation. */
+function chatDetailsInner(acc) {
+  const svcs = W.servicesWith(acc.id);
+  return '<div class="opt-cd-who"><span class="avatar ' + tone(acc.name) + '" aria-hidden="true">' + initials(acc.name) + '</span><div><strong>' + esc(acc.name) + '</strong><small>' + esc(acc.title) + '</small><span class="rating">' + ratingLine(acc.id) + '</span></div></div>' +
+    '<p class="opt-cd-h">Your services with ' + esc(firstName(acc.name)) + '</p>' +
+    (svcs.length ? '<ul class="opt-cd-svcs">' + svcs.map(s => '<li><a href="#/work/' + s.id + '"><span>' + esc(s.service) + '</span><small>' + esc(s.status) + '</small></a></li>').join('') + '</ul>' : '<p class="muted small">No services yet.</p>') +
+    '<div class="opt-cd-actions"><a class="btn primary sm" href="#/request/' + acc.id + '">Request a service</a><a class="btn sm" href="#/profile/' + acc.id + '">View profile</a></div>';
+}
+function chatDetailsMini(acc) {
+  const s = W.servicesWith(acc.id)[0];
+  return '<details class="opt-cd-mini"><summary>About ' + esc(firstName(acc.name)) + (s ? '<span> · ' + esc(s.service) + ': ' + esc(s.status) + '</span>' : '') + '</summary>' + chatDetailsInner(acc) + '</details>';
 }
 function statusText(m) {
   switch (m.status) {
@@ -1136,9 +1190,16 @@ function threadParts(r) {
     : blockedByMe ? '<p class="note"><span>You blocked ' + other + '. They can\'t message you. <button class="linkbtn" data-action="unblock" data-id="' + conv.id + '" data-fkey="unblock">Unblock</button></span></p>'
     : blockedByThem ? '<p class="note"><span>You can\'t send messages in this conversation.</span></p>'
     : composerHTML('thread:' + conv.id);
-  return { title: peerName(conv), back: '#/chats', body: tools + messagesHTML(conv, acc || { name: 'Accountant' }), footer: footer, scrollBottom: true,
-    actions: isClient && !accGone ? '<a class="icon-btn" href="#/profile/' + acc.id + '" aria-label="View profile">' + icon('user') + '</a>' : '',
-    headExtra: isClient && !accGone ? '<a class="btn sm" href="#/profile/' + acc.id + '">View profile</a>' : '' };
+  /* Design option B: Report and Block move into a More disclosure in the header. Option A: the details disclosure. */
+  const o = S.opt.chats;
+  const more = '<details class="opt-more"><summary class="btn sm">More<span class="sr-only"> actions for this chat</span></summary><div class="opt-more-menu">' +
+    '<button type="button" data-action="report" data-kind="chat" data-id="' + conv.id + '" data-fkey="report-chat">Report</button>' +
+    (blockedByMe ? '' : '<button type="button" data-action="block" data-id="' + conv.id + '" data-fkey="block">Block</button>') + '</div></details>';
+  const mini = o === 'a' && isClient && !accGone ? chatDetailsMini(acc) : '';
+  return { title: peerName(conv), back: '#/chats', top: mini, body: (o === 'b' ? '' : tools) + messagesHTML(conv, acc || { name: 'Accountant' }), footer: footer, scrollBottom: true,
+    actions: (isClient && !accGone ? '<a class="icon-btn" href="#/profile/' + acc.id + '" aria-label="View profile">' + icon('user') + '</a>' : '') + (o === 'b' ? more : ''),
+    headExtra: (isClient && !accGone ? '<a class="btn sm" href="#/profile/' + acc.id + '">View profile</a>' : '') + (o === 'b' ? more : ''),
+    panel: o === 'a' && isClient && !accGone ? '<aside class="opt-cd-panel" aria-label="About ' + esc(acc.name) + '">' + chatDetailsInner(acc) + '</aside>' : '' };
 }
 
 /* ---------- Sign in ---------- */
@@ -1458,7 +1519,49 @@ function filterHTML(desktop) {
   return '<div class="filter"><label for="svc">Service</label><select id="svc" name="service" data-fkey="svc" data-bind="service-select">' +
     '<option value="">All services</option>' + SERVICES.map(s => '<option' + (S.dir.svcDraft === s ? ' selected' : '') + '>' + esc(s) + '</option>').join('') + '</select></div>' + dirSubmitHTML();
 }
+/* ---------- Design options for the directory (options.html, 2026-11-24): proposals, not adopted ---------- */
+/* A · Slim search, rows: one row of search for a signed-in person, and accountants as full-width rows. */
+function rowHTML(p) {
+  const yrs = yearsExp(p);
+  return '<li><a class="dir-row" href="#/profile/' + p.id + '" data-fkey="card-' + p.id + '"><span class="avatar ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span>' +
+    '<span class="dir-row-main"><span class="dir-row-top"><strong>' + esc(p.name) + '</strong><span class="sub">' + esc(p.title) + '</span></span>' +
+    '<span class="dir-row-facts"><span class="rating">' + ratingLine(p.id) + '</span>' + (p.city ? '<span>' + icon('pin', 14) + esc(p.city) + '</span>' : '') + (yrs ? '<span>' + yearsText(yrs) + '\' experience</span>' : '') + '</span>' +
+    '<span class="dir-row-tags">' + p.services.map(s => '<span class="tag">' + esc(s.name) + '</span>').join('') + '</span>' +
+    '<span class="dir-row-sum">' + esc(p.summary) + '</span></span><span class="card-link">View profile' + icon('chevron', 16) + '</span></a></li>';
+}
+function slimSearchHTML(desktop) {
+  if (!S.me) return heroHTML(desktop);
+  if (desktop) return '<form class="opt-slim" role="search" method="get" action="#/directory" data-dir-form><h1 id="screen-title" tabindex="-1">Find an accountant</h1>' + searchHTML(true) + filterHTML(true) + '</form>';
+  return '<form class="opt-slim phone" role="search" method="get" action="#/directory" data-dir-form>' + searchHTML(false) + '<div class="opt-slim-row">' + filterHTML(false) + '</div></form>';
+}
+/* B · Filter column: search and every service as a list in a left column; phones keep the current search card. */
+function filterColumnHTML() {
+  const svc = (v, label, i) => '<li><button type="submit" name="service" value="' + esc(v) + '" class="opt-svc" data-fkey="chip-' + i + '" data-action="service" data-val="' + esc(v) + '" aria-pressed="' + (S.dir.service === v) + '">' + esc(label) + '</button></li>';
+  return '<form class="opt-filters" role="search" method="get" action="#/directory" data-dir-form>' +
+    '<div class="opt-filter-block"><label for="q" class="opt-filter-h">Search</label><div class="search">' + icon('search', 18) +
+    '<input id="q" type="search" name="q" data-fkey="q" data-bind="search" placeholder="Name, city or service" value="' + esc(S.dir.typed) + '" autocomplete="off"></div>' + dirSubmitHTML() + '</div>' +
+    '<div class="opt-filter-block" role="group" aria-labelledby="opt-svc-h"><p class="opt-filter-h" id="opt-svc-h">Service</p><ul>' + svc('', 'All services', 'x') + SERVICES.map((s, i) => svc(s, s, i)).join('') + '</ul></div></form>';
+}
+/* C · Welcome back: a signed-in client's accountants, each with its newest news, above the usual search. */
+function welcomeStripHTML(desktop) {
+  const ids = W.myAccountants();
+  if (!ids.length) return '';
+  const item = id => {
+    const p = getListed(id); if (!p) return '';
+    const conv = CONVS.find(c => c.clientId === S.me.clientId && c.accountantId === id), unread = conv ? (conv.unread.client || 0) : 0;
+    const svcs = W.servicesWith(id), wait = svcs.find(s => s.status === 'Waiting for client'), first = wait || svcs[0];
+    const news = unread ? unread + ' new message' + (unread === 1 ? '' : 's') : first ? first.service + ' · ' + first.status : 'Added · no services yet';
+    const href = unread ? '#/thread/' + conv.id : first ? '#/work/' + first.id : '#/profile/' + id;
+    return '<li><a class="opt-wb-item" href="' + href + '"><span class="avatar sm ' + tone(p.name) + '" aria-hidden="true">' + initials(p.name) + '</span><span><strong>' + esc(p.name) + '</strong><small' + (unread || wait ? ' class="hot"' : '') + '>' + esc(news) + '</small></span></a></li>';
+  };
+  return '<section class="opt-welcome' + (desktop ? '' : ' phone') + '" aria-label="Your accountants"><div class="opt-wb-head"><p>Welcome back, ' + esc(firstName(S.me.name)) + '</p><a href="#/workspace">My accountants</a></div><ul>' + ids.map(item).join('') + '</ul></section>';
+}
 function directoryBodyHTML(sel, desktop) {
+  const o = S.opt.directory, results = '<div class="results" data-dir-results role="region" aria-label="Accountant search results" aria-live="polite" aria-atomic="false">' + dirResultsHTML(sel) + '</div>';
+  const tail = desktop ? (S.me ? '' : howHTML(true)) : infoLinksHTML();
+  if (o === 'a') return slimSearchHTML(desktop) + results + tail;
+  if (o === 'b' && desktop) return '<div class="opt-band"><h1 id="screen-title" tabindex="-1">Find an accountant</h1><p>Explore the experience, services and people behind each profile.</p></div><div class="opt-filter-grid">' + filterColumnHTML() + results + '</div>' + tail;
+  if (o === 'c' && S.me && S.me.role === 'client') return welcomeStripHTML(desktop) + heroHTML(desktop) + '<div class="directory-heading"><div><h2>Meet your next accountant</h2><p>Explore the experience, services and people behind each profile.</p></div></div>' + results + tail;
   return heroHTML(desktop) + '<div class="directory-heading"><div><h2>Meet your next accountant</h2><p>Explore the experience, services and people behind each profile.</p></div></div>' +
     '<div class="results" data-dir-results role="region" aria-label="Accountant search results" aria-live="polite" aria-atomic="false">' + dirResultsHTML(sel) + '</div>' + (desktop ? (S.me ? '' : howHTML(true)) : infoLinksHTML());
 }
@@ -1723,7 +1826,7 @@ function phoneScreen(r) {
       return { title: 'Tax Buddy', body: directoryBodyHTML('', false), tabs: true };
     case 'profile': {
       const p = getListed(r.id);
-      return { title: 'Profile', back: '#/directory', body: profileBodyHTML(r.id, false), footer: p && S.online ? profileAction(p) : '' };
+      return { title: 'Profile', back: '#/directory', body: profileBodyHTML(r.id, false), footer: p && S.online && S.opt.profile !== 'b' ? profileAction(p) : '' };
     }
     case 'review': return { title: 'Write a review', back: '#/profile/' + r.accId, body: reviewPageHTML(r.accId) };
     case 'compose': case 'thread': return threadParts(r);
@@ -1753,11 +1856,18 @@ function phoneShell(r) {
   return '<header class="appbar' + (sc.back ? ' has-back' : '') + '">' +
     (sc.back ? '<a class="icon-btn" href="' + sc.back + '" aria-label="Back" data-fkey="back">' + icon('back') + '</a>' : '') +
     '<h1 id="screen-title" tabindex="-1">' + (r.name === 'directory' ? '<span class="brand">' + brandIconHTML() + 'Tax Buddy</span>' : esc(sc.title)) + '</h1>' + (sc.actions || '') + themeToggleHTML() + '</header>' +
-    offlineBanner() + '<div class="content"' + scroll + '>' + sc.body + (r.name !== 'directory' && r.name !== 'me' ? '<footer class="mobile-site-links">' + infoLinksHTML() + '</footer>' : '') + '</div>' +
+    offlineBanner() + (sc.top ? '<div class="opt-top">' + sc.top + '</div>' : '') + '<div class="content"' + scroll + '>' + sc.body + (r.name !== 'directory' && r.name !== 'me' ? '<footer class="mobile-site-links">' + infoLinksHTML() + '</footer>' : '') + '</div>' +
     (sc.footer ? '<div class="footer">' + sc.footer + '</div>' : '') + (sc.tabs ? tabbarHTML(r) : '');
 }
 function desktopMain(r) {
   const page = (key, inner) => '<div class="page" data-skey="' + key + '"><div class="container">' + inner + '</div>' + footerHTML() + '</div>';
+  if (['workspace','client','work','request'].includes(r.name) && S.wsNav === 'side') {
+    /* Proposed workspace navigation (2026-11-24, not adopted): the side list from 960 px and the fuller breadcrumb. */
+    const w = W.page(r), side = W.sideHTML(r), trail = W.trail(r);
+    const crumbs = '<nav class="crumbs" aria-label="Breadcrumb">' + trail.map((c, i) => (i ? '<span aria-hidden="true">/</span>' : '') + (c.href ? '<a href="' + c.href + '">' + esc(c.label) + '</a>' : '<span aria-current="page">' + esc(c.label) + '</span>')).join('') + '</nav>';
+    const inner = '<div class="workspace">' + crumbs + '<h1 id="screen-title" tabindex="-1" class="work-page-title">' + esc(w.title) + '</h1>' + w.body + '</div>';
+    return '<div class="page" data-skey="work-' + esc(location.hash) + '">' + (side ? '<div class="work-split">' + side + '<div class="work-main container">' + inner + '</div></div>' : '<div class="container">' + inner + '</div>') + footerHTML() + '</div>';
+  }
   if (['workspace','client','work','request'].includes(r.name)) { const w=W.page(r); return page('work-'+esc(location.hash), '<div class="workspace"><nav class="crumbs" aria-label="Breadcrumb"><a href="#/workspace">'+(S.me && S.me.role === 'accountant' ? 'Clients' : 'My accountants')+'</a>'+(r.name === 'workspace' ? '' : '<span aria-hidden="true">/</span><span>'+esc(w.title)+'</span>')+'</nav><h1 id="screen-title" tabindex="-1" class="work-page-title">'+esc(w.title)+'</h1>'+w.body+'</div>'); }
   switch (r.name) {
     case 'directory': return page('d-dir', directoryBodyHTML('', true));
@@ -1765,17 +1875,18 @@ function desktopMain(r) {
     case 'review': return page('d-review', '<div class="narrow"><nav class="crumbs" aria-label="Breadcrumb"><a href="#/profile/' + esc(r.accId) + '">Back to profile</a></nav><div class="panel"><h1 id="screen-title" tabindex="-1">Write a review</h1>' + reviewPageHTML(r.accId) + '</div></div>');
     case 'info': { const i = infoPage(r.page); return page('d-info-' + r.page, '<div class="narrow"><div class="panel prose"><h1 id="screen-title" tabindex="-1">' + esc(i.title) + '</h1>' + i.body + '</div></div>'); }
     case 'chats': case 'thread': case 'compose': {
-      let detail;
+      let detail, panel = '';
       if (r.name === 'chats') {
         detail = '<section class="pane-detail" aria-label="Conversation"><div class="empty-detail"><div>' + icon('chat', 40) + '<p>' + (S.me ? 'Select a conversation.' : 'Sign in to see your chats.') + '</p></div></div></section>';
       } else {
         const t = threadParts(r);
+        panel = t.panel || '';
         detail = '<section class="pane-detail" aria-label="Conversation"><div class="pane-head"><h2 id="screen-title" tabindex="-1">' + esc(t.title) + '</h2>' + (t.headExtra || '') + '</div>' +
-          '<div class="pane-scroll pad"' + (t.scrollBottom ? ' data-scroll-bottom' : '') + '>' + t.body + '</div>' + (t.footer ? '<div class="footer">' + t.footer + '</div>' : '') + '</section>';
+          (t.top ? '<div class="opt-top">' + t.top + '</div>' : '') + '<div class="pane-scroll pad"' + (t.scrollBottom ? ' data-scroll-bottom' : '') + '>' + t.body + '</div>' + (t.footer ? '<div class="footer">' + t.footer + '</div>' : '') + '</section>';
       }
       const list = '<section class="pane-list" aria-label="Conversations"><div class="pane-head"><h1' + (r.name === 'chats' ? ' id="screen-title" tabindex="-1"' : '') + '>Chats</h1></div>' +
         '<div class="pane-scroll" data-skey="d-convs">' + convListHTML(r.name === 'thread' ? r.id : '') + '</div></section>';
-      return '<div class="panes">' + list + detail + '</div>';
+      return '<div class="panes' + (S.opt.chats === 'b' ? ' opt-focus' : '') + (panel ? ' opt-has-panel' : '') + '">' + list + detail + panel + '</div>';
     }
   }
   let title = '', body = '', footer = '';
@@ -1885,6 +1996,9 @@ function notesHTML() {
   return '<h2>Screen notes: ' + esc(n.title) + '</h2><p class="muted small">IDs refer to docs/PRD.md, the ADRs and feature specs, including specs/client-services.</p>' +
     '<h3>Look</h3><p class="small"><strong>' + esc(L.name) + '</strong>: ' + esc(L.mood) + '. Tax Buddy is the current direction; earlier alternatives remain in the Look control. See prototypes/DESIGN-DIRECTIONS.md.</p>' +
     (S.look === 'taxbuddy' ? '<h3>Palette</h3><p class="small"><strong>' + esc(PALETTES[S.palette]) + '</strong>: ' + (S.palette === 'forest' ? 'the current palette.' : 'a colour proposal for comparison, not chosen. Only colours change; Paper & Forest stays current until the owner decides.') + '</p>' : '') +
+    (key === 'work' ? '<h3>Workspace navigation</h3><p class="small">' + (S.wsNav === 'side'
+      ? '<strong>Side list (proposed 2026-11-24, not adopted).</strong> From 960 px, a list of your clients (or accountants) and their services sits beside the client and service pages, as the conversation list sits beside a chat. The breadcrumb names the client and the service, and on phones Back from a service goes to its client. Narrower frames show only the breadcrumb.'
+      : '<strong>Breadcrumb only</strong>: the current design. Switch Workspace navigation to "Side list" to compare the proposal.') + '</p>' : '') +
     '<h3>Requirements shown</h3><ul>' + n.refs.map(li).join('') + '</ul>' +
     '<h3>Open decisions (proposals shown)</h3><ul>' + n.open.map(li).join('') + '</ul>' +
     '<h3>Try</h3><div class="tries">' + n.tries.map(t => '<button type="button" class="pbtn" data-try="' + t[1] + '" data-k="' + (t[2] || '') + '" data-v="' + esc(t[3] || '') + '">' + esc(t[0]) + '</button>').join('') + '</div>' +
@@ -1962,6 +2076,7 @@ function syncToolbar() {
   $id('sel-look').value = S.look;
   $id('sel-palette').value = S.palette;
   $id('sel-picture').value = S.picMode;
+  $id('sel-wsnav').value = S.wsNav;
   $id('sel-palette').disabled = S.look !== 'taxbuddy';
   $id('sel-palette').title = S.look === 'taxbuddy' ? 'Colour proposals for the Tax Buddy look' : 'Palette options apply to the Tax Buddy look only';
   $id('sel-role').value = S.me ? (S.me.accountantId === 'a-new' ? 'newAccountant' : S.me.role) : 'visitor';
@@ -2095,6 +2210,8 @@ const ACTIONS = {
   },
   'toggle-how': () => { S.howOpen = !S.howOpen; render(); },
   'goto-reviews': () => { S.focusSel = '#reviews-h'; render(); },
+  /* Profile option A: the section links move focus to the section heading (in-page anchors on the site). */
+  'opt-jump': el => { S.focusSel = '#' + el.dataset.target; render(); },
   'pick-star': el => { if (S.review) { S.review.stars = +el.dataset.n; S.review.error = ''; } render(); },
   'save-review': () => {
     const rv = S.review; if (!rv) return;
@@ -2384,6 +2501,7 @@ $id('chk-notes').addEventListener('change', e => { S.notes = e.target.checked; r
 $id('btn-reset').addEventListener('click', () => { history.replaceState(null, '', location.pathname + '#/directory'); location.reload(); });
 
 $id('sel-work-data').addEventListener('change', e => { W.dataMode=e.target.value; render(); });
+$id('sel-wsnav').addEventListener('change', e => { S.wsNav = e.target.value; render(); });
 $id('sel-work-save').addEventListener('change', e => { W.saveScenario=e.target.value; });
 $id('sel-work-upload').addEventListener('change', e => { W.uploadScenario=e.target.value; });
 
