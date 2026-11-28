@@ -145,6 +145,44 @@ The user sent screenshots of the footer's Light/Dark/System switch and of "Sign 
 |---|---|---|---|
 | BD14 / DESIGN theme | Open any page at phone and desktop widths, with the device light and dark; press the icon, then press it again | One icon in the header: a moon on light, a sun on dark. Pressing switches to dark, then back to light, on the same page; nothing in the footer; no horizontal scroll at 320 px | Web tests, prototype checker, and Edge on the running site and the prototype ([evidence](../../docs/delivery/evidence/2026-11-23-f02-theme-toggle.md)) |
 
+## Client details on Account, 2026-11-25 (BD15)
+
+The user asked that clients can store and edit their basic and profile information. From three designs on the [options page](../../prototypes/README.md#client-details) they chose B: "implement the edit on account in the prototype". Later that day the user said "implement to site": it became [PRD R25](../../docs/PRD.md#requirements) and was built as [F17](../client-details/spec.md), which resolved [C05](../../docs/README.md#history-and-unresolved-conflicts). The prototype was then aligned with what F17 built: the name limit, the phone rule and the sharing line.
+
+- **What a client stores** (the user's choice): their name (starting from the Google name), phone and city; a business name, type and industry. The email is the Google address, shown but not editable, and never shown to accountants. A note asks for no TIN or ID numbers.
+- **Who sees it** (the user's choice): the accountants the client contacts. In practice that's the accountants the client has a service with, because the details show only on their client page and in requests. The form's sharing line names them. Never public (R11).
+- **On Account:** a "Your details" card under the avatar card, with phone, city and business, and Edit details. Edit details opens the same card as a form, at `/account?edit=details#details`, with Save details and Cancel. Focus moves to the card's heading on Edit, Save and Cancel. A saved line shows until the client leaves Account.
+- **Checks on Save:** a name is required, up to 100 characters (the account name's limit). A phone may use only digits, spaces, `+`, `-` and parentheses, 7–20 characters, with at least 7 digits. City and industry take up to 80 characters, the business name up to 120, and the type must come from the list. A refused or offline save keeps everything typed.
+- **For accountants** (the user's choice): an "About Maria" card at the top of their page for that client, and inside the request panel of a service awaiting acceptance.
+- **Not chosen:** A (a separate My details page) and C (that page with a preview of what accountants see). Both stay on the options page as `opt=details-a` and `opt=details-c`.
+- **Prototype:** `clientDetailsCardHTML` in `meHTML`, and `aboutClientHTML` in `service-workspace.js`.
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD15 / C05 (no PRD ID yet) | A client opens Account, presses Edit details, enters a phone with letters, then a valid one, and saves; presses Edit details again and Cancel; an accountant opens their page for the client | The card shows the details. The form opens in place and the address has `edit=details`. A phone with letters is refused and focused. A valid save shows the new phone and a saved line, with focus on "Your details". Cancel keeps what was saved. The accountant sees "About Maria" | Prototype checker (212 checks, 10 for this) and the options page's click checks ([evidence](../../docs/delivery/evidence/2026-11-25-prototype-client-details.md#follow-up-the-same-day-edit-on-account-is-the-prototypes-default)). On the site: [F17](../client-details/spec.md) CD01–CD07 |
+
+## My profile: preview beside the form, 2026-11-25 (BD16)
+
+Of the three designs for the accountant's profile editor on the [options page](../../prototypes/README.md#design-options-for-the-accountants-flow), the user chose B: "in the My profile implement Option B: Preview beside the form in the prototype". It's now the prototype's default. Later that day the user said "implement to site", and it was built as [F05 PE09](../profile-editing/spec.md).
+
+- **Wide pages:** the form on the left, unchanged. On the right is a panel headed "Your card in the directory": the accountant's directory card as clients see it, as last saved, then "As last saved. Changes show here after you save." and View public profile. The page widens to 1000 px, and Save stays under the form.
+- **Before listing:** the panel says "Not listed yet. Your card appears in the directory, and here, once everything needed to be listed is filled in and saved."
+- **Phones, and desktop pages narrower than 860 px:** a closed "Preview your directory card" disclosure above the form holds the same content.
+- **No new scope:** the card is the one the directory already shows (R01, R05). The preview changes only after Save, so it can differ from the form while editing (the trade-off the user accepted).
+- **Without script:** works. The card is drawn on the server, and the disclosure is a `details` element. The site would use a media query where the prototype uses a container query.
+- **Not chosen:** A (a section menu) and C (a compact top with Save in view). Both stay on the options page as `opt=editor-a` and `opt=editor-c`. The one long form is "Before" there (`opt=editor-current`).
+- **Prototype:** the `eo === 'b'` branch of `editorParts`, with `.editor-wide`, `.editor-grid`, `.editor-preview` and `.editor-preview-mini` in `taxbuddy.css`. Client details C reuses the layout. The panel's label became an `h2` when the site was built, so the headings run h1, h2, then the card's h3.
+- **Site:** the same markup and class names in `ProfileEditorPage.razor` and `app.css`. The card is the directory's own (`AccountantCardItem`), read through `DirectoryService.GetCardAsync`.
+- **Site deviations:**
+  - a media query from 860 px stands in for the prototype's container query;
+  - the panel sticks 16 px below the top of the window, because the window scrolls, not a frame;
+  - the heading band widens to 976 px, the page container's width;
+  - when the card can't be read, the panel says "We couldn't load your card right now. Your profile is still listed." (no prototype state).
+
+| ID / requirement | Given / when | Observable result | Verification boundary |
+|---|---|---|---|
+| BD16 / R05 | A listed accountant opens My profile on a wide desktop page, changes the city and saves; the page at 700 px; a new accountant on a phone opens the disclosure | The card sits right of the form and keeps the old city until Save, then shows the new one. At 700 px the card is a closed disclosure above the form. The new accountant's disclosure says "Not listed yet" and has no card | Prototype checker (224 checks, 12 for this) and the options page's click checks ([evidence](../../docs/delivery/evidence/2026-11-25-prototype-editor-preview.md)). On the site: [F05](../profile-editing/spec.md) PE09 ([evidence](../../docs/delivery/evidence/2026-11-25-f05-editor-preview.md)) |
+
 ## Name availability, 2026-11-16
 
 This was a preliminary web survey for D01 and the open rename task ([record](../../docs/delivery/evidence/2026-11-16-name-availability.md)), not clearance. It found active "TaxBuddy" tax products in the Philippines (taxbuddyph.com) and India (taxbuddy.com), and a live US TAXBUDDIES mark for tax services. IPOPHL, WIPO and domain registrars were not searched directly. Nothing was decided; D01 stays with the owner.

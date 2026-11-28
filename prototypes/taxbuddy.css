@@ -547,3 +547,195 @@
 @container website (max-width:760px) {
   .opt-acc-split { grid-template-columns:1fr; }
 }
+
+/* ===== My profile: Preview beside the form (editor B, chosen by the user on 2026-11-25 from options.html) =====
+   A wider page: the form, then the directory card as last saved on the right. On phones, and on desktop pages narrower
+   than 860 px, the card is in a closed disclosure above the form instead. Client details C reuses the layout. */
+.editor-wide .single-inner { max-width:1000px; }
+.editor-wide .pane-head h1 { flex-basis:1000px; }
+.editor-grid { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:28px; align-items:start; }
+.editor-preview { position:sticky; top:0; display:grid; gap:10px; padding:18px; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.editor-preview p { margin:0; }
+.editor-preview .cards { margin:0; }
+.editor-preview-h { margin:4px 0 0; color:var(--muted); font:600 11px/1.4 var(--font-body); letter-spacing:.15em; text-transform:uppercase; }
+.editor-preview-mini { margin:0 0 14px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--app-bg); }
+.editor-preview-mini summary { min-height:44px; padding:12px 14px; cursor:pointer; font-size:13px; font-weight:600; }
+.editor-preview-mini[open] { padding-bottom:14px; }
+.editor-preview-mini>:not(summary) { margin:0 14px 10px; }
+.device.desktop .editor-preview-mini { display:none; }
+@container website (max-width:860px) {
+  .editor-grid { grid-template-columns:1fr; }
+  .editor-preview { position:static; }
+  .device.desktop .editor-preview-mini { display:block; }
+  .device.desktop .editor-preview-mini + .editor-grid .editor-preview { display:none; }
+}
+
+/* ===== Design options for the accountant's pages (options.html, 2026-11-25): not chosen unless marked ===== */
+/* My profile A · Section menu (not chosen): the section column first, on the wider page above */
+.opt-ed-a .editor-grid { grid-template-columns:220px minmax(0,1fr); }
+.opt-ed-nav { position:sticky; top:0; }
+.opt-ed-nav ul { display:grid; gap:2px; margin:0; padding:0; list-style:none; }
+.opt-ed-nav a { display:flex; align-items:flex-start; gap:10px; padding:10px 12px; border-radius:var(--r-md); color:var(--text); font-size:14px; font-weight:600; text-decoration:none; }
+.opt-ed-nav a:hover { background:var(--surface-2); }
+.opt-ed-nav small { display:block; margin-top:2px; color:var(--muted); font-size:12px; font-weight:400; }
+.opt-ed-tick { display:grid; flex:none; place-items:center; width:20px; height:20px; margin-top:1px; border:1.5px solid var(--ctl); border-radius:50%; color:var(--on-primary); }
+.opt-ed-tick.done { border-color:var(--primary); background:var(--primary); }
+.opt-ed-a .desk-footer { margin-left:248px; }
+@container website (max-width:860px) {
+  .opt-ed-a .editor-grid { grid-template-columns:1fr; }
+  .opt-ed-nav { position:static; }
+  .opt-ed-a .desk-footer { margin-left:0; }
+}
+/* My profile C · Compact top, Save in view (not chosen) */
+.opt-check-fold { margin:0 0 18px; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.opt-check-fold summary { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 12px; min-height:44px; padding:10px 14px; cursor:pointer; font-size:14px; }
+.opt-check-fold summary span { color:var(--link); font-size:13px; text-decoration:underline; }
+.opt-check-fold .checklist { margin:0; border:0; border-top:1px solid var(--border); border-radius:0 0 var(--r-lg) var(--r-lg); }
+.opt-ed-c .desk-footer { position:sticky; bottom:-24px; max-width:none; margin-top:8px; padding:12px 0 28px; border-top:1px solid var(--border); background:var(--app-bg); }
+.opt-ed-c .desk-footer .btn { max-width:320px; }
+
+/* Chats (accountant) A · Client panel, C · All / Unread */
+.opt-cd-req { display:grid; gap:8px; padding:12px; border:1px solid var(--border); border-left:3px solid var(--primary); border-radius:var(--r-md); background:var(--surface); }
+.opt-cd-req p { margin:0; font-size:13.5px; }
+.opt-chat-tabs { margin:0 -16px 10px; padding:0 8px; }
+
+/* Clients A · Requests first, B · Services by status, C · Client table */
+.opt-next li>.avatar { flex:none; }
+.opt-next-text small { display:block; margin-top:2px; color:var(--muted); font-size:12px; }
+.opt-next li>.actions { display:flex; flex-wrap:wrap; gap:6px; }
+.opt-next li>.work-error { flex-basis:100%; margin:0; }
+.opt-status-group { margin:0 0 20px; }
+.opt-status-group h3 { display:flex; align-items:center; gap:8px; margin:0 0 10px; font-size:18px; }
+.opt-svc-row.nobadge { grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) auto 16px; }
+.opt-table { width:100%; overflow:hidden; border:1px solid var(--border); border-radius:var(--r-lg); border-collapse:separate; border-spacing:0; background:var(--surface); font-size:13.5px; }
+.opt-table th, .opt-table td { padding:12px 14px; border-bottom:1px solid var(--border); text-align:left; vertical-align:middle; }
+.opt-table thead th { background:var(--app-bg); color:var(--muted); font:600 11px/1.4 var(--font-body); letter-spacing:.1em; text-transform:uppercase; }
+.opt-table tbody tr:last-child>* { border-bottom:0; }
+.opt-table tbody th a { display:inline-flex; align-items:center; gap:10px; color:var(--text); font-weight:600; text-decoration:none; }
+.opt-table tbody th a:hover span { text-decoration:underline; }
+.opt-client-cards { display:grid; gap:8px; margin:0; padding:0; list-style:none; }
+.opt-client-cards li { align-items:flex-start; }
+.opt-client-cards a.badge { text-decoration:none; }
+
+/* Service progress A · Section links, B · Documents per task, C · Updates first */
+.opt-work-links { margin:0 0 16px; padding:8px 4px; border-top:0; background:var(--app-bg); }
+.opt-task-docs { display:flex; flex-basis:100%; flex-wrap:wrap; align-items:center; gap:6px 14px; padding-left:32px; font-size:12.5px; }
+.opt-doc { display:inline-flex; align-items:center; gap:6px; }
+.opt-attach { display:inline-flex; align-items:center; gap:4px; font-size:12.5px; }
+.device.phone .opt-task-docs { padding-left:0; }
+.opt-work-c { grid-template-columns:minmax(0,1fr) 340px; }
+.opt-work-c .work-history { position:static; }
+.opt-check-aside { position:sticky; top:20px; min-width:0; }
+.opt-check-aside .work-panel { padding:20px; }
+.opt-check-aside .work-panel h3 { font-size:20px; }
+.opt-check-aside .work-tasks li { display:grid; gap:8px; padding:12px 0; }
+.opt-check-aside .work-task-status { display:block; }
+.opt-check-aside .work-task-status select { width:100%; }
+@container website (max-width:800px) {
+  .opt-work-c { grid-template-columns:1fr; }
+  .opt-check-aside { position:static; }
+}
+
+/* ===== Client details (options.html, 2026-11-25): a proposal, not adopted. index.html?opt=details-a|b|c ===== */
+.opt-cd-share { display:flex; align-items:flex-start; gap:8px; margin:0 0 16px; padding:12px 14px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--surface); font-size:13.5px; line-height:1.5; }
+.opt-cd-share .ic { flex:none; margin-top:2px; color:var(--muted); }
+.opt-cd-label { display:block; margin-bottom:4px; font-size:13.5px; font-weight:600; }
+.opt-cd-static { margin:0; font-size:14.5px; overflow-wrap:anywhere; }
+.opt-cd-static .hint { display:block; }
+.opt-cd-form .note { margin:0 0 8px; }
+.opt-cd-card { margin:0 0 14px; padding:18px 20px; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.opt-cd-card h2 { margin:0; font-size:18px; }
+.opt-cd-card.editing h2 { margin-bottom:12px; }
+.opt-cd-card>p.muted { margin:0; }
+.opt-cd-card>.save-status { margin:10px 0 0; }
+.opt-cd-card .actions { display:flex; flex-wrap:wrap; gap:8px; }
+.opt-cd-card dl, .opt-about-client dl { display:grid; grid-template-columns:max-content minmax(0,1fr); gap:6px 16px; margin:12px 0 8px; font-size:14px; }
+.opt-cd-card dt, .opt-about-client dt { color:var(--muted); font-size:13px; }
+.opt-cd-card dd, .opt-about-client dd { margin:0; overflow-wrap:anywhere; }
+.opt-about-client { margin:0 0 20px; padding:18px 20px; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.opt-about-client h3 { margin:0; font-size:18px; }
+.opt-about-client p { margin:0; }
+.opt-about-client.compact { margin:12px 0; padding:12px 14px; background:var(--app-bg); }
+.opt-about-client.compact h3 { font-size:15px; }
+.editor-preview .opt-about-client { margin:0; }
+
+/* ===== Accountant dashboard (options.html, 2026-11-26): archived the same day, no option chosen. index.html?opt=dash-a|b|c =====
+   A "Needs you" list and B tiles and sections at /dashboard; C an overview at the top of Clients. Existing components:
+   pills, meters, the opt-next list, work-stat tiles and work-panel sections. */
+.workspace.dash .work-page-title { margin-top:28px; }
+.device.phone .workspace.dash .work-page-title { margin-top:8px; }
+.dash-sub { margin:6px 0 16px; color:var(--muted); font-size:14px; }
+.dash-listing { display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px; margin:0 0 18px; font-size:14px; }
+.dash-rating { display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; }
+.dash-meter { display:inline-flex; align-items:center; gap:8px; color:var(--muted); font-size:13px; }
+.dash-meter .meter { width:96px; margin:0; }
+.dash-needs h2, .dash-also h2 { display:flex; align-items:center; gap:8px; margin:0 0 8px; font-size:22px; }
+.dash-needs .opt-next-text strong { font-weight:700; }
+.workspace.dash .dash-needs, .workspace.dash .dash-also, .workspace.dash .dash-listing, .workspace.dash .dash-sub { max-width:760px; }
+.dash-also { margin:0 0 24px; }
+.dash-also p { margin:0 0 8px; font-size:14px; }
+.dash-links { display:flex; flex-wrap:wrap; gap:4px 18px; margin:8px 0 0; font-size:14px; }
+.dash-links a { display:inline-flex; align-items:center; min-height:44px; }
+/* B · Tiles and sections */
+.dash-tiles { grid-template-columns:repeat(4,minmax(0,1fr)); margin:0 0 20px; }
+a.dash-tile { border:1px solid transparent; text-decoration:none; }
+a.dash-tile:hover { border-color:var(--link); }
+.dash-section h2 { margin:0 0 12px; font-size:22px; }
+.dash-section .dash-listing { margin:0 0 10px; }
+.dash-section .work-quiet { margin:0; }
+.dash-section .dash-group { display:flex; align-items:center; gap:8px; margin:18px 0 8px; font-size:15px; }
+.dash-section .dash-group:first-of-type { margin-top:0; }
+.dash-rows { display:grid; gap:6px; margin:0; padding:0; list-style:none; }
+.dash-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; min-height:56px; padding:10px 12px; border:1px solid var(--border); border-radius:var(--r-md); background:var(--app-bg); color:var(--text); text-decoration:none; }
+a.dash-row:hover { border-color:var(--link); }
+.dash-row-text { flex:1; min-width:160px; }
+.dash-row-text strong { display:block; font-size:14.5px; }
+.dash-row-text small { display:block; margin-top:2px; color:var(--muted); font-size:12px; }
+.dash-row .actions { display:flex; flex-wrap:wrap; gap:6px; }
+.dash-row .work-error { flex-basis:100%; margin:0; }
+/* C · Overview at the top of Clients */
+.dash-split { display:grid; grid-template-columns:minmax(0,1fr) 300px; gap:20px; align-items:start; margin:20px 0 8px; }
+.dash-split .dash-needs { margin:0; }
+.dash-side { display:grid; gap:12px; }
+.dash-card { padding:16px 18px; border:1px solid var(--border); border-radius:var(--r-lg); background:var(--surface); }
+.dash-card h3 { margin:0 0 10px; font-size:16px; }
+.dash-card p { margin:0 0 6px; }
+.dash-card .meter { margin:6px 0; }
+.dash-counts { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:0; }
+.dash-counts div { padding:8px 10px; border-radius:var(--r-md); background:var(--primary-soft); color:var(--on-soft); }
+.dash-counts dt { font-size:11.5px; font-weight:600; }
+.dash-counts dd { margin:2px 0 0; font:600 22px/1.1 var(--font-head); }
+.dash-h2 { margin:24px 0 12px; font-size:22px; }
+@container website (max-width:860px) {
+  .dash-tiles { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .dash-split { grid-template-columns:1fr; }
+  .dash-side { grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); }
+}
+.device.phone .dash-sub { margin-top:0; }
+.device.phone .dash-needs { padding:16px; }
+.device.phone .dash-needs h2, .device.phone .dash-also h2, .device.phone .dash-section h2 { font-size:20px; }
+.device.phone .dash-tiles .work-stat small { display:block; }
+.device.phone .dash-row-text { min-width:140px; }
+.device.phone .opt-next li>.actions, .device.phone .dash-row .actions { flex-basis:100%; }
+.device.phone .dash-side { grid-template-columns:1fr; }
+
+/* ===== Page titles on the workspace pages (options.html, 2026-11-26): proposals, not adopted. index.html?opt=heads-a|b|c =====
+   One title per page: the client's or service's name, instead of a breadcrumb, a page-type heading, an eyebrow and a
+   second title. */
+.heads-title { margin:24px 0 6px; font-size:32px; line-height:1.15; overflow-wrap:anywhere; }
+.workspace .crumbs + .heads-title { margin-top:0; }
+.heads-sub { max-width:760px; margin:0 0 20px; color:var(--muted); font-size:14.5px; line-height:1.6; }
+/* B · Header bar */
+.heads-bar { display:flex; flex-wrap:wrap; align-items:center; gap:6px 14px; margin:20px 0 18px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+.heads-bar .heads-title { flex:1; min-width:0; margin:0; font-size:26px; }
+.heads-back { display:inline-flex; flex-basis:100%; align-items:center; gap:4px; min-height:44px; font-size:13.5px; }
+.heads-private { font-size:12.5px; font-weight:600; background:var(--surface-2); color:var(--text); }
+.heads-row { margin:0 0 12px; }
+/* C · Trail as the title */
+.heads-trail { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px; margin:24px 0 6px; }
+.heads-trail nav { display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px; font:400 26px/1.15 var(--font-head); color:var(--muted); }
+.heads-trail nav a { color:var(--muted); }
+.heads-trail .heads-title { margin:0; font-size:26px; }
+.heads-phone-trail { margin:0 0 8px; }
+.heads-phone-trail a { display:inline-flex; align-items:center; min-height:44px; }
+.device.phone .heads-sub { font-size:13.5px; }

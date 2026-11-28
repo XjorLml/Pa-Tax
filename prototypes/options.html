@@ -15,13 +15,18 @@
 body{margin:0;background:var(--bg);color:var(--text);font:14px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 a{color:var(--accent)}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
 .sr-only{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 header{position:sticky;top:0;z-index:5;background:var(--surface);border-bottom:1px solid var(--border)}
 .top{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 16px;padding:12px 20px 0}
 .top strong{font-size:15px}
 .top span{color:var(--muted);font-size:12.5px}
 .top a{margin-left:auto;font-size:13px}
-.steps{display:flex;gap:4px;margin:0;padding:8px 16px 0;overflow-x:auto;list-style:none}
+.navrow{display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 16px;padding:8px 20px 0}
+.navrow>.group{padding-bottom:6px}
+.archived a{display:inline-flex;align-items:center;min-height:44px;padding:0 10px;color:var(--muted);font-size:13px}
+.archived a[aria-current="page"]{color:var(--text);font-weight:700}
+.steps{display:flex;gap:4px;margin:0;padding:0;overflow-x:auto;list-style:none}
 .steps a{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-bottom:3px solid transparent;color:var(--text);text-decoration:none;white-space:nowrap}
 .steps a:hover{background:var(--bg)}
 .steps a[aria-current="step"]{border-bottom-color:var(--accent);font-weight:700}
@@ -57,12 +62,15 @@ select{min-height:38px;padding:0 8px;border:1px solid var(--border);border-radiu
 </head>
 <body>
 <header>
-  <div class="top"><strong>Tax Buddy design options</strong><span>The client's flow after sign-in · proposals for review, not approved · synthetic data</span><a href="index.html">Open the full prototype</a></div>
-  <nav aria-label="Pages in the client's flow"><ol class="steps" id="steps"></ol></nav>
+  <div class="top"><strong>Tax Buddy design options</strong><span>Pages after sign-in, for clients and accountants · proposals for review, not approved · synthetic data</span><a href="index.html">Open the full prototype</a></div>
+  <div class="navrow"><div class="group" role="group" aria-labelledby="lbl-flow"><span id="lbl-flow">Flow</span><div class="seg" id="flows"></div></div>
+  <nav aria-label="Pages in this flow" id="stepsnav"><ol class="steps" id="steps"></ol></nav>
+  <nav class="group archived" id="archgroup" aria-labelledby="lbl-arch" hidden><span id="lbl-arch">Archived</span><span id="archived"></span></nav></div>
 </header>
 <main>
   <div class="bar">
     <div class="group" role="group" aria-labelledby="lbl-opt"><span id="lbl-opt">Option</span><div class="seg" id="opts"></div></div>
+    <div class="group" role="group" aria-labelledby="lbl-state" id="stategroup" hidden><span id="lbl-state">State</span><div class="seg" id="states"></div></div>
     <div class="group" role="group" aria-labelledby="lbl-frame"><span id="lbl-frame">Frame</span><div class="seg" id="frames"><button type="button" data-frame="desktop">Desktop</button><button type="button" data-frame="phone">Phone</button></div></div>
     <label class="group"><span>Theme</span><select id="theme"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
     <div class="nav"><button type="button" class="btn" id="prev">← Previous page</button><button type="button" class="btn" id="next">Next page →</button></div>
@@ -73,8 +81,9 @@ select{min-height:38px;padding:0 8px;border:1px solid var(--border);border-radiu
 </main>
 <script>
 'use strict';
-/* Pages and options. Each option is rendered by index.html with opt=<page>-<option>; the texts are the review notes. */
-const PAGES = [
+/* Pages and options per flow. Each option is rendered by index.html with opt=<page>-<option>, signed in as the flow's
+   persona; the texts are the review notes. Client flow 2026-11-24; accountant flow 2026-11-25. */
+const CLIENT_PAGES = [
   { key: 'directory', name: 'Directory', route: { desktop: '#/directory', phone: '#/directory' }, options: {
     current: { name: 'Current', idea: 'A big "Find an accountant" search band with service buttons, then accountants as cards in two columns.',
       tradeoff: 'Friendly and familiar; a returning client scrolls past the same band every time.', noscript: 'Works: a plain search form, and each service button submits it (C03).' },
@@ -128,38 +137,195 @@ const PAGES = [
     c: { name: 'List and details', idea: 'Your accountants on the left, the chosen one\'s work on the right, as in Chats.',
       changes: 'Choosing an accountant shows their services, Request a service, Open chat and Remove saved. It matches the Side list proposal for service pages.',
       tradeoff: 'One accountant at a time; a new address form (/workspace?accountant=…).', noscript: 'Works: each accountant is a link.',
-      phone: 'The list of accountants; each opens on its own screen with Back.', try: 'Choose the other accountant.' } } }
+      phone: 'The list of accountants; each opens on its own screen with Back.', try: 'Choose the other accountant.' } } },
+  /* Client details, 2026-11-25: the user chose the fields (name, phone, city; business name, type, industry), sharing with
+     the accountants a client contacts, and showing them on the accountant's client page and service requests. */
+  { key: 'details', name: 'My details', route: { desktop: '#/me', phone: '#/me' }, options: {
+    current: { chosen: true, name: 'Current: Edit on Account (chosen 2026-11-25)', idea: 'Your details sit on Account under your name, with Edit details.',
+      changes: 'Chosen by the user on 2026-11-25 ("implement the edit on account in the prototype") and now the prototype\'s default. A "Your details" card shows what you saved; Edit details opens the form in place, with Save details and Cancel, and focus moves to the card each time. Before this, Account had nothing to fill in.',
+      tradeoff: 'Everything about you on one page; Account gets longer, most of all while editing.', noscript: 'Works: Edit details is a link (/account?edit=details#details) and Save posts the form.',
+      scope: true, try: 'Press Edit details, change a field, then Save details.' },
+    a: { name: 'My details page (not chosen)', idea: 'A "My details" row on Account opens its own page with a short form.',
+      changes: 'About you (name, phone and city, with the email shown but not editable) and Your business (name, type and industry), then Save details. A line names the accountants who can see them.',
+      tradeoff: 'Familiar, like a smaller version of the accountant\'s editor; one more page to open.', noscript: 'Works: a static form posted to the same page, like the profile editor.',
+      scope: true, routes: { desktop: '#/me/details', phone: '#/me/details' } },
+    c: { name: 'What accountants see (not chosen)', idea: 'The details page shows, beside the form, the card your accountants see.',
+      changes: 'Like A, plus a preview of the "About Maria" card that accountants see on their page for you and in your requests, as last saved. On phones it\'s a disclosure above the form.',
+      tradeoff: 'Makes sharing clear before you save; more on the page.', noscript: 'Works: the preview is drawn on the server and changes after Save.',
+      scope: true, routes: { desktop: '#/me/details', phone: '#/me/details' } } },
+    also: [['The accountant\'s page for Maria', '#/clients/u-maria'], ['A request from Jose, as the accountant', '#/work/e2']] }
 ];
+const ACCOUNTANT_PAGES = [
+  /* My profile, 2026-11-25: the user chose B ("in the My profile implement Option B: Preview beside the form in the
+     prototype"). It is the prototype's default; "before" (opt=editor-current) is the one long form the site still has. */
+  { key: 'editor', name: 'My profile', route: { desktop: '#/me/profile', phone: '#/me/profile' }, options: {
+    current: { chosen: true, name: 'Current: Preview beside the form (chosen 2026-11-25)', idea: 'Your directory card, as clients see it, beside the form.',
+      changes: 'Chosen by the user on 2026-11-25 and now the prototype\'s default; the site still shows the one long form (Before) until it\'s built. The form on the left; on the right your card as last saved, with View public profile. Before you\'re listed, it says where the card will appear. On desktop pages narrower than 860 px the card moves into a closed disclosure above the form, as on phones.',
+      tradeoff: 'Shows the client\'s view while editing; the preview changes only after Save, so it can differ from the form.', noscript: 'Works: the card is drawn on the server, and the narrow-screen disclosure is a details element.',
+      phone: 'A "Preview your directory card" disclosure above the form.', try: 'Change your city, then Save profile: the card shows the new city.' },
+    before: { opt: 'current', name: 'One long form (the site today)', idea: 'One long form under a heading band: the listed status, a six-item listing checklist, then About you, Experience, Services, Portfolio highlights and Contact details, with Save at the end.',
+      changes: 'Nothing new: this was the prototype\'s design until 2026-11-25, and the site follows it until the chosen design is built (opt=editor-current).',
+      tradeoff: 'Everything in one place; long to scroll, and the checklist fills the top of the page even when it\'s complete.', noscript: 'Works: a static form posted to the same page (F05).' },
+    a: { name: 'Section menu (not chosen)', idea: 'A column of the form\'s sections beside the form, each marked done or not.',
+      changes: 'On wide screens a left column lists About you, Experience, Services, Portfolio highlights and Contact details, says Done, Needed to be listed, Added or Optional, and jumps to each.',
+      tradeoff: 'Easier to move around a long form; the fields get narrower.', noscript: 'Works: in-page anchor links. Without script the marks change only after Save.',
+      phone: 'A row of section links above the form.', try: 'Press a section to jump to it.' },
+    c: { name: 'Compact top, Save in view (not chosen)', idea: 'Less above the form, and Save always within reach.',
+      changes: 'Once you\'re listed and nothing is missing, the six-item checklist folds into one line with Show checklist; while anything is missing it shows in full, as today. Save stays in view at the bottom on wide screens too.',
+      tradeoff: 'Less scrolling for returning accountants; the checklist is easier to miss.', noscript: 'Works: the fold is a details element and Save a sticky bar.',
+      phone: 'The folded checklist; Save was already in view on phones.' } } },
+  { key: 'achats', name: 'Chats', route: { desktop: '#/thread/c2', phone: '#/chats' }, options: {
+    current: { name: 'Current', idea: 'The list with the email-notification note, previews and unread badges; the conversation with Report and Block.',
+      tradeoff: 'Familiar; nothing about the client\'s requests or services while you reply.', noscript: 'The page is static and the conversation panel is live (Interactive Server), as built in F07.' },
+    a: { name: 'Client panel', idea: 'A third column with the client and their services with you.',
+      changes: 'From about 1000 px: the client, a new request with Review request, the services with this client and their status, and Open client page. Narrower screens and phones get an "About Jose" disclosure under the header.',
+      tradeoff: 'Context while replying; the conversation gets narrower.', noscript: 'Works: drawn on the server; the disclosure is a details element.',
+      phone: 'Open a conversation: the "About" disclosure sits under the app bar.', phoneRoute: '#/thread/c2' },
+    b: { name: 'Waiting for your reply', idea: 'The list splits by who wrote last.',
+      changes: '"Waiting for your reply" holds the conversations where the client wrote last; "Answered" holds the rest.',
+      tradeoff: 'A clear inbox to work through; a conversation moves between the sections as messages arrive and as you reply.', noscript: 'Works.' },
+    c: { name: 'All / Unread tabs', idea: 'Tabs above the list to show only unread conversations.',
+      changes: 'All and Unread, with counts; the email note sits under the tabs. The open conversation stays in the list after it\'s read.',
+      tradeoff: 'Quick focus on new messages; one more control.', noscript: 'Works: the tabs are links (/chats?filter=unread).', try: 'Choose Unread.' } } },
+  { key: 'clients', name: 'Clients', route: { desktop: '#/workspace', phone: '#/workspace' }, options: {
+    current: { name: 'Current', idea: 'A heading, three number tiles (Clients, In progress, New requests), then a card per client with service and request counts.',
+      tradeoff: 'A calm overview; to answer a request you open the client, then the service.', noscript: 'Works: static pages with named forms (F03).' },
+    a: { name: 'Requests first', idea: 'New requests at the top, answered from the list.',
+      changes: 'A "New requests" section with the client, the service, when it was requested, and Accept, Decline and View request. The client cards follow; the number tiles go.',
+      tradeoff: 'The fastest response; you accept without opening the service page.', noscript: 'Works: Accept and Decline are the same posted forms as on the service page.',
+      try: 'Accept or decline Jose Reyes\'s request.' },
+    b: { name: 'Services by status', idea: 'Every service under its status.',
+      changes: 'Requested, In progress, Waiting for client and Completed (and Declined when there are any). Each row has the client, progress and last update; the number tiles go.',
+      tradeoff: 'Workload at a glance; less about each client.', noscript: 'Works.' },
+    c: { name: 'Client table', idea: 'One compact row per client.',
+      changes: 'Columns for the client, services, most urgent status, messages and last activity, most recent first.',
+      tradeoff: 'Scales to many clients; denser and less friendly.', noscript: 'Works: a plain table.', phone: 'One card per client with the most urgent status and new messages.' } } },
+  { key: 'work', name: 'Service progress', route: { desktop: '#/work/e1', phone: '#/work/e1' }, options: {
+    current: { name: 'Current', idea: 'The service heading with its status and Open chat; the request panel while awaiting acceptance; the checklist with a status menu per task and Save; documents below; Progress updates on the right.',
+      tradeoff: 'Everything on one page; long on phones, where Progress updates comes last.', noscript: 'Works: static pages with named forms, and uploads as plain multipart forms (F03).' },
+    a: { name: 'Section links', idea: 'Links that jump to the checklist, documents and updates.',
+      changes: 'A row of links under the heading (with Request while a request is open) that stays at the top while you scroll.',
+      tradeoff: 'Lowest risk; helps most on phones.', noscript: 'Works: in-page anchor links.', try: 'Press Updates.' },
+    b: { name: 'Documents per task', idea: 'Each task shows its documents and an Attach button.',
+      changes: 'Under each task: its documents with Download, and "Attach a document", which picks that task in the upload form and takes you there. The documents section keeps the whole-service documents.',
+      tradeoff: 'Ties files to the work they\'re for; longer task rows.', noscript: 'Works: Attach is a link that keeps the task in the address (?task=…#documents), as after a failed upload today.',
+      try: 'Press "Attach a document" under a task.' },
+    c: { name: 'Updates first', idea: 'The progress updates lead the page, with the checklist in a card beside them.',
+      changes: 'The note box and history (notes and activity together) come first, with documents below; the checklist sits in a narrower card on the right.',
+      tradeoff: 'Reads like a project log; progress is less prominent and the task rows stack.', noscript: 'Works.', phone: 'Updates, then documents, then the checklist.' } } },
+  /* Page titles, 2026-11-26: the user sent screenshots of Clients and a client's page and said "create recommended
+     designs for these, it shows redundant titles". Proposals only; the View switch picks the page (and who views it). */
+  { key: 'heads', name: 'Page titles', statesLabel: 'View', route: { desktop: '#/workspace', phone: '#/workspace' },
+    states: [['clients', 'Clients', 'accountant', '', '#/workspace'], ['client', 'A client', 'accountant', '', '#/clients/u-maria'], ['service', 'A service', 'accountant', '', '#/work/e1'],
+      ['myacc', 'My accountants (client)', 'client', '', '#/workspace'], ['cservice', 'A service (client)', 'client', '', '#/work/e1'], ['request', 'Request a service (client)', 'client', '', '#/request/a1']],
+    notes: [
+      ['Pages', 'Every workspace page: Clients and a client\'s page for accountants, each service page, and My accountants and Request a service for clients. The View switch picks one.'],
+      ['Recommended', 'A. Each page gets one title, the name people are looking for; the breadcrumb only adds the way back; and the sentence about who can see the work stays. B gives up that sentence, and C makes long names harder to read.'],
+      ['Headings', 'The name becomes the h1. On the site the sections\' headings would move up one level so none is skipped; the prototype keeps their current level.'],
+      ['Scope', 'A layout change for DESIGN; no PRD change. The site builds these headers in WorkFrame and WorkIntro, so the chosen option would be built there. The Side list proposal (Workspace navigation) keeps its own header.']],
+    options: {
+      current: { name: 'Current', idea: 'Four labels on every workspace page: a breadcrumb that ends with the page itself (on Clients it\'s only "Clients"); a small heading naming the page type ("Clients", "Client services", "Service progress"); the eyebrow "Your private workspace"; then a large second title (a slogan on the lists, the client\'s or service\'s name elsewhere) and a sentence.',
+        tradeoff: 'Friendly on the lists; elsewhere the real name comes third, and Request a service says its name twice. On phones the app bar shows the page type and the large title repeats it below.', noscript: 'Works: static pages (F03).' },
+      a: { name: 'Name as the title', idea: 'One title per page: the client\'s or service\'s name, under a breadcrumb of the pages above it.',
+        changes: 'The breadcrumb names only the pages above: none on Clients and My accountants; "Clients" above Maria Santos; "Clients / Maria Santos" above Bookkeeping. The h1 is the name, large. The eyebrow and the slogans go; the page\'s sentence stays under the title, with who can see the work.',
+        tradeoff: 'Clear and conventional; the lists lose their slogan.', noscript: 'Works: the same static pages with a different header.',
+        phone: 'The app bar shows the name ("Maria Santos", "Bookkeeping"), and Back goes to the page above; the sentence follows, with no second title.', try: 'Switch View between Clients, A client and A service.' },
+      b: { name: 'Compact header bar', idea: 'Back to the page above, the name and who can see it, in one bar.',
+        changes: 'A Back link names the page above ("Clients", "Maria Santos"). The name is the h1, with a pill such as "Private to you and Maria" beside it. No trail, eyebrow, slogan or sentence; a line divides the bar from the page.',
+        tradeoff: 'The most room for the work; one step up at a time, and the explaining sentences go.', noscript: 'Works.',
+        phone: 'The app bar shows the name; the privacy pill sits at the top of the page.' },
+      c: { name: 'Trail as the title', idea: 'The pages above and the name read as one title line: Clients / Maria Santos / Bookkeeping.',
+        changes: 'The pages above are muted links before the name, at the same size; the name is the h1. The sentence stays below. No eyebrow or slogan.',
+        tradeoff: 'Where you are, in one line; long names wrap, and the links compete with the name.', noscript: 'Works.',
+        phone: 'The app bar shows the name; the pages above are links at the top of the page.' } } },
+  /* Dashboard, 2026-11-26: the user asked for a first page after sign-in that answers "what needs me today?" and "how
+     is my listing doing?". Proposals only, not in the PRD; each uses only data the site already has. The State switch
+     signs in a different accountant, or makes the load fail. Archived the same day at the user's request: it left the
+     flow and is listed under "Archived"; no option was chosen. */
+  { key: 'dash', name: 'Dashboard', archived: 'Archived on 2026-11-26 at the user\'s request ("archive dashboard design in the prototype for now"): not in the flow, and no option chosen. Kept for reference; every option still works.', route: { desktop: '#/workspace', phone: '#/workspace' },
+    states: [['andrea', 'Andrea', 'accountant', ''], ['busy', 'Busy', 'busyAccountant', ''], ['new', 'New, not listed', 'newAccountant', ''], ['quiet', 'Listed, no clients', 'listedAccountant', ''], ['error', 'Load fails', 'accountant', '&wsdata=error']],
+    notes: [
+      ['Scope', 'Not in the PRD. A dashboard adds a page and a navigation item, and changes where sign-in lands, so choosing one needs an owner decision recorded in the PRD or DESIGN, and in the SDD\'s navigation table. Prototype only: the site and the current design are unchanged.'],
+      ['Data', 'Only what the site has today: listed or not and what the six-item checklist still needs; requests awaiting Accept or Decline; services in progress, waiting for the client and completed, with their last update; unread chats and clients who wrote last; the rating, and reviews without a reply.'],
+      ['Needs a PRD decision (left out)', 'Profile views and search appearances; earnings or fees (no prices in release 1); reply-time or response-rate figures; "new since your last visit" (needs a last-visit record); filing deadlines and due dates (tasks have none); trends over time. Each needs new tracking or data.'],
+      ['Overlap with Clients', 'The Clients options A–C (step 3) answer some of the same questions. C here replaces the top of Clients, so choosing it settles those too. A and B leave Clients as it is, or with whichever Clients option is chosen, and link to it.']],
+    options: {
+      current: { name: 'Current', idea: 'No dashboard. After signing in, an accountant goes back to the page they started from: the directory, from the header\'s Sign in. The nearest overview is Clients (shown): three number tiles and a card per client. The listing status is on Account and My profile, unread counts on Chats, and reviews on the public profile.',
+        tradeoff: 'Nothing new to learn; answering "what needs me today?" means opening Clients, Chats and the public profile one by one.', noscript: 'Works: static pages.',
+        nav: 'Site bar: Find an accountant, Chats, Clients. Phone tabs: Accountants, Chats, Clients, Account.' },
+      a: { name: '"Needs you" list', idea: 'One list of what needs the accountant now, most urgent kind first, at a new Dashboard page.',
+        changes: 'A line with the listing (Listed, the rating and View public profile; or Not listed yet with a meter and Finish your profile). Then "Needs you": finishing the listing until listed; each new request with Accept, Decline and View request; each client who wrote last, with Reply; each review without a reply, with Reply on your profile. Then one line about the rest of the work, and links to Clients, Chats and My profile. When nothing is waiting: "You\'re all caught up."',
+        tradeoff: 'The quickest answer to "what needs me?"; less of an overview of the work in progress, which stays on Clients.', noscript: 'Works: Accept and Decline are the service page\'s posted forms; everything else is a link. The counts are as of the page load.',
+        phone: 'The same list; each item\'s buttons take the full width under its text.',
+        lives: 'A new page, /dashboard, and a Dashboard item. Sign-in with no page to return to would land here; registration still opens My profile.',
+        nav: 'Site bar: Dashboard first (current on /dashboard), then Find an accountant, Chats and Clients. Phone tabs: Dashboard, Chats, Clients, Account. Dashboard takes the Accountants tab\'s place, because five tabs don\'t fit 320 px; the directory stays a link on the dashboard.',
+        routes: { desktop: '#/dashboard', phone: '#/dashboard' }, try: 'Accept or decline a request, then switch State to Busy or New, not listed.' },
+      b: { name: 'Tiles and sections', idea: 'Four number tiles at the top, then a section for each kind of thing.',
+        changes: 'Tiles for new requests, unread messages, active services (with how many wait for the client) and the rating (with reviews without a reply); each jumps to its section. Sections: Your listing (with what\'s still needed), New requests with Accept and Decline, Services grouped as waiting for the client, in progress and completed (three each, with the last update), Messages waiting for a reply, and Reviews without a reply.',
+        tradeoff: 'The fullest picture in one place; longer, and the urgent items aren\'t gathered together.', noscript: 'Works: the tiles are in-page links (#requests and so on) and the forms are the service page\'s.',
+        phone: 'Tiles two by two, then the sections one under another.',
+        lives: 'A new page, /dashboard, and a Dashboard item, as in A.',
+        nav: 'As A: Dashboard first in the site bar, and in place of Accountants in the phone tabs.',
+        routes: { desktop: '#/dashboard', phone: '#/dashboard' }, try: 'Press a tile; switch State to Busy.' },
+      c: { name: 'Overview on Clients', idea: 'A compact two-column overview at the top of the Clients page, instead of a new page.',
+        changes: 'Clients loses its introduction and number tiles. On the left, "Needs you" as in A; on the right, three small cards: Your listing, Services (counts for new requests, in progress, waiting for the client and completed) and Reviews. "Your clients" and the client cards follow.',
+        tradeoff: 'No new page or navigation; Clients gets busier, and the listing and reviews sit on a page named for clients.', noscript: 'Works, as for A.',
+        phone: '"Needs you" first, then the three cards, then the clients. The urgent part stays at the top.',
+        lives: 'The top of Clients (/workspace); no new address or item. Sign-in with no page to return to would land on Clients.',
+        nav: 'Unchanged: Clients is current in the site bar and the phone tabs.',
+        try: 'Accept a request; switch State to New, not listed.' } } }
+];
+const FLOWS = { client: { name: 'Client', role: 'client', pages: CLIENT_PAGES }, accountant: { name: 'Accountant', role: 'accountant', pages: ACCOUNTANT_PAGES } };
 const FRAMES = { desktop: { w: 1120, h: 860 }, phone: { w: 430, h: 820 } };
 const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 const q = new URLSearchParams(location.search);
+const flow0 = FLOWS[q.get('flow')] ? q.get('flow') : 'client';
 const st = {
-  page: PAGES.some(p => p.key === q.get('page')) ? q.get('page') : 'directory',
+  flow: flow0,
+  page: FLOWS[flow0].pages.some(p => p.key === q.get('page')) ? q.get('page') : FLOWS[flow0].pages[0].key,
   option: q.get('option') || 'current',
   frame: q.get('frame') === 'phone' || q.get('frame') === 'desktop' ? q.get('frame') : (innerWidth >= 900 ? 'desktop' : 'phone'),
-  theme: ['light', 'dark'].includes(q.get('theme')) ? q.get('theme') : 'system'
+  theme: ['light', 'dark'].includes(q.get('theme')) ? q.get('theme') : 'system',
+  state: q.get('state') || ''
 };
-const page = () => PAGES.find(p => p.key === st.page);
+const pages = () => FLOWS[st.flow].pages;
+/* The flow's steps leave out archived pages, which are listed under "Archived" and still open from the address. */
+const steps = () => pages().filter(p => !p.archived);
+const page = () => pages().find(p => p.key === st.page);
+/* A page's states: who is signed in, extra address values such as wsdata=error, and (Page titles) the page to show. */
+const stateOf = () => { const s = page().states; return s ? s.find(x => x[0] === st.state) || s[0] : null; };
 const keys = () => Object.keys(page().options);
-const label = k => k === 'current' ? 'Current' : k.toUpperCase();
+/* 'before' is the design a chosen option replaced; its opt value says how index.html shows it (opt=editor-current). */
+const label = k => k === 'current' ? 'Current' : k === 'before' ? 'Before' : k.toUpperCase();
+const optValue = (p, k) => p.options[k].opt || k;
 function src(k, embed) {
-  const p = page(), o = p.options[k], route = (st.frame === 'phone' && o.phoneRoute) || p.route[st.frame];
-  return 'index.html?' + (embed ? 'embed=1&' : '') + 'notes=0&role=client&device=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme) + (k === 'current' ? '' : '&opt=' + p.key + '-' + k) + route;
+  const s = stateOf(), p = page(), o = p.options[k], route = (s && s[4]) || (o.routes && o.routes[st.frame]) || (st.frame === 'phone' && o.phoneRoute) || p.route[st.frame];
+  return 'index.html?' + (embed ? 'embed=1&' : '') + 'notes=0&role=' + (s ? s[2] : FLOWS[st.flow].role) + (s ? s[3] : '') + '&device=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme) + (k === 'current' ? '' : '&opt=' + p.key + '-' + optValue(p, k)) + route;
 }
 function frameHTML(k, scale, caption) {
   const f = FRAMES[st.frame], p = page();
   return '<figure class="cell" style="margin:0">' + (caption ? '<figcaption><span class="tag">' + label(k) + '</span>' + (k === 'current' ? '' : '<strong>' + esc(p.options[k].name) + '</strong>') + '<button type="button" class="btn" data-view="' + k + '">View this one</button></figcaption>' : '') +
-    '<div class="frame" style="width:' + Math.round(f.w * scale) + 'px;height:' + Math.round(f.h * scale) + 'px"><iframe title="' + esc(p.name + ', ' + (k === 'current' ? 'current design' : 'option ' + label(k) + ', ' + p.options[k].name) + ', ' + st.frame) + '" src="' + esc(src(k, true)) + '" style="width:' + f.w + 'px;height:' + f.h + 'px;transform:scale(' + scale + ')"></iframe></div></figure>';
+    '<div class="frame" style="width:' + Math.round(f.w * scale) + 'px;height:' + Math.round(f.h * scale) + 'px"><iframe title="' + esc(p.name + ', ' + (k === 'current' ? 'current design' : k === 'before' ? 'the design before, ' + p.options[k].name : 'option ' + label(k) + ', ' + p.options[k].name) + ', ' + st.frame) + '" src="' + esc(src(k, true)) + '" style="width:' + f.w + 'px;height:' + f.h + 'px;transform:scale(' + scale + ')"></iframe></div></figure>';
 }
 function infoHTML() {
-  const p = page(), i = PAGES.indexOf(p);
-  if (st.option === 'compare') return '<h1>' + esc(p.name) + '<small>Step ' + (i + 1) + ' of ' + PAGES.length + ' · all options side by side, smaller. Each frame works; choose "View this one" for its notes.</small></h1>';
+  const p = page(), i = steps().indexOf(p), who = FLOWS[st.flow].name + ' flow, ' + (p.archived ? 'archived page, not in the flow' : 'step ' + (i + 1) + ' of ' + steps().length);
+  if (st.option === 'compare') return '<h1>' + esc(p.name) + '<small>' + who + ' · all options side by side, smaller. Each frame works; choose "View this one" for its notes.</small></h1>' +
+    (p.notes ? '<dl>' + (p.archived ? [['Archived', p.archived]] : []).concat(p.notes).map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl>' : '');
   const o = p.options[st.option], rows = [['Idea', o.idea], ['What changes', o.changes || 'Nothing: this is the design the site follows today.'], ['Trade-off', o.tradeoff], ['Without script', o.noscript]];
   if (o.phone) rows.push(['On phones', o.phone]);
   if (o.try) rows.push(['Try', o.try]);
-  return '<h1>' + esc(p.name) + ' · ' + (st.option === 'current' ? 'Current design' : 'Option ' + label(st.option) + ': ' + esc(o.name)) + '<small>Step ' + (i + 1) + ' of ' + PAGES.length + (st.option === 'current' ? ' · the default until you choose' : ' · proposal, not adopted') + '</small></h1>' +
-    '<div class="links"><a class="btn" href="' + esc(src(st.option, false)) + '" target="_blank" rel="noopener">Open in the full prototype</a></div>' +
+  if (o.scope) rows.push(['Scope', 'PRD R25 since 2026-11-25. The chosen design is built on the site as F17; the others are proposals only.']);
+  if (o.lives) rows.push(['Where it lives', o.lives]);
+  if (o.nav) rows.push(['Site bar and tabs', o.nav]);
+  if (p.notes) p.notes.forEach(n => rows.push(n));
+  if (p.archived) rows.unshift(['Archived', p.archived]);
+  /* Pages of the other role that the option changes, opened in the full prototype. */
+  const also = p.also ? p.also.map(a => '<a class="btn" href="' + esc('index.html?notes=0&role=accountant&device=' + st.frame + (st.option === 'current' ? '' : '&opt=' + p.key + '-' + optValue(p, st.option)) + a[1]) + '" target="_blank" rel="noopener">' + esc(a[0]) + '</a>').join('') : '';
+  const chosen = !!p.options.current.chosen;
+  return '<h1>' + esc(p.name) + ' · ' + (st.option === 'current' ? (o.chosen ? esc(o.name) : 'Current design') : st.option === 'before' ? 'Before: ' + esc(o.name) : 'Option ' + label(st.option) + ': ' + esc(o.name)) + '<small>' + who +
+    (p.archived ? (st.option === 'current' ? ' · the design the site follows today' : ' · archived, not chosen') : st.option === 'current' ? (o.chosen ? ' · chosen, the prototype\'s default' : ' · the default until you choose') : st.option === 'before' ? ' · replaced in the prototype by the chosen design' : chosen ? ' · not chosen' : ' · proposal, not adopted') + '</small></h1>' +
+    '<div class="links"><a class="btn" href="' + esc(src(st.option, false)) + '" target="_blank" rel="noopener">Open in the full prototype</a>' + also + '</div>' +
     '<dl>' + rows.map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl>';
 }
 function layout() {
@@ -170,31 +336,41 @@ function layout() {
   $('stage').innerHTML = ks.map(k => frameHTML(k, scale, true)).join('');
 }
 function render() {
-  const p = page(), i = PAGES.indexOf(p);
+  const p = page(), i = steps().indexOf(p), arch = pages().filter(x => x.archived);
   if (st.option !== 'compare' && !p.options[st.option]) st.option = 'current';
-  $('steps').innerHTML = PAGES.map((x, n) => '<li><a href="?page=' + x.key + '&frame=' + st.frame + '" data-page="' + x.key + '"' + (x === p ? ' aria-current="step"' : '') + '><span class="n">' + (n + 1) + '</span>' + esc(x.name) + '</a></li>').join('');
+  $('flows').innerHTML = Object.keys(FLOWS).map(k => '<button type="button" data-flow="' + k + '" aria-pressed="' + (st.flow === k) + '">' + FLOWS[k].name + '</button>').join('');
+  $('stepsnav').setAttribute('aria-label', 'Pages in the ' + FLOWS[st.flow].name.toLowerCase() + '\'s flow');
+  $('steps').innerHTML = steps().map((x, n) => '<li><a href="?flow=' + st.flow + '&page=' + x.key + '&frame=' + st.frame + '" data-page="' + x.key + '"' + (x === p ? ' aria-current="step"' : '') + '><span class="n">' + (n + 1) + '</span>' + esc(x.name) + '</a></li>').join('');
   $('opts').innerHTML = keys().map(k => '<button type="button" data-opt="' + k + '" aria-pressed="' + (st.option === k) + '"' + (k === 'current' ? '' : ' title="' + esc(p.options[k].name) + '"') + '>' + (k === 'current' ? 'Current' : label(k) + ' · ' + esc(p.options[k].name)) + '</button>').join('') +
     '<button type="button" data-opt="compare" aria-pressed="' + (st.option === 'compare') + '">Compare all</button>';
+  $('archgroup').hidden = !arch.length;
+  $('archived').innerHTML = arch.map(x => '<a href="?flow=' + st.flow + '&page=' + x.key + '&frame=' + st.frame + '" data-page="' + x.key + '"' + (x === p ? ' aria-current="page"' : '') + '>' + esc(x.name) + '</a>').join('');
   document.querySelectorAll('#frames button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.frame === st.frame)));
+  const s = stateOf();
+  $('stategroup').hidden = !s;
+  $('lbl-state').textContent = p.statesLabel || 'State';
+  $('states').innerHTML = s ? p.states.map(x => '<button type="button" data-state="' + x[0] + '" aria-pressed="' + (x === s) + '">' + esc(x[1]) + '</button>').join('') : '';
   $('theme').value = st.theme;
-  $('prev').disabled = i === 0; $('next').disabled = i === PAGES.length - 1;
+  $('prev').disabled = i <= 0; $('next').disabled = i < 0 || i === steps().length - 1;
   $('info').innerHTML = infoHTML();
-  document.title = p.name + ' · ' + (st.option === 'compare' ? 'Compare' : st.option === 'current' ? 'Current' : 'Option ' + label(st.option)) + ' · Tax Buddy design options';
-  history.replaceState(null, '', '?page=' + st.page + '&option=' + st.option + '&frame=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme));
+  document.title = FLOWS[st.flow].name + ' · ' + p.name + ' · ' + (st.option === 'compare' ? 'Compare' : st.option === 'current' || st.option === 'before' ? label(st.option) : 'Option ' + label(st.option)) + ' · Tax Buddy design options';
+  history.replaceState(null, '', '?' + (st.flow === 'client' ? '' : 'flow=' + st.flow + '&') + 'page=' + st.page + '&option=' + st.option + '&frame=' + st.frame + (st.theme === 'system' ? '' : '&theme=' + st.theme) + (s && s !== p.states[0] ? '&state=' + s[0] : ''));
   layout();
 }
 const keepFocus = sel => { const el = document.querySelector(sel); if (el) el.focus(); };
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-page],[data-opt],[data-frame],[data-view]');
+  const t = e.target.closest('[data-flow],[data-page],[data-opt],[data-frame],[data-view],[data-state]');
   if (!t) return;
-  if (t.dataset.page) { e.preventDefault(); st.page = t.dataset.page; st.option = 'current'; render(); keepFocus('[data-page="' + st.page + '"]'); }
+  if (t.dataset.flow) { st.flow = t.dataset.flow; st.page = steps()[0].key; st.option = 'current'; st.state = ''; render(); keepFocus('[data-flow="' + st.flow + '"]'); }
+  else if (t.dataset.page) { e.preventDefault(); st.page = t.dataset.page; st.option = 'current'; st.state = ''; render(); keepFocus('[data-page="' + st.page + '"]'); }
+  else if (t.dataset.state) { st.state = t.dataset.state; render(); keepFocus('[data-state="' + st.state + '"]'); }
   else if (t.dataset.opt) { st.option = t.dataset.opt; render(); keepFocus('[data-opt="' + st.option + '"]'); }
   else if (t.dataset.frame) { st.frame = t.dataset.frame; render(); keepFocus('[data-frame="' + st.frame + '"]'); }
   else if (t.dataset.view) { st.option = t.dataset.view; render(); keepFocus('[data-opt="' + st.option + '"]'); }
 });
 $('theme').addEventListener('change', e => { st.theme = e.target.value; render(); });
-$('prev').addEventListener('click', () => { const i = PAGES.indexOf(page()); if (i > 0) { st.page = PAGES[i - 1].key; st.option = 'current'; render(); } });
-$('next').addEventListener('click', () => { const i = PAGES.indexOf(page()); if (i < PAGES.length - 1) { st.page = PAGES[i + 1].key; st.option = 'current'; render(); } });
+$('prev').addEventListener('click', () => { const ps = steps(), i = ps.indexOf(page()); if (i > 0) { st.page = ps[i - 1].key; st.option = 'current'; st.state = ''; render(); } });
+$('next').addEventListener('click', () => { const ps = steps(), i = ps.indexOf(page()); if (i < ps.length - 1) { st.page = ps[i + 1].key; st.option = 'current'; st.state = ''; render(); } });
 let rt; addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(layout, 150); });
 render();
 </script>

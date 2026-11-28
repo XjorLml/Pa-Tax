@@ -50,6 +50,13 @@ This is a prototype DOM/layout check in the supplied browser, not real device, s
 
 F03 extends the helper with private client/added-accountant lists, request/accept/decline, task progress, shared notes, role guards, generated sample document validation/retry/removal, and account changes during upload. The download check intercepts the final anchor handoff to inspect a generated synthetic PDF Blob; it does not establish operating-system download behavior. Run `node --check prototypes/service-workspace.js` for the external module. Pass `artifacts/client-services` as the optional output directory to keep the current run separate from F02 artifacts; retained reports include source SHA-256 values. No actual user file or real upload is used.
 
+Since 2026-11-25 it also covers the client details card on Account ([F02 BD15](../specs/brand-design-refresh/spec.md#client-details-on-account-2026-11-25-bd15), prototype only):
+- view, edit in place, a refused phone, and a save;
+- layout on desktop and on a 390 px phone, with touch targets;
+- the accountant's "About Maria" card.
+
+The design options on `options.html` aren't covered.
+
 The helper also covers the palette options (F02 BD08): the default palette, each option in light and dark with its 17 contrast pairs, the phone frame, and the Palette control. It writes `contrast-palettes.json` beside the other reports. Pass `artifacts/palette-options` as the output directory to keep that run separate.
 
 Since 2026-11-12 it also checks the directory's static-page contract (conflict C03): typing alone does not filter, Search and the service buttons submit, sort and page are links, their values appear in the address, and cards carry no per-user tag. Pass `artifacts/c03-directory` to keep that run separate.

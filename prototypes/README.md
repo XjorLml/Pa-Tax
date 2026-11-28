@@ -46,7 +46,7 @@ Optional URL settings, useful for sharing a specific state:
 | `role` | `client`, `accountant`, `newAccountant` (default is a visitor) |
 | `picture` | `e` (default, current), `a` (used without script), `b`, `c`, `d` (not chosen) |
 | `wsnav` | `current` (default, breadcrumb only), `side` (side list, proposed 2026-11-24, not adopted) |
-| `opt` | A design option per page, for example `directory-a` or `directory-a,chats-b`. Pages: `directory`, `profile`, `chats`, `myacc`; options `a`, `b`, `c`. Left out, every page shows the current design. See [design options](#design-options-for-the-clients-flow) |
+| `opt` | A design option per page, for example `directory-a` or `directory-a,chats-b`. Client pages: `directory`, `profile`, `chats`, `myacc`, `details`. Accountant pages: `editor`, `achats`, `clients`, `work`. Options `a`, `b`, `c`. Left out, every page shows the current design; for `details` that's B, chosen on 2026-11-25. See the design options for [clients](#design-options-for-the-clients-flow) and [accountants](#design-options-for-the-accountants-flow) |
 | `embed` | `1` shows the simulated browser alone, without the bar or notes; used by `options.html` |
 | `theme` | `light`, `dark` (default follows the system) |
 | `offline` | `1` |
@@ -85,6 +85,104 @@ These are proposals. Without `opt`, the prototype shows the current design, whic
 - the other options stay, marked "not chosen", as with the Picture design options.
 
 None of them adds a feature: they rearrange data the pages already show. Directory C and Chats A show a client's own data in new places; for Directory C that's a public page, so it would be drawn only for that client and not cached publicly.
+
+## Client details
+
+On 2026-11-25 the user asked that clients can store and edit their basic information and profile information. Today a client has only the name and email from Google and an optional picture. The client's flow on `options.html` has a fifth step, **My details**. The user decided:
+- **Fields:** a name (starting from the Google name), phone and city; a business name, type (sole proprietor, partnership, corporation, freelancer or self-employed, or not registered yet) and industry. The email stays the Google address and isn't shown. There is a note not to add a TIN or ID numbers.
+- **Who sees them:** the accountants the client contacts, through a conversation or a service, as with the client's picture (R24). Never public (R11).
+- **Where accountants see them:** an "About Maria" card on their page for that client, and inside a service request.
+
+| Option | What it shows |
+|---|---|
+| **B · Edit on Account (chosen 2026-11-25, the default)** | A "Your details" card on Account, with Edit details opening the form in place (`/account?edit=details`), Save details and Cancel |
+| A · My details page (not chosen) | A "My details" row on Account opens a page with the form, and a line naming the accountants who can see it (`opt=details-a`) |
+| C · What accountants see (not chosen) | The page from A with a preview of the card accountants see (`opt=details-c`) |
+
+**B is the default.** The user said "implement the edit on account in the prototype", so the prototype shows B without any `opt`. It also shows the accountant's side: `index.html?role=accountant#/clients/u-maria`, or `#/work/e2` for a request. The choice is recorded as [F02 BD15](../specs/brand-design-refresh/spec.md#client-details-on-account-2026-11-25-bd15), and the prototype checker covers it. **Jump to → Client details** opens the form.
+
+**Built on the site, 2026-11-25.** The user then said "implement to site". It became [PRD R25](../docs/PRD.md#requirements) and [F17](../specs/client-details/spec.md), which resolved conflict C05. The prototype was aligned with the site:
+- the name takes up to 100 characters;
+- a phone needs at least 7 digits;
+- the sharing line names only the accountants with a service.
+
+## Design options for the accountant's flow
+
+On 2026-11-25 the user asked for the same for accountants. **Flow → Accountant** in [options.html](options.html) (or `options.html?flow=accountant`) shows the accountant's pages, signed in as Andrea Villanueva. The steps follow an accountant's progress: get listed, get messages, get requests, do the work. The user kept every option proposed.
+
+| Step | Page | Options |
+|---|---|---|
+| 1 | My profile (the editor) | **B · Preview beside the form (chosen 2026-11-25, the default)**; A · Section menu and C · Compact top, Save in view (not chosen) |
+| 2 | Chats | A · Client panel; B · Waiting for your reply; C · All / Unread tabs |
+| 3 | Clients | A · Requests first; B · Services by status; C · Client table |
+| 4 | Service progress | A · Section links; B · Documents per task; C · Updates first |
+
+The same rules apply as for the client's options:
+- These are proposals, and the current design stays the default.
+- Each option keeps to data and actions the accountant already has. Clients A answers requests with the same Accept and Decline as the service page. Service progress B uses the existing link between a document and a task.
+- The accountant's Chats options use their own setting (`achats`). The client's Chats options don't apply to accountants.
+
+**My profile: B is the default.** The user said "in the My profile implement Option B: Preview beside the form in the prototype". Without any `opt`, the editor now shows the directory card, as last saved, beside the form. On phones, and on desktop pages narrower than 860 px, the card is in a closed disclosure above the form. On the options page, B is "Current". "Before" shows the one long form the site still has (`opt=editor-current`). The choice is recorded as [F02 BD16](../specs/brand-design-refresh/spec.md#my-profile-preview-beside-the-form-2026-11-25-bd16), and the prototype checker covers it. The other three pages still wait for a choice.
+
+**Built on the site, 2026-11-25.** The user then said "implement to site". It was built as [F05 PE09](../specs/profile-editing/spec.md), with the same markup and class names. The panel's label became an `h2` in both.
+
+## Page titles options
+
+On 2026-11-26 the user sent screenshots of Clients and a client's page and said: "create recommended designs for these, it shows redundant titles". Every workspace page stacks four labels:
+- a breadcrumb that ends with the page itself (on Clients it's only "Clients");
+- a small heading naming the page type ("Clients", "Client services", "Service progress");
+- the eyebrow "Your private workspace";
+- a large second title, which is a slogan on the lists and the name elsewhere.
+
+On phones, the app bar repeats the page type above the large title. **Flow → Accountant → 5 Page titles** in [options.html](options.html) shows three fixes. Its **View** switch picks the page: Clients, a client, a service, My accountants, a client's service, or Request a service.
+
+| Option | What it shows |
+|---|---|
+| Current | The four labels above |
+| **A · Name as the title (recommended)** | A breadcrumb of the pages above only (none on the lists). Then the name as the only, large title, and the page's sentence, which says who can see the work. On phones, the app bar shows the name, and Back goes to the page above (`opt=heads-a`) |
+| B · Compact header bar | Back to the page above, the name, and a pill such as "Private to you and Maria"; no sentence (`opt=heads-b`) |
+| C · Trail as the title | "Clients / Maria Santos / Bookkeeping" on one line, with the name as the h1 and the pages above as muted links (`opt=heads-c`) |
+
+All three drop the eyebrow and the slogans. The current design stays the default. It's a DESIGN change with no PRD effect: the site builds these headers in `WorkFrame` and `WorkIntro`, so a chosen option would be built there. On the site, the sections' headings would move up a level so none is skipped. The Side list proposal (Workspace navigation) keeps its own header.
+
+## Accountant dashboard options
+
+**Archived on 2026-11-26.** The same day the user said "archive dashboard design in the prototype for now", and no option was chosen.
+- On [options.html](options.html), the Dashboard left the accountant's steps, which are back to four. It's listed under **Archived** in the header, with a note saying so.
+- Every option, state and check still works, from there or with `opt=dash-a|b|c`.
+- The two extra accountants (Francis Lim, Elaine Navarro) stay under **Signed in as**.
+
+The user had asked for an accountant dashboard as design options. It's the first page after sign-in, and it answers "what needs me today?" and "how is my listing doing?". These were proposals only: the current pages stay the default, and the site and the PRD are unchanged.
+
+| Option | What it shows | Where it lives |
+|---|---|---|
+| Current | No dashboard; the frame shows Clients, the nearest overview | Sign-in returns to the page it started from |
+| A · "Needs you" list | One list, most urgent kind first: finishing the listing until listed; new requests with Accept, Decline and View request; clients who wrote last, with Reply; reviews without a reply. Then one line about the rest of the work | A new `/dashboard` (`opt=dash-a`) |
+| B · Tiles and sections | Four tiles (new requests, unread messages, active services, rating), each jumping to its section. Then sections for the listing, requests, services by status, messages and reviews | A new `/dashboard` (`opt=dash-b`) |
+| C · Overview on Clients | "Needs you" beside three small cards (listing, service counts, reviews), then the client cards. It replaces the Clients introduction and tiles | The top of Clients, `/workspace` (`opt=dash-c`) |
+
+- **Navigation:**
+  - A and B put Dashboard first in the site bar, current on `/dashboard`;
+  - on phones, Dashboard takes the Accountants tab's place, because five tabs don't fit 320 px;
+  - C changes nothing; Clients stays current.
+- **States:** the options page's **State** switch shows each option as:
+  - Andrea;
+  - a busy accountant: Elaine Navarro, with three requests, three chats waiting and two reviews without a reply;
+  - a new, unlisted accountant: Sam Aquino;
+  - a listed accountant with no clients: Francis Lim;
+  - a failed load (`wsdata=error`).
+
+  In the full prototype, **Signed in as** has the two new accountants. **Workspace data → Load fails** shows the failed load.
+- **Data:** only what the site has today: the listing checklist, requests, service statuses with their last update, unread and unanswered chats, and reviews with their replies.
+- **Left out, because each needs a PRD decision:**
+  - profile views and search appearances;
+  - earnings or fees;
+  - reply-time figures;
+  - "new since your last visit";
+  - due dates;
+  - trends.
+- **Overlap:** C settles the Clients options A–C if chosen; A and B leave Clients as it is.
+- **Scope:** a dashboard isn't in the PRD. Choosing one adds a page and a navigation item, and changes where sign-in lands. That needs an owner decision recorded in the PRD or DESIGN, and in the SDD's navigation table.
 
 ## What it covers
 

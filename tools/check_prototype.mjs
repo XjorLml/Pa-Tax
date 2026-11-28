@@ -399,6 +399,120 @@ try {
     await route('#/work/e1'); await layout(name+' service'); await screenshot(name+'-service');
     if(device==='phone') await check(name+' service touch targets', `[...document.querySelectorAll('.work-panel .btn,.work-field input,.work-field select,.work-field textarea,.work-task-status select,.work-task-name input')].every(e=>e.getBoundingClientRect().height>=44)`);
   }
+  // Client details on Account (the user's choice B of 2026-11-25; C05, not in the PRD): view, edit in place, a refused
+  // phone, save; the form on a phone; the accountant's page for the client shows them.
+  await open('device=desktop&role=client&theme=light&notes=0', '#/me');
+  await check('Client details: Account shows Your details with Edit details', `!!document.querySelector('.opt-cd-card [data-action="cd-edit"]')`);
+  await click('[data-action="cd-edit"]'); await delay(300);
+  await check('Client details: Edit details opens the form in place and moves focus to it', `!!document.querySelector('.opt-cd-card.editing #cd-name') && document.activeElement.id==='cd-h'`);
+  await set('#cd-phone', 'call me', 'input'); await click('[data-action="cd-save"]'); await delay(200);
+  await check('Client details: a phone with letters is refused', textHas('Enter a phone number using digits, spaces, + or -.'));
+  await set('#cd-phone', '+63 900 000 0299', 'input'); await click('[data-action="cd-save"]'); await delay(300);
+  await check('Client details: Save shows the new phone on the card', `!document.querySelector('.opt-cd-card.editing') && document.querySelector('.opt-cd-card').textContent.includes('+63 900 000 0299')`);
+  await layout('Client details on Account');
+  await open('device=phone&role=client&theme=dark&notes=0', '#/me/edit', 390, 900);
+  await layout('Client details form on a phone');
+  await check('Client details: form touch targets on a phone', `[...document.querySelectorAll('.opt-cd-card input,.opt-cd-card select,.opt-cd-card .btn')].every(e=>e.getBoundingClientRect().height>=44)`);
+  await open('device=desktop&role=accountant&theme=light&notes=0', '#/clients/u-maria');
+  await check('Client details: the accountant\'s page for Maria shows About Maria', `!!document.querySelector('.opt-about-client')`);
+  // My profile: the preview beside the form (the user's choice B of 2026-11-25). The directory card as last saved sits
+  // beside the form on wide desktop pages, and in a closed disclosure above the form on phones and narrow desktop pages.
+  await open('device=desktop&role=accountant&theme=light&notes=0', '#/me/profile');
+  await check('My profile: the directory card sits beside the form', `(() => { const a=document.querySelector('.editor-grid>aside.editor-preview'), f=document.querySelector('.editor-grid>.form');
+    return !!a && !!a.querySelector('.card') && getComputedStyle(a).display!=='none' && a.getBoundingClientRect().left>=f.getBoundingClientRect().right && getComputedStyle(document.querySelector('.editor-preview-mini')).display==='none'; })()`);
+  await set('#f-city', 'Synthetic Preview City', 'input');
+  await check('My profile: the card keeps what was last saved while typing', `!document.querySelector('.editor-preview .card').textContent.includes('Synthetic Preview City')`);
+  await click('[data-action="save-profile"]');
+  await until(() => js(`!!document.querySelector('.editor-preview .card') && document.querySelector('.editor-preview .card').textContent.includes('Synthetic Preview City')`));
+  await check('My profile: Save shows the new city on the card', `document.querySelector('.editor-preview .card').textContent.includes('Synthetic Preview City') && ${textHas('Saved. Your profile is listed in the directory.')}`);
+  await layout('My profile with the preview');
+  await open('device=desktop&role=accountant&theme=dark&notes=0', '#/me/profile', 700, 1000);
+  await check('My profile: on a narrow desktop page the card is a closed disclosure above the form', `(() => { const m=document.querySelector('.editor-preview-mini');
+    return getComputedStyle(m).display!=='none' && !m.open && getComputedStyle(document.querySelector('.editor-preview')).display==='none' && m.getBoundingClientRect().bottom<=document.querySelector('.editor-grid').getBoundingClientRect().top; })()`);
+  await layout('My profile on a 700 px desktop page');
+  await open('device=phone&role=newAccountant&theme=light&notes=0', '#/me/profile', 390, 900);
+  await click('.editor-preview-mini summary'); await delay(100);
+  await check('My profile: before listing, the phone preview says where the card will appear', `(() => { const m=document.querySelector('.editor-preview-mini');
+    return m.open && m.textContent.includes('Not listed yet') && !m.querySelector('.card') && !document.querySelector('.editor-preview') && m.querySelector('summary').getBoundingClientRect().height>=44; })()`);
+  await layout('My profile on a phone, not listed');
+  await open('device=desktop&role=accountant&theme=light&notes=0&opt=editor-current', '#/me/profile');
+  await check('My profile: opt=editor-current shows the one long form without a preview', `!document.querySelector('.editor-preview, .editor-preview-mini') && !!document.querySelector('.single-inner>.form')`);
+  // Accountant dashboard options (2026-11-26; archived the same day, kept working): A "Needs you" and B tiles at /dashboard, C an
+  // overview on Clients. The default has no dashboard. States: Andrea, busy (Elaine), new (Sam), listed with no clients
+  // (Francis) and a failed load; phones at 320 px with 44 px targets.
+  const dashTargets = sel => `[...document.querySelectorAll(${JSON.stringify(sel)})].every(e=>e.getBoundingClientRect().height>=44)`;
+  const navFirst = `document.querySelector('.sitenav a')`;
+  await open('device=desktop&role=accountant&theme=light&notes=0', '#/workspace');
+  await check('Dashboard: the default has no Dashboard item, and Clients is current', `!document.querySelector('.sitenav a[href="#/dashboard"]') && document.querySelector('.sitenav a[aria-current="page"]').getAttribute('href')==='#/workspace' && !document.querySelector('.dash-split')`);
+  await route('#/dashboard');
+  await check('Dashboard: without an option, /dashboard is not a page', textHas('We couldn\'t find that page'));
+  await open('device=desktop&role=accountant&theme=light&notes=0&opt=dash-a', '#/dashboard');
+  await check('Dashboard A: Dashboard is first in the site bar and current', `${navFirst}.getAttribute('href')==='#/dashboard' && ${navFirst}.getAttribute('aria-current')==='page'`);
+  await check('Dashboard A: Andrea\'s listing line and four things that need her', `${textHas('Listed in the directory')} && document.querySelectorAll('.dash-needs li').length===4 && !!document.querySelector('.dash-needs [data-action="ws-accept"][data-id="e2"]') && ${textHas('Jose Reyes is waiting for your reply')} && ${textHas('Maria Santos is waiting for your reply')} && ${textHas('Noel B. left 4 stars. No reply yet')}`);
+  await click('.dash-needs [data-action="ws-accept"][data-id="e2"]'); await delay(300);
+  await check('Dashboard A: an accepted request leaves the list and becomes work in progress', `document.querySelectorAll('.dash-needs li').length===3 && !document.querySelector('[data-action="ws-accept"][data-id="e2"]') && ${textHas('1 service in progress')}`);
+  await layout('Dashboard A, desktop');
+  await open('device=desktop&role=listedAccountant&theme=dark&notes=0&opt=dash-a', '#/dashboard');
+  await check('Dashboard A: listed with no clients is all caught up', `${textHas('You\'re all caught up. Nothing needs you right now. Clients find you in the directory')} && ${textHas('No services yet.')} && !document.querySelector('.dash-needs li')`);
+  await layout('Dashboard A, listed with no clients, dark');
+  await open('device=phone&role=newAccountant&theme=dark&notes=0&opt=dash-a', '#/dashboard', 320, 900);
+  await check('Dashboard A, phone: Dashboard takes the Accountants tab\'s place and is current', `(() => { const t=[...document.querySelectorAll('.tabbar a')]; return t.length===4 && t[0].getAttribute('href')==='#/dashboard' && t[0].getAttribute('aria-current')==='page' && !t.some(a=>a.getAttribute('href')==='#/directory'); })()`);
+  await check('Dashboard A, new accountant: creating the profile comes first', `(() => { const li=document.querySelector('.dash-needs li'); return li.textContent.includes('Your listing') && li.textContent.includes('Create your profile') && document.querySelectorAll('.dash-needs li').length===1 && ${textHas('1 of 6 details')}; })()`);
+  await check('Dashboard A, phone: 44 px touch targets', dashTargets('.dash .btn, .dash-links a, .tabbar a'));
+  await layout('Dashboard A, new accountant, 320 px');
+  await open('device=phone&role=busyAccountant&theme=light&notes=0&opt=dash-b', '#/dashboard', 320, 900);
+  await check('Dashboard B, busy: the tiles count 3 requests, 3 unread, 2 active services and a 4.0 rating', `(() => { const t=[...document.querySelectorAll('.dash-tile strong')].map(s=>s.textContent); return t.join(',')==='3,3,2,4.0'; })()`);
+  await check('Dashboard B, busy: five sections, three requests to answer and two reviews without a reply', `document.querySelectorAll('.dash-section').length===5 && document.querySelectorAll('.dash-requests [data-action="ws-accept"]').length===3 && ${textHas('Carl U., 5 stars')} && ${textHas('Bea R., 3 stars')}`);
+  await click('.dash-tile[data-target="dash-rev"]'); await delay(200);
+  await check('Dashboard B: a tile moves focus to its section', `document.activeElement && document.activeElement.id==='dash-rev'`);
+  await check('Dashboard B, phone: 44 px touch targets', dashTargets('.dash .btn, .dash-links a, .tabbar a, .dash-tile, a.dash-row'));
+  await layout('Dashboard B, busy, 320 px');
+  await open('device=desktop&role=busyAccountant&theme=dark&notes=0&opt=dash-b', '#/dashboard');
+  await check('Dashboard B, desktop: four tiles in one row', `(() => { const t=[...document.querySelectorAll('.dash-tile')].map(e=>Math.round(e.getBoundingClientRect().top)); return t.length===4 && new Set(t).size===1; })()`);
+  await layout('Dashboard B, busy, desktop dark');
+  await open('device=desktop&role=busyAccountant&theme=light&notes=0&opt=dash-c', '#/workspace');
+  await check('Dashboard C: Clients stays current, with no Dashboard item', `!document.querySelector('.sitenav a[href="#/dashboard"]') && document.querySelector('.sitenav a[aria-current="page"]').getAttribute('href')==='#/workspace'`);
+  await check('Dashboard C, busy: eight things need Elaine, beside her listing, services and reviews, then her clients', `document.querySelectorAll('.dash-split .dash-needs li').length===8 && document.querySelectorAll('.dash-side .dash-card').length===3 && !!document.querySelector('#dash-clients + .work-people') && !document.querySelector('.work-stats')`);
+  await layout('Dashboard C, busy, desktop');
+  await open('device=phone&role=busyAccountant&theme=dark&notes=0&opt=dash-c', '#/workspace', 320, 900);
+  await check('Dashboard C, phone: "Needs you" comes first and the tabs are unchanged', `document.querySelector('.dash-needs').getBoundingClientRect().top < document.querySelector('.dash-side').getBoundingClientRect().top && [...document.querySelectorAll('.tabbar a')].some(a=>a.getAttribute('href')==='#/directory') && document.querySelector('.tabbar a[aria-current="page"]').getAttribute('href')==='#/workspace'`);
+  await check('Dashboard C, phone: 44 px touch targets', dashTargets('.dash-split .btn, .tabbar a'));
+  await layout('Dashboard C, busy, 320 px');
+  await open('device=desktop&role=accountant&theme=light&notes=0&opt=dash-a&wsdata=error', '#/dashboard');
+  await check('Dashboard: a failed load says so, with Try again', `${textHas('We couldn\'t load your dashboard')} && !!document.querySelector('[data-action="ws-retry-load"]') && !document.querySelector('.dash-needs')`);
+  await click('[data-action="ws-retry-load"]'); await delay(200);
+  await check('Dashboard: Try again loads the dashboard', `!!document.querySelector('.dash-needs')`);
+  await open('device=phone&role=accountant&theme=light&notes=0&opt=dash-c&wsdata=error', '#/workspace', 320, 900);
+  await check('Dashboard C: a failed load keeps the Clients page\'s message', textHas('Could not load your workspace'));
+  // Page titles on the workspace pages (2026-11-26; proposals, not adopted): one title per page instead of a breadcrumb,
+  // a page-type heading, an eyebrow and a second title. The default keeps today's header.
+  const h1s = `[...document.querySelectorAll('#app h1')].map(h=>h.textContent.trim())`;
+  const crumbs = `[...document.querySelectorAll('#app .crumbs a, #app .heads-trail nav a')].map(a=>a.textContent.trim())`;
+  await open('device=desktop&role=accountant&theme=light&notes=0', '#/clients/u-maria');
+  await check('Page titles: the default keeps the breadcrumb, "Client services" and the eyebrow', `${h1s}.join()==='Client services' && !!document.querySelector('.work-intro .eyebrow') && ${textHas('Client services')}`);
+  await open('device=desktop&role=accountant&theme=light&notes=0&opt=heads-a', '#/workspace');
+  await check('Page titles A: Clients has one title, no breadcrumb, eyebrow or slogan', `${h1s}.join()==='Clients' && !document.querySelector('.crumbs, .eyebrow, .work-intro') && !${textHas('A clear view of your client work.')} && !!document.querySelector('.heads-sub')`);
+  await route('#/clients/u-maria');
+  await check('Page titles A: a client\'s page is titled with the name, under "Clients"', `${h1s}.join()==='Maria Santos' && ${crumbs}.join('/')==='Clients' && document.querySelector('.heads-sub').textContent.includes('Only this client and you')`);
+  await route('#/work/e1');
+  await check('Page titles A: a service sits under "Clients / Maria Santos", and its sentence says who can see it', `${h1s}.join()==='Bookkeeping' && ${crumbs}.join('/')==='Clients/Maria Santos' && !document.querySelector('.work-intro') && document.querySelector('.heads-sub').textContent==='Only Maria and you can see this work.'`);
+  await layout('Page titles A, service, desktop');
+  await open('device=desktop&role=client&theme=dark&notes=0&opt=heads-a', '#/request/a1');
+  await check('Page titles A: Request a service says its name once', `${h1s}.join()==='Request a service' && [...document.querySelectorAll('#app h1, #app h2')].filter(h=>h.textContent.includes('Request a service')).length===1`);
+  await open('device=phone&role=accountant&theme=light&notes=0&opt=heads-a', '#/work/e1', 320, 900);
+  await check('Page titles A, phone: the app bar names the service and Back goes to the client', `document.querySelector('#screen-title').textContent==='Bookkeeping' && document.querySelector('.appbar a[aria-label="Back"]').getAttribute('href')==='#/clients/u-maria' && !document.querySelector('.work-intro, .eyebrow')`);
+  await layout('Page titles A, service, 320 px');
+  await open('device=desktop&role=accountant&theme=dark&notes=0&opt=heads-b', '#/work/e1');
+  await check('Page titles B: Back to Maria Santos, the name and a privacy pill in one bar', `(() => { const b=document.querySelector('.heads-bar'); return !!b && b.querySelector('.heads-back').textContent.trim()==='Maria Santos' && b.querySelector('h1').textContent==='Bookkeeping' && b.querySelector('.heads-private').textContent.includes('Private to you and Maria') && !document.querySelector('.heads-sub, .work-intro, .crumbs'); })()`);
+  await layout('Page titles B, service, desktop dark');
+  await open('device=phone&role=client&theme=dark&notes=0&opt=heads-b', '#/work/e1', 320, 900);
+  await check('Page titles B, phone: the pill names the accountant', `document.querySelector('#screen-title').textContent==='Bookkeeping' && document.querySelector('.heads-row .heads-private').textContent.includes('Private to you and Andrea')`);
+  await layout('Page titles B, client service, 320 px');
+  await open('device=desktop&role=accountant&theme=light&notes=0&opt=heads-c', '#/work/e1');
+  await check('Page titles C: "Clients / Maria Santos / Bookkeeping" on one line, the name the h1', `(() => { const t=document.querySelector('.heads-trail'); const tops=[...t.querySelectorAll('nav a, h1')].map(e=>Math.round(e.getBoundingClientRect().bottom)); return ${crumbs}.join('/')==='Clients/Maria Santos' && t.querySelector('h1').textContent==='Bookkeeping' && Math.max(...tops)-Math.min(...tops)<=6; })()`);
+  await open('device=phone&role=accountant&theme=light&notes=0&opt=heads-c', '#/work/e1', 320, 900);
+  await check('Page titles C, phone: the pages above are 44 px links at the top', `[...document.querySelectorAll('.heads-phone-trail a')].map(a=>a.textContent).join('/')==='Clients/Maria Santos' && [...document.querySelectorAll('.heads-phone-trail a')].every(a=>a.getBoundingClientRect().height>=44)`);
+  await layout('Page titles C, service, 320 px');
   if (errors.length) throw new Error(errors.join('\n'));
   console.log(`PASS: ${results.length} prototype checks; ${version.Browser}`);
 } catch (e) {

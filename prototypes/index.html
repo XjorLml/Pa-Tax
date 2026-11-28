@@ -531,6 +531,8 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
         <option value="client">Client · Maria Santos</option>
         <option value="accountant">Accountant · Andrea Villanueva</option>
         <option value="newAccountant">Accountant · Sam Aquino (new)</option>
+        <option value="listedAccountant">Accountant · Francis Lim (listed, no clients)</option>
+        <option value="busyAccountant">Accountant · Elaine Navarro (busy)</option>
       </select>
     </label>
     <div class="pctl"><span id="lbl-net">Network</span>
@@ -565,6 +567,7 @@ a.mi:hover,button.mi:hover{background:var(--surface-2)}
         <option value="editor">Edit profile (accountant)</option>
         <option value="editor-new">Create profile (new accountant)</option>
         <option value="delete">Delete account</option>
+        <option value="client-details">Client details (edit on Account)</option>
         <option value="reviews">Profile reviews (client)</option>
         <option value="review">Write a review</option>
         <option value="reply">Reply to a review (accountant)</option>
@@ -707,7 +710,11 @@ const CONVS = [
 const PERSONAS = {
   client: { name: 'Maria Santos', role: 'client', clientId: 'u-maria', provider: 'Google', email: 'maria.santos@example.com' },
   accountant: { name: 'Andrea Villanueva', role: 'accountant', accountantId: 'a1', provider: 'Microsoft', email: 'andrea.v@example.com' },
-  newAccountant: { name: 'Sam Aquino', role: 'accountant', accountantId: 'a-new', provider: 'Google', email: 'sam.aquino@example.com' }
+  newAccountant: { name: 'Sam Aquino', role: 'accountant', accountantId: 'a-new', provider: 'Google', email: 'sam.aquino@example.com' },
+  /* For the dashboard options (2026-11-26): a listed accountant with no clients, chats or reviews yet, and a busy one
+     with several requests, unread chats and reviews without a reply. */
+  listedAccountant: { name: 'Francis Lim', role: 'accountant', accountantId: 'a6', provider: 'Google', email: 'francis.lim@example.com' },
+  busyAccountant: { name: 'Elaine Navarro', role: 'accountant', accountantId: 'a5', provider: 'Google', email: 'elaine.navarro@example.com' }
 };
 
 /* ---------- State ---------- */
@@ -722,7 +729,16 @@ const S = {
   signin: null, editor: null, del: null,
   emailOn: true, emailNote: null, picMode: 'e', wsNav: 'current',
   /* Design options per page (options.html, 2026-11-24): 'current' unless the address names a proposal (opt=directory-a). */
-  opt: { directory: 'current', profile: 'current', chats: 'current', myacc: 'current' }, pic: { open: false, file: null, pending: null, menu: false, msg: null, ok: false }, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
+  /* Accountant pages (2026-11-25): editor (My profile), achats (Chats), clients (Clients), work (service page). */
+  /* My profile: B (preview beside the form) is the default since the user chose it on 2026-11-25; A and C were not
+     chosen, and opt=editor-current shows the one long form the site has today. */
+  /* Client details (2026-11-25): details. B (edit on Account) is the default since the user chose it that day; A and C
+     were not chosen. cd is the client's unsaved details form. */
+  /* Page titles on the workspace pages (2026-11-26): heads. Current is the breadcrumb, a page-type h1, an eyebrow and a
+     second title; A, B and C give each page one title. */
+  /* Accountant dashboard (2026-11-26): dash. No dashboard today; A and B are a new /dashboard, C the top of Clients.
+     Archived the same day at the user's request: no option chosen; they still work with opt=dash-a|b|c. */
+  opt: { directory: 'current', profile: 'current', chats: 'current', myacc: 'current', details: 'b', editor: 'b', achats: 'current', clients: 'current', work: 'current', dash: 'current', heads: 'current' }, chatFilter: 'all', cd: null, pic: { open: false, file: null, pending: null, menu: false, msg: null, ok: false }, toast: null, dialog: null, review: null, replyTo: null, replyDraft: '', report: null, blockTarget: null,
   route: null, routeChanged: false, guardTarget: null, focusSel: null
 };
 const qs = new URLSearchParams(location.search);
@@ -740,8 +756,9 @@ if (PALETTES[qs.get('palette')]) S.palette = qs.get('palette');
 if (['a', 'b', 'c', 'd', 'e'].indexOf(qs.get('picture')) >= 0) S.picMode = qs.get('picture');
 /* Workspace navigation: 'current' (breadcrumb only) or 'side', the proposal of 2026-11-24 (not adopted). */
 if (['current', 'side'].indexOf(qs.get('wsnav')) >= 0) S.wsNav = qs.get('wsnav');
-/* Design options: opt=directory-a,profile-b,chats-c,myacc-a. options.html also passes embed=1 to show the frame alone. */
-(qs.get('opt') || '').split(',').forEach(x => { const [k, v] = x.split('-'); if (k in S.opt && ['a', 'b', 'c'].includes(v)) S.opt[k] = v; });
+/* Design options: opt=directory-a,profile-b,chats-c,myacc-a. options.html also passes embed=1 to show the frame alone.
+   'current' brings back the design a chosen option replaced (opt=editor-current). */
+(qs.get('opt') || '').split(',').forEach(x => { const [k, v] = x.split('-'); if (k in S.opt && ['a', 'b', 'c', 'current'].includes(v)) S.opt[k] = v; });
 if (qs.get('embed') === '1') document.documentElement.classList.add('embed');
 
 /* ---------- Helpers ---------- */
@@ -783,6 +800,7 @@ const ICONS = {
   bell: '<path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 0 0 4 0"/>',
   alert: '<path d="M12 3l10 18H2L12 3z"/><path d="M12 10v5M12 18h.01"/>',
   check: '<path d="M5 12l5 5L20 7"/>',
+  home: '<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/>',
   plus: '<path d="M12 5v14M5 12h14"/>',
   x: '<path d="M6 6l12 12M18 6L6 18"/>',
   send: '<path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/>',
@@ -857,10 +875,12 @@ function parseRoute() {
     case 'agree': return { name: 'agree' };
     case 'chats': return { name: 'chats' };
     case 'workspace': return { name: 'workspace', sub: b || '' };
+    /* Dashboard options A and B (2026-11-26, proposals): /dashboard exists only while one of them is shown. */
+    case 'dashboard': return S.opt.dash === 'a' || S.opt.dash === 'b' ? { name: 'dashboard' } : { name: 'info', page: 'notfound' };
     case 'clients': return { name: 'client', id: b || '' };
     case 'work': return { name: 'work', id: b || '' };
     case 'request': return { name: 'request', accId: b || '' };
-    case 'me': return { name: b === 'profile' ? 'editor' : b === 'delete' ? 'delete' : b === 'picture' ? 'picture' : 'me' };
+    case 'me': return { name: b === 'profile' ? 'editor' : b === 'delete' ? 'delete' : b === 'picture' ? 'picture' : b === 'details' ? 'details' : 'me', edit: b === 'edit' };
     case 'privacy': case 'terms': case 'about': case 'help': case 'for-accountants': case 'email-off': case 'error': return { name: 'info', page: a };
     default: return { name: 'info', page: 'notfound' };
   }
@@ -873,6 +893,7 @@ function onRoute() {
   if (r.name !== 'signin') S.signin = null;
   else if (!S.signin) S.signin = { step: 'choose', next: '#/directory' };
   if (r.name !== 'delete') S.del = null;
+  if (r.name !== 'me' && S.cd && S.cd.status === 'saved') S.cd.status = '';
   if (r.name !== 'review') S.review = null;
   render();
 }
@@ -912,11 +933,13 @@ function startDirLoad() {
 const stateHTML = (ic, title, text, actions) => '<div class="state">' + icon(ic, 36) + '<h2>' + title + '</h2>' + (text ? '<p>' + text + '</p>' : '') + (actions || '') + '</div>';
 const offlineBanner = () => S.online ? '' : '<div class="banner warn" role="status">' + icon('wifiOff', 18) + '<div><strong>Connection lost.</strong> Your typed text is kept. Send it again when you\'re back online.</div></div>';
 const signinBtn = next => '<button class="btn primary" data-action="start-signin" data-next="' + esc(next) + '">Sign in</button>';
+/* Accountant chats option C keeps its Unread tab in the address. */
+function chatFilterQuery() { return S.me && S.me.role === 'accountant' && S.opt.achats === 'c' && S.chatFilter === 'unread' ? '?filter=unread' : ''; }
 /* Proposed page addresses, shown in the simulated browser bar. */
 const PATHS = {
   workspace: r => '/workspace' + (!r.sub ? '' : S.opt.myacc === 'b' ? '?status=' + r.sub : S.opt.myacc === 'c' ? '?accountant=' + r.sub : ''), client: r => '/clients/' + r.id, work: r => '/work/' + r.id, request: r => '/accountants/' + r.accId + '/request-service',
-  directory: () => '/', profile: r => '/accountants/' + r.id, review: r => '/accountants/' + r.accId + '/review', compose: r => '/chats/new/' + r.accId, thread: r => '/chats/' + r.id,
-  signin: () => '/signin', agree: () => '/account/agree', chats: () => '/chats', me: () => '/account', editor: () => '/account/profile', 'delete': () => '/account/delete', picture: () => '/account/picture',
+  dashboard: () => '/dashboard', directory: () => '/', profile: r => '/accountants/' + r.id, review: r => '/accountants/' + r.accId + '/review', compose: r => '/chats/new/' + r.accId, thread: r => '/chats/' + r.id + chatFilterQuery(),
+  signin: () => '/signin', agree: () => '/account/agree', chats: () => '/chats' + chatFilterQuery(), me: r => '/account' + (r.edit && S.opt.details === 'b' ? '?edit=details' : ''), details: () => '/account/details', editor: () => '/account/profile', 'delete': () => '/account/delete', picture: () => '/account/picture',
   info: r => r.page === 'notfound' ? '/' + location.hash.replace(/^#\/?/, '') : r.page === 'email-off' ? '/email/off' : '/' + r.page
 };
 function addressText() {
@@ -1094,8 +1117,11 @@ function convListHTML(selId) {
       : stateHTML('chat', 'No client messages yet', 'When a client messages you, the conversation appears here.', '');
   }
   const note = S.me.role === 'accountant' ? '<p class="muted small" style="margin:0 0 10px">' + (S.emailOn ? 'New client messages are also emailed to you.' : 'Email notifications are off.') + ' <a href="#/me">Change</a></p>' : '';
+  /* Client options use S.opt.chats; the accountant's use S.opt.achats (2026-11-25). Each falls back for the other role. */
+  const oc = S.me.role === 'client' ? S.opt.chats : 'current', oa = S.me.role === 'accountant' ? S.opt.achats : 'current';
+  const group = (t, cs) => cs.length ? '<h2 class="opt-conv-h">' + t + '</h2><ul class="convs">' + cs.map(row).join('') + '</ul>' : '';
   const row = c => {
-    const u = unreadFor(c), l = lastMsg(c), mine = l && l.from === S.me.role, name = peerName(c), o = S.opt.chats;
+    const u = unreadFor(c), l = lastMsg(c), mine = l && l.from === S.me.role, name = peerName(c), o = oc;
     /* Design option B: names and unread only. Option C: the client's service status with this accountant. */
     const svc = o === 'c' && S.me.role === 'client' ? W.servicesWith(c.accountantId)[0] : null;
     return '<li><a class="conv' + (u ? ' unread' : '') + (o === 'b' ? ' opt-slim-conv' : '') + '" href="#/thread/' + c.id + '"' + (selId === c.id ? ' aria-current="true"' : '') + '>' +
@@ -1106,9 +1132,17 @@ function convListHTML(selId) {
           (svc ? '<span class="opt-conv-svc">' + icon('list', 14) + esc(svc.service) + ' · ' + esc(svc.status) + '</span>' : '')) +
       '</span></a></li>';
   };
-  if (S.opt.chats === 'c') {
-    const group = (t, cs) => cs.length ? '<h2 class="opt-conv-h">' + t + '</h2><ul class="convs">' + cs.map(row).join('') + '</ul>' : '';
-    return note + group('New messages', list.filter(c => unreadFor(c))) + group('Earlier', list.filter(c => !unreadFor(c)));
+  if (oc === 'c') return note + group('New messages', list.filter(c => unreadFor(c))) + group('Earlier', list.filter(c => !unreadFor(c)));
+  /* Accountant B: the client wrote last means waiting for a reply. C: All / Unread tabs (?filter=unread on the site). */
+  if (oa === 'b') {
+    const waiting = list.filter(c => { const l = lastMsg(c); return l && l.from === 'client'; });
+    return note + group('Waiting for your reply', waiting) + group('Answered', list.filter(c => !waiting.includes(c)));
+  }
+  if (oa === 'c') {
+    const unreadOnly = S.chatFilter === 'unread', shown = unreadOnly ? list.filter(c => unreadFor(c) || c.id === selId) : list;
+    const tab = (v, t, n) => '<a href="#/chats" data-action="opt-chat-filter" data-val="' + v + '"' + ((v === 'unread') === unreadOnly ? ' aria-current="page"' : '') + '>' + t + '<span class="opt-count">' + n + '</span></a>';
+    return '<nav class="opt-tabs opt-chat-tabs" aria-label="Filter conversations">' + tab('all', 'All', list.length) + tab('unread', 'Unread', list.filter(c => unreadFor(c)).length) + '</nav>' + note +
+      (shown.length ? '<ul class="convs">' + shown.map(row).join('') + '</ul>' : '<p class="muted small">No unread conversations.</p>');
   }
   return note + '<ul class="convs">' + list.map(row).join('') + '</ul>';
 }
@@ -1120,6 +1154,20 @@ function chatDetailsInner(acc) {
     '<p class="opt-cd-h">Your services with ' + esc(firstName(acc.name)) + '</p>' +
     (svcs.length ? '<ul class="opt-cd-svcs">' + svcs.map(s => '<li><a href="#/work/' + s.id + '"><span>' + esc(s.service) + '</span><small>' + esc(s.status) + '</small></a></li>').join('') + '</ul>' : '<p class="muted small">No services yet.</p>') +
     '<div class="opt-cd-actions"><a class="btn primary sm" href="#/request/' + acc.id + '">Request a service</a><a class="btn sm" href="#/profile/' + acc.id + '">View profile</a></div>';
+}
+/* Accountant A · Client panel: the client, a request waiting for an answer, and their services with you. */
+function clientDetailsInner(conv) {
+  const name = conv.clientName, first = esc(firstName(name)), svcs = W.servicesForClient(conv.clientId), req = svcs.filter(s => s.phase === 'requested');
+  return '<div class="opt-cd-who"><span class="avatar ' + tone(name) + '" aria-hidden="true">' + initials(name) + '</span><div><strong>' + esc(name) + '</strong><small>Client</small></div></div>' +
+    (req.length ? '<div class="opt-cd-req"><p><strong>New request:</strong> ' + req.map(s => esc(s.service)).join(', ') + '</p><a class="btn primary sm" href="#/work/' + req[0].id + '">Review request</a></div>' : '') +
+    '<p class="opt-cd-h">Services with ' + first + '</p>' +
+    (svcs.length ? '<ul class="opt-cd-svcs">' + svcs.map(s => '<li><a href="#/work/' + s.id + '"><span>' + esc(s.service) + '</span><small>' + esc(s.status) + '</small></a></li>').join('') + '</ul>' +
+      '<div class="opt-cd-actions"><a class="btn sm" href="#/clients/' + conv.clientId + '">Open client page</a></div>'
+      : '<p class="muted small">No services yet. They start when ' + first + ' requests one of your services.</p>');
+}
+function clientDetailsMini(conv) {
+  const svcs = W.servicesForClient(conv.clientId), req = svcs.find(s => s.phase === 'requested'), s = req || svcs[0];
+  return '<details class="opt-cd-mini"><summary>About ' + esc(firstName(conv.clientName)) + (s ? '<span> · ' + (req ? 'New request: ' + esc(req.service) : esc(s.service) + ': ' + esc(s.status)) + '</span>' : '') + '</summary>' + clientDetailsInner(conv) + '</details>';
 }
 function chatDetailsMini(acc) {
   const s = W.servicesWith(acc.id)[0];
@@ -1190,16 +1238,18 @@ function threadParts(r) {
     : blockedByMe ? '<p class="note"><span>You blocked ' + other + '. They can\'t message you. <button class="linkbtn" data-action="unblock" data-id="' + conv.id + '" data-fkey="unblock">Unblock</button></span></p>'
     : blockedByThem ? '<p class="note"><span>You can\'t send messages in this conversation.</span></p>'
     : composerHTML('thread:' + conv.id);
-  /* Design option B: Report and Block move into a More disclosure in the header. Option A: the details disclosure. */
-  const o = S.opt.chats;
+  /* Design option B: Report and Block move into a More disclosure in the header. Option A: the details disclosure.
+     The accountant's option A (S.opt.achats) shows the client and their services with you instead. */
+  const o = isClient ? S.opt.chats : 'current', oa = isClient ? 'current' : S.opt.achats;
   const more = '<details class="opt-more"><summary class="btn sm">More<span class="sr-only"> actions for this chat</span></summary><div class="opt-more-menu">' +
     '<button type="button" data-action="report" data-kind="chat" data-id="' + conv.id + '" data-fkey="report-chat">Report</button>' +
     (blockedByMe ? '' : '<button type="button" data-action="block" data-id="' + conv.id + '" data-fkey="block">Block</button>') + '</div></details>';
-  const mini = o === 'a' && isClient && !accGone ? chatDetailsMini(acc) : '';
+  const mini = o === 'a' && !accGone ? chatDetailsMini(acc) : oa === 'a' ? clientDetailsMini(conv) : '';
   return { title: peerName(conv), back: '#/chats', top: mini, body: (o === 'b' ? '' : tools) + messagesHTML(conv, acc || { name: 'Accountant' }), footer: footer, scrollBottom: true,
     actions: (isClient && !accGone ? '<a class="icon-btn" href="#/profile/' + acc.id + '" aria-label="View profile">' + icon('user') + '</a>' : '') + (o === 'b' ? more : ''),
     headExtra: (isClient && !accGone ? '<a class="btn sm" href="#/profile/' + acc.id + '">View profile</a>' : '') + (o === 'b' ? more : ''),
-    panel: o === 'a' && isClient && !accGone ? '<aside class="opt-cd-panel" aria-label="About ' + esc(acc.name) + '">' + chatDetailsInner(acc) + '</aside>' : '' };
+    panel: o === 'a' && !accGone ? '<aside class="opt-cd-panel" aria-label="About ' + esc(acc.name) + '">' + chatDetailsInner(acc) + '</aside>'
+      : oa === 'a' ? '<aside class="opt-cd-panel" aria-label="About ' + esc(conv.clientName) + '">' + clientDetailsInner(conv) + '</aside>' : '' };
 }
 
 /* ---------- Sign in ---------- */
@@ -1314,14 +1364,81 @@ function meHTML() {
   const listed = !!(prof && prof.listed && !prof.deleted);
   let rows = '';
   rows += '<li><a class="mi" href="#/workspace">' + icon('list') + '<span class="mi-main">' + (isAcc ? 'Clients and service work' : 'My accountants and service progress') + '<small>Private checklists, shared updates and service documents</small></span>' + icon('chevron',18) + '</a></li>';
+  /* Client details options A and C (2026-11-25, not adopted): a row that opens the My details page. */
+  if (!isAcc && (S.opt.details === 'a' || S.opt.details === 'c')) {
+    const d = W.detailsFor(S.me.clientId), sum = [d.bizName, d.city].filter(Boolean).join(' · ');
+    rows += '<li><a class="mi" href="#/me/details">' + icon('user') + '<span class="mi-main">My details<small>' + esc(sum || 'Add your phone, city and business') + '. Shared with accountants you contact.</small></span>' + icon('chevron', 18) + '</a></li>';
+  }
   if (isAcc) {
     rows += '<li><a class="mi" href="#/me/profile">' + icon('edit') + '<span class="mi-main">My profile and portfolio<small>' + (listed ? 'Listed in the directory' : 'Not listed yet') + '</small></span>' + icon('chevron', 18) + '</a></li>';
     if (listed) { const rt = ratingOf(prof.id); rows += '<li><a class="mi" href="#/profile/' + prof.id + '">' + icon('chat') + '<span class="mi-main">My reviews<small>' + (rt.count ? rt.avg.toFixed(1) + ' average from ' + countText(rt.count) + '. Reply on your public profile.' : 'No reviews yet.') + '</small></span>' + icon('chevron', 18) + '</a></li>'; }
   }
   rows += emailRow();
   rows += '<li><button class="mi" data-action="sign-out" data-fkey="sign-out">' + icon('logout') + '<span class="mi-main">Sign out</span></button></li>';
-  return meCardHTML(isAcc) +
+  return meCardHTML(isAcc) + (!isAcc && S.opt.details === 'b' ? clientDetailsCardHTML() : '') +
     '<ul class="menu">' + rows + '</ul><ul class="menu"><li><a class="mi danger" href="#/me/delete">' + icon('trash') + '<span class="mi-main">Delete account</span>' + icon('chevron', 18) + '</a></li></ul>' + infoLinksHTML();
+}
+
+/* ---------- Client details (options.html, 2026-11-25): a proposal, not adopted. S.opt.details ----------
+   A: a My details page from Account. B: the details on Account, edited in place. C: the page with a preview of what
+   accountants see. The details are shared with the accountants the client contacts (W.aboutClientHTML), never public. */
+const BIZ_TYPES = ['Sole proprietor', 'Partnership', 'Corporation', 'Freelancer or self-employed', 'Not registered yet'];
+function ensureClientDetails() {
+  if (!S.cd || S.cd.who !== S.me.clientId) S.cd = { who: S.me.clientId, d: W.detailsFor(S.me.clientId), errors: {}, status: '' };
+  return S.cd;
+}
+function cdFld(id, label, field, o) {
+  o = o || {};
+  const cd = S.cd, err = cd.errors[id];
+  return '<div class="field"><label for="' + id + '">' + label + (o.req ? '' : ' <span class="req">(optional)</span>') + '</label>' +
+    '<input id="' + id + '" type="' + (o.type || 'text') + '" value="' + esc(cd.d[field]) + '" data-fkey="' + id + '" data-bind="cd" data-field="' + field + '"' +
+    (o.ph ? ' placeholder="' + esc(o.ph) + '"' : '') + (o.auto ? ' autocomplete="' + o.auto + '"' : '') +
+    (err ? ' aria-invalid="true" aria-describedby="' + id + '-err"' : o.hint ? ' aria-describedby="' + id + '-hint"' : '') + '>' +
+    (o.hint ? '<span class="hint" id="' + id + '-hint">' + o.hint + '</span>' : '') + (err ? '<span class="ferr" id="' + id + '-err">' + esc(err) + '</span>' : '') + '</div>';
+}
+function sharedWithHTML() {
+  /* The accountants who can see the details: those with a service, on their client page and in requests (F17, as built). */
+  const names = W.servicedBy(S.me.clientId).map(id => getListed(id)).filter(Boolean).map(p => '<strong>' + esc(p.name) + '</strong>');
+  return '<p class="opt-cd-share">' + icon('lock', 16) + '<span>' + (names.length ? 'Shared with the accountants you contact: ' + names.join(', ') + '.' : 'Shared with the accountants you contact, once you request a service.') + ' Never shown publicly.</span></p>';
+}
+function clientDetailsFormHTML() {
+  const cd = ensureClientDetails(), d = cd.d;
+  return '<div class="form opt-cd-form"><fieldset><legend>About you</legend>' +
+    cdFld('cd-name', 'Your name', 'name', { req: 1, auto: 'name', hint: 'Shown to the accountants you contact. Reviews show your first name and last initial.' }) +
+    cdFld('cd-phone', 'Phone', 'phone', { type: 'tel', auto: 'tel', ph: '+63 900 000 0000', hint: 'Leave it blank if you prefer chat.' }) +
+    cdFld('cd-city', 'City', 'city', { auto: 'address-level2', ph: 'e.g. Pasig City' }) +
+    '<div class="field"><span class="opt-cd-label">Email</span><p class="opt-cd-static">' + esc(S.me.email) + '<span class="hint">From your Google sign-in. Not shown to accountants.</span></p></div></fieldset>' +
+    '<fieldset><legend>Your business</legend>' + cdFld('cd-biz', 'Business name', 'bizName', { auto: 'organization', ph: 'e.g. Rivera Trading' }) +
+    '<div class="field"><label for="cd-type">Type <span class="req">(optional)</span></label><select id="cd-type" data-fkey="cd-type" data-bind="cd" data-field="bizType"><option value="">Choose a type</option>' +
+    BIZ_TYPES.map(t => '<option' + (t === d.bizType ? ' selected' : '') + '>' + t + '</option>').join('') + '</select></div>' +
+    cdFld('cd-industry', 'Industry', 'industry', { ph: 'e.g. Food and drink' }) + '</fieldset>' +
+    '<p class="note">' + icon('info', 18) + '<span>Don\'t add your TIN or other ID numbers here. Give them privately when an accountant asks for them.</span></p>' +
+    '<p class="save-status ' + (cd.status === 'saved' ? 'ok' : cd.status === 'failed' ? 'fail' : '') + '" role="status">' +
+    (cd.status === 'saved' ? 'Saved. The accountants you contact see these details.' : cd.status === 'failed' ? 'Not saved: no connection. Your changes are still here.' : '') + '</p></div>';
+}
+function clientPreviewHTML() {
+  return '<p class="opt-cd-h">What your accountants see</p>' + W.aboutClientHTML(S.me.clientId) + '<p class="muted small">As last saved, on their page for you and in your service requests. Your email isn\'t shown.</p>';
+}
+function clientDetailsParts() {
+  if (!S.me) return { title: 'My details', body: stateHTML('user', 'Sign in to see your details', '', signinBtn('#/me/details')) };
+  if (S.me.role !== 'client') return { title: 'My details', body: stateHTML('user', 'Only clients have these details', 'Accountants edit their public profile instead.', '<a class="btn" href="#/me/profile">My profile</a>') };
+  const form = sharedWithHTML() + clientDetailsFormHTML(), footer = '<button class="btn primary block" data-action="cd-save" data-fkey="cd-save">Save details</button>';
+  if (S.opt.details === 'c') {
+    if (S.device === 'phone') return { title: 'My details', body: '<details class="editor-preview-mini"><summary>What your accountants see</summary>' + clientPreviewHTML() + '</details>' + form, footer: footer };
+    return { title: 'My details', cls: 'editor-wide', body: '<div class="editor-grid"><div>' + form + '</div><aside class="editor-preview" aria-label="What your accountants see">' + clientPreviewHTML() + '</aside></div>', footer: footer };
+  }
+  return { title: 'My details', body: form, footer: footer };
+}
+/* Option B: the details under the name on Account; Edit details opens the same form in place (/account?edit=details). */
+function clientDetailsCardHTML() {
+  if (parseRoute().edit) return '<section class="opt-cd-card editing" id="details" aria-labelledby="cd-h"><h2 id="cd-h" tabindex="-1">Edit your details</h2>' + sharedWithHTML() + clientDetailsFormHTML() +
+    '<div class="actions"><button class="btn primary" data-action="cd-save" data-fkey="cd-save">Save details</button><a class="btn" href="#/me" data-action="cd-cancel" data-fkey="cd-cancel">Cancel</a></div></section>';
+  const d = W.detailsFor(S.me.clientId), biz = [d.bizName, d.bizType, d.industry].filter(Boolean).join(' · ');
+  const row = (t, v) => '<dt>' + t + '</dt><dd' + (v ? '' : ' class="muted"') + '>' + esc(v || 'Not added') + '</dd>';
+  const saved = S.cd && S.cd.status === 'saved' && S.cd.who === S.me.clientId;
+  return '<section class="opt-cd-card" id="details" aria-labelledby="cd-h"><div class="work-row"><h2 id="cd-h" tabindex="-1">Your details</h2><a class="btn sm" href="#/me/edit" data-action="cd-edit" data-fkey="cd-edit">' + icon('edit', 16) + ' Edit details</a></div>' +
+    '<dl>' + row('Phone', d.phone) + row('City', d.city) + row('Business', biz) + '</dl><p class="muted small">Shared with the accountants you contact. Never shown publicly.</p>' +
+    (saved ? '<p class="save-status ok" role="status">Saved. The accountants you contact see these details.</p>' : '') + '</section>';
 }
 
 /* ---------- Profile editor ---------- */
@@ -1372,14 +1489,18 @@ function editorParts() {
   const listed = !!(prof && prof.listed && !prof.deleted);
   const missing = missingFields(f);
   const errs = Object.keys(ed.errors);
+  const eo = S.opt.editor;
   let h = '<p class="status-line"><span class="pill ' + (listed ? 'ok' : 'warn') + '">' + icon(listed ? 'check' : 'alert', 14) + ' ' + (listed ? 'Listed in the directory' : 'Not listed yet') + '</span>' +
     (listed ? '<a href="#/profile/' + ed.accId + '">View public profile</a>' : '') + '</p>';
-  h += '<div class="checklist" data-checklist>' + checklistInner(f, listed) + '</div>';
+  /* Design option C (2026-11-25, not chosen): once listed and complete, the checklist folds into one line. */
+  h += eo === 'c' && listed && !missing.length
+    ? '<details class="opt-check-fold"><summary>Everything needed to be listed is filled in.<span>Show checklist</span></summary><div class="checklist" data-checklist>' + checklistInner(f, listed) + '</div></details>'
+    : '<div class="checklist" data-checklist>' + checklistInner(f, listed) + '</div>';
   if (errs.length) {
     h += '<div class="err-summary" id="err-summary" tabindex="-1" role="alert"><h2>Fix ' + (errs.length === 1 ? 'this' : 'these') + ' before saving</h2><ul>' +
       errs.map(id => '<li><a href="#' + id + '" data-action="focus-field" data-target="' + id + '">' + esc(ed.errors[id]) + '</a></li>').join('') + '</ul></div>';
   }
-  h += '<fieldset><legend>About you</legend>' +
+  h += '<fieldset><legend' + edLegendId('about') + '>About you</legend>' +
     '<div class="picture-row">' + avatarEditHTML() + '<div><p class="picture-row-title">Profile picture</p><span class="hint">Optional. Without one, your initials are shown. Use the pencil to add or change it on your Account page.</span></div></div>' +
     fld('f-name', 'Display name', f.name, { field: 'name', req: 1 }) +
     fld('f-title', 'Professional title', f.title, { field: 'title', req: 1, ph: 'e.g. Certified Public Accountant', hint: 'Use only titles you hold. Don\'t add your PRC licence number or other ID numbers anywhere on your profile; give them privately if a client asks.' }) +
@@ -1389,7 +1510,7 @@ function editorParts() {
     '<textarea id="f-summary" rows="5" data-fkey="f-summary" data-bind="ed" data-field="summary"' + (se ? ' aria-invalid="true" aria-describedby="f-summary-err"' : '') + '>' + esc(f.summary) + '</textarea>' +
     '<span class="hint"><span data-count-summary>' + num(f.summary.length) + '</span> / ' + num(MAX_SUMMARY) + ' characters. The first lines appear in the directory.</span>' +
     (se ? '<span class="ferr" id="f-summary-err">' + esc(se) + '</span>' : '') + '</div></fieldset>';
-  h += '<fieldset><legend>Experience</legend>' + f.experience.map((x, i) =>
+  h += '<fieldset><legend' + edLegendId('experience') + '>Experience</legend>' + f.experience.map((x, i) =>
     '<div class="row"><div class="row-head"><span>Experience ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-exp" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> experience ' + (i + 1) + '</span></button></div>' +
     fld('f-exp-' + i + '-role', 'Role', x.role, { bind: 'ed-exp', field: 'role', i: i, ph: 'e.g. Senior tax associate' }) +
     fld('f-exp-' + i + '-org', 'Company or practice', x.org, { bind: 'ed-exp', field: 'org', i: i, ph: 'e.g. Self-employed' }) +
@@ -1398,7 +1519,7 @@ function editorParts() {
     '<label class="check"><input type="checkbox" data-bind="ed-exp-current" data-i="' + i + '" data-fkey="f-exp-' + i + '-cur"' + (x.current ? ' checked' : '') + '> I work here now</label></div>'
   ).join('') + '<button class="btn sm" id="add-exp" data-action="add-exp" data-fkey="add-exp">' + icon('plus', 16) + ' Add experience</button>' +
     '<p class="muted small">Your years of experience on your card are counted from the earliest start month here.</p></fieldset>';
-  h += '<fieldset><legend>Services</legend>' + f.services.map((s, i) => {
+  h += '<fieldset><legend' + edLegendId('services') + '>Services</legend>' + f.services.map((s, i) => {
     const ne = ed.errors['f-svc-' + i + '-name'];
     return '<div class="row"><div class="row-head"><span>Service ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-svc" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> service ' + (i + 1) + '</span></button></div>' +
       '<div class="field"><label for="f-svc-' + i + '-name">Service</label><select id="f-svc-' + i + '-name" data-fkey="f-svc-' + i + '-name" data-bind="ed-svc" data-field="name" data-i="' + i + '"' + (ne ? ' aria-invalid="true" aria-describedby="f-svc-' + i + '-name-err"' : '') + '>' +
@@ -1407,7 +1528,7 @@ function editorParts() {
       fld('f-svc-' + i + '-desc', 'Short description', s.desc, { bind: 'ed-svc', field: 'desc', i: i, ph: 'What this includes' }) + '</div>';
   }).join('') + '<button class="btn sm" id="add-svc" data-action="add-svc" data-fkey="add-svc">' + icon('plus', 16) + ' Add service</button><p class="muted small">No prices in release 1. Clients ask about pricing in chat.</p></fieldset>';
   h += portfolioFieldset(f);
-  h += '<fieldset><legend>Contact details</legend>' +
+  h += '<fieldset><legend' + edLegendId('contact') + '>Contact details</legend>' +
     fld('f-email', 'Email', f.email, { field: 'email', type: 'email', req: 1, ph: 'name@example.com' }) +
     fld('f-phone', 'Phone', f.phone, { field: 'phone', type: 'tel', ph: '+63 900 000 0000' }) +
     fld('f-website', 'Website', f.website, { field: 'website', ph: 'example.com' }) +
@@ -1418,8 +1539,33 @@ function editorParts() {
   h += '<p class="save-status ' + (ed.status === 'saved' ? 'ok' : ed.status === 'failed' ? 'fail' : '') + '" data-save-status role="status">' + esc(msgText) + '</p>';
   const footer = '<button class="btn primary block" data-action="save-profile" data-fkey="save"' + (ed.status === 'saving' ? ' disabled' : '') + '>' +
     (ed.status === 'saving' ? '<span class="spin" aria-hidden="true"></span> Saving…' : 'Save profile') + '</button>';
-  return { title: listed ? 'My profile' : 'Create your profile', body: '<div class="form">' + h + '</div>', footer: footer };
+  const title = listed ? 'My profile' : 'Create your profile', desktop = S.device === 'desktop';
+  /* Design option A (2026-11-25, not chosen): a section menu with ticks; on phones a row of section links. */
+  if (eo === 'a') {
+    const secs = [['about', 'About you', !!(f.name.trim() && f.title.trim() && f.summary.trim()), 1], ['experience', 'Experience', f.experience.length > 0, 0],
+      ['services', 'Services', f.services.some(s => s.name), 1], ['highlights', 'Portfolio highlights', f.portfolio.length > 0, 0], ['contact', 'Contact details', !!(f.email.trim() && f.consent), 1]];
+    const link = s => '<a href="#/me/profile" data-action="opt-jump" data-target="ed-' + s[0] + '">' + (desktop ? '<span class="opt-ed-tick' + (s[2] ? ' done' : '') + '" aria-hidden="true">' + (s[2] ? icon('check', 14) : '') + '</span>' : '') +
+      '<span>' + s[1] + (desktop ? '<small>' + (s[3] ? (s[2] ? 'Done' : 'Needed to be listed') : (s[2] ? 'Added' : 'Optional')) + '</small>' : '') + '</span></a>';
+    if (!desktop) return { title: title, body: '<nav class="opt-sections opt-ed-links" aria-label="Profile sections">' + secs.map(link).join('') + '</nav><div class="form">' + h + '</div>', footer: footer };
+    return { title: title, cls: 'editor-wide opt-ed-a', body: '<div class="editor-grid"><nav class="opt-ed-nav" aria-label="Profile sections"><ul>' + secs.map(s => '<li>' + link(s) + '</li>').join('') + '</ul></nav><div class="form">' + h + '</div></div>', footer: footer };
+  }
+  /* The chosen design (B, the user's choice of 2026-11-25): the directory card as clients see it, as last saved, beside
+     the form. On phones, and on desktop pages narrower than 860 px, it's a closed disclosure above the form instead. */
+  if (eo === 'b') {
+    const p = PROFILES.find(x => x.id === ed.accId);
+    const card = listed && p ? '<ul class="cards">' + cardHTML(p) + '</ul><p class="muted small">As last saved. Changes show here after you save.</p><a href="#/profile/' + ed.accId + '">View public profile</a>'
+      : '<p class="muted small">Not listed yet. Your card appears in the directory, and here, once everything needed to be listed is filled in and saved.</p>';
+    const mini = '<details class="editor-preview-mini"><summary>Preview your directory card</summary>' + card + '</details>';
+    if (!desktop) return { title: title, body: mini + '<div class="form">' + h + '</div>', footer: footer };
+    return { title: title, cls: 'editor-wide', body: mini + '<div class="editor-grid"><div class="form">' + h + '</div>' +
+      '<aside class="editor-preview" aria-labelledby="ed-preview-h"><h2 class="editor-preview-h" id="ed-preview-h">Your card in the directory</h2>' + card + '</aside></div>', footer: footer };
+  }
+  /* Design option C (not chosen): Save stays in view at the bottom on wide screens too (phones already have it).
+     opt=editor-current: the one long form, as on the site until the chosen design is built. */
+  return { title: title, body: '<div class="form">' + h + '</div>', footer: footer, cls: eo === 'c' ? 'opt-ed-c' : '' };
 }
+/* Editor option A: the legends take ids for the section menu. */
+function edLegendId(k) { return S.opt.editor === 'a' ? ' id="ed-' + k + '" tabindex="-1"' : ''; }
 function saveEditor() {
   const ed = S.editor;
   if (!ed) return;
@@ -1597,6 +1743,135 @@ const footerHTML = () => '<footer class="sitefoot"><div class="container"><span 
   '<span class="small">Accountants write their own profiles. Tax Buddy doesn\'t check licences or qualifications.</span>' + infoLinksHTML() + '</div></footer>';
 
 const W = window.createServiceWorkspace({ S, PROFILES, CONVS, esc, initials, tone, fmtShort, fmtTime, nid, ago, render, toast, go, icon, getListed, signinBtn, stateHTML, announce });
+/* Elaine Navarro's chats for the busy dashboard state (2026-11-26). Added after the workspace so the earlier records keep
+   their generated IDs; only Elaine sees them. Paula and Rina wrote last and are unread; Carmen's is read but unanswered. */
+CONVS.push(
+  { id: 'c5', clientId: 'u-paula', clientName: 'Paula Mercado', accountantId: 'a5', unread: { client: 0, accountant: 2 }, messages: [
+    msg('client', 'Hi Elaine, I sent a request for my quarterly tax filing.', 40), msg('client', 'The deadline is close, so I hope you can take it.', 38)] },
+  { id: 'c6', clientId: 'u-rina', clientName: 'Rina Castillo', accountantId: 'a5', unread: { client: 0, accountant: 1 }, messages: [
+    msg('client', 'Good afternoon. I want to register a small catering business.', 230)] },
+  { id: 'c7', clientId: 'u-carmen', clientName: 'Carmen Lao', accountantId: 'a5', unread: { client: 0, accountant: 0 }, messages: [
+    msg('accountant', 'Please send the official receipts for September so I can finish the return.', 300),
+    msg('client', 'I found most of them. Is a photo of the receipt book enough?', 260)] });
+/* The options page's "Load fails" state: wsdata=error (also empty and loading), as the Workspace data control sets. */
+if (['empty', 'loading', 'error'].indexOf(qs.get('wsdata')) >= 0) W.dataMode = qs.get('wsdata');
+
+/* ---------- Accountant dashboard (options.html, 2026-11-26): archived the same day, no option chosen. S.opt.dash ----------
+   The first page after sign-in: "what needs me today?" and "how is my listing doing?". A: a "Needs you" list at
+   /dashboard. B: number tiles and sections at /dashboard. C: a compact two-column overview at the top of Clients
+   (/workspace). Only data the site has today: the listing checklist, service requests and statuses with their last
+   update, unread and unanswered chats, and reviews with their replies. On the site each is a static page: Accept and
+   Decline are the service page's posted forms, and everything else is a plain link. */
+function dashData() {
+  const id = S.me.accountantId, prof = PROFILES.find(p => p.id === id && !p.deleted);
+  const f = prof || { name: S.me.name, title: '', summary: '', email: '', services: [], consent: false };
+  const steps = listingSteps(f), svcs = W.accountantServices(), convs = myConvs(), reviews = prof ? reviewsFor(id) : [];
+  return {
+    id, prof, listed: !!(prof && prof.listed), steps, missing: steps.filter(s => !s.done),
+    requests: svcs.filter(s => s.phase === 'requested'),
+    inProgress: svcs.filter(s => s.phase === 'active' && (s.status === 'In progress' || s.status === 'Not started')),
+    waitingClient: svcs.filter(s => s.phase === 'active' && s.status === 'Waiting for client'),
+    completed: svcs.filter(s => s.phase === 'active' && s.status === 'Completed'),
+    unreadCount: totalUnread(), toReply: convs.filter(c => lastMsg(c) && lastMsg(c).from === 'client'),
+    reviews, unreplied: reviews.filter(r => !r.reply), rating: ratingOf(id)
+  };
+}
+const dashAvatar = name => '<span class="avatar sm ' + tone(name) + '" aria-hidden="true">' + initials(name) + '</span>';
+const dashWhen = at => at ? '<small>' + esc(fmtShort(at)) + '</small>' : '';
+const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+const dashProfileBtn = (d, primary) => '<a class="btn sm' + (primary ? ' primary' : '') + '" href="#/me/profile">' + (d.prof ? 'Finish your profile' : 'Create your profile') + '</a>';
+/* Accept and Decline: the same actions, wording and error line as the service page's request panel. */
+function dashAnswer(s) {
+  const who = '<span class="sr-only"> ' + esc(s.service) + ' for ' + esc(s.client) + '</span>';
+  return '<span class="actions"><button class="btn primary sm" data-action="ws-accept" data-id="' + s.id + '">Accept' + who + '</button>' +
+    '<button class="btn sm" data-action="ws-decline" data-id="' + s.id + '">Decline' + who + '</button>' +
+    '<a class="btn ghost sm" href="#/work/' + s.id + '">View request<span class="sr-only"> from ' + esc(s.client) + '</span></a></span>' + W.errorFor(s.id);
+}
+/* What needs the accountant, most urgent kind first: the listing (until listed), requests, chats and reviews. */
+function dashNeeds(d) {
+  const items = [];
+  if (!d.listed) items.push({ tag: 'Your listing', text: d.missing.length ? 'Add ' + d.missing.map(s => s.name).join(', ') + ' to be listed in the directory.' : 'Everything is filled in. Save your profile to be listed.', actions: dashProfileBtn(d, true) });
+  d.requests.forEach(s => items.push({ tag: 'New request', text: '<strong>' + esc(s.client) + '</strong> requested ' + esc(s.service), at: s.last, actions: dashAnswer(s) }));
+  d.toReply.forEach(c => { const n = unreadFor(c), who = peerName(c);
+    items.push({ tag: n ? n + ' new' : 'Reply needed', text: '<strong>' + esc(who) + '</strong> is waiting for your reply', at: lastMsg(c).at, actions: '<a class="btn sm" href="#/thread/' + c.id + '">Reply<span class="sr-only"> to ' + esc(who) + '</span></a>' }); });
+  d.unreplied.forEach(r => items.push({ tag: 'Review', text: '<strong>' + esc(shortName(r.clientName)) + '</strong> left ' + plural(r.stars, 'star', 'stars') + '. No reply yet', at: r.at,
+    actions: '<a class="btn sm" href="#/profile/' + d.id + '">Reply on your profile<span class="sr-only"> to ' + esc(shortName(r.clientName)) + '</span></a>' }));
+  return items;
+}
+const dashItemHTML = i => '<li><span class="opt-next-tag">' + esc(i.tag) + '</span><span class="opt-next-text">' + i.text + dashWhen(i.at) + '</span>' + i.actions + '</li>';
+function dashQuiet(d) {
+  if (!d.listed) return 'Once you\'re listed, requests, messages and reviews appear here.';
+  return 'You\'re all caught up. Nothing needs you right now.' + (d.requests.length + d.inProgress.length + d.waitingClient.length + d.completed.length + d.toReply.length ? '' : ' Clients find you in the directory; their requests, messages and reviews will appear here.');
+}
+function dashListingLine(d, button) {
+  const done = d.steps.filter(s => s.done).length;
+  return d.listed
+    ? '<span class="pill ok">' + icon('check', 14) + ' Listed in the directory</span><span class="dash-rating">' + ratingLine(d.id) + '</span><a href="#/profile/' + d.id + '">View public profile</a>'
+    : '<span class="pill warn">' + icon('alert', 14) + ' Not listed yet</span><span class="dash-meter"><span class="meter" aria-hidden="true"><span style="width:' + Math.round(done / d.steps.length * 100) + '%"></span></span>' + done + ' of ' + d.steps.length + ' details</span>' + (button ? dashProfileBtn(d, false) : '');
+}
+const dashWorkLine = d => (d.inProgress.length + d.waitingClient.length + d.completed.length
+  ? [plural(d.inProgress.length, 'service', 'services') + ' in progress', d.waitingClient.length + ' waiting for the client', d.completed.length + ' completed'].join(' · ')
+  : 'No services yet.');
+/* A · "Needs you": one list of what needs the accountant now, then a line about the rest of their work. */
+function dashA(d) {
+  const items = dashNeeds(d);
+  return '<p class="dash-sub">What needs you today, and how your listing is doing.</p><div class="dash-listing">' + dashListingLine(d, false) + '</div>' +
+    '<section class="opt-next dash-needs" aria-labelledby="dash-needs-t"><h2 id="dash-needs-t">Needs you' + (items.length ? ' <span class="opt-count">' + items.length + '</span>' : '') + '</h2>' +
+    (items.length ? '<ul>' + items.map(dashItemHTML).join('') + '</ul>' : '<p class="work-quiet">' + dashQuiet(d) + '</p>') + '</section>' +
+    '<section class="dash-also" aria-labelledby="dash-work-t"><h2 id="dash-work-t">Your work</h2><p>' + dashWorkLine(d) + '</p>' +
+    '<p class="dash-links"><a href="#/workspace">Clients</a><a href="#/chats">Chats' + (d.unreadCount ? ' (' + d.unreadCount + ' unread)' : '') + '</a><a href="#/me/profile">My profile</a>' + (d.listed ? '<a href="#/profile/' + d.id + '">Your card in the directory</a>' : '') + '</p></section>';
+}
+/* B · Tiles and sections: four number tiles that jump to their section, then the listing, requests, services,
+   messages and reviews in turn. */
+function dashRow(href, name, title, meta, end) {
+  return '<li><a class="dash-row" href="' + href + '">' + dashAvatar(name) + '<span class="dash-row-text"><strong>' + esc(title) + '</strong><small>' + meta + '</small></span>' + (end || '') + icon('chevron', 16) + '</a></li>';
+}
+function dashB(d) {
+  const tile = (t, label, value, detail) => '<a class="work-stat dash-tile" href="#/dashboard" data-action="opt-jump" data-target="' + t + '"><span>' + label + '</span><strong>' + value + '</strong><small>' + detail + '</small></a>';
+  const sec = (t, title, body) => '<section class="work-panel dash-section" aria-labelledby="' + t + '"><h2 id="' + t + '" tabindex="-1">' + title + '</h2>' + body + '</section>';
+  const active = d.inProgress.length + d.waitingClient.length;
+  const group = (label, list) => '<h3 class="dash-group">' + label + ' <span class="opt-count">' + list.length + '</span></h3>' + (list.length
+    ? '<ul class="dash-rows">' + list.slice(0, 3).map(s => dashRow('#/work/' + s.id, s.client, s.service, esc(s.client) + ' · ' + (s.last ? 'last update ' + esc(fmtShort(s.last)) : 'no updates yet') + ' · ' + s.progress.done + ' of ' + s.progress.total + ' tasks')).join('') + '</ul>'
+    : '<p class="work-quiet">None.</p>');
+  const done = d.steps.filter(s => s.done).length;
+  return '<p class="dash-sub">What needs you today, and how your listing is doing.</p>' +
+    '<div class="work-stats dash-tiles">' + tile('dash-req', 'New requests', d.requests.length, 'Waiting for your answer') + tile('dash-msg', 'Unread messages', d.unreadCount, plural(d.toReply.length, 'chat waits', 'chats wait') + ' for a reply') +
+    tile('dash-svc', 'Active services', active, d.waitingClient.length + ' waiting for the client') + tile('dash-rev', 'Rating', d.rating.count ? d.rating.avg.toFixed(1) : '–', d.rating.count ? plural(d.unreplied.length, 'review', 'reviews') + ' without a reply' : 'No reviews yet') + '</div>' +
+    sec('dash-list', 'Your listing', '<p class="dash-listing">' + dashListingLine(d, true) + '</p>' + (d.listed ? '' : '<div class="meter" aria-hidden="true"><span style="width:' + Math.round(done / d.steps.length * 100) + '%"></span></div><p class="work-quiet">Still needed: ' + esc(d.missing.map(s => s.name).join(', ')) + '.</p>')) +
+    sec('dash-req', 'New requests', d.requests.length ? '<ul class="dash-rows dash-requests">' + d.requests.map(s => '<li><div class="dash-row">' + dashAvatar(s.client) + '<span class="dash-row-text"><strong>' + esc(s.client) + '</strong><small>Requested ' + esc(s.service) + ' · ' + esc(fmtShort(s.last)) + '</small></span>' + dashAnswer(s) + '</div></li>').join('') + '</ul>'
+      : '<p class="work-quiet">No new requests. They appear here when a client requests one of your services.</p>') +
+    sec('dash-svc', 'Services', (d.inProgress.length + d.waitingClient.length + d.completed.length ? group('Waiting for the client', d.waitingClient) + group('In progress', d.inProgress) + group('Completed', d.completed) : '<p class="work-quiet">No services yet.</p>') + '<p class="dash-links"><a href="#/workspace">All clients and services</a></p>') +
+    sec('dash-msg', 'Messages', (d.toReply.length ? '<ul class="dash-rows">' + d.toReply.map(c => dashRow('#/thread/' + c.id, peerName(c), peerName(c), 'Waiting for your reply · ' + esc(fmtShort(lastMsg(c).at)), unreadFor(c) ? '<span class="badge">' + unreadFor(c) + '<span class="sr-only"> unread</span></span>' : '')).join('') + '</ul>'
+      : '<p class="work-quiet">No one is waiting for a reply.</p>') + '<p class="dash-links"><a href="#/chats">Open Chats</a></p>') +
+    sec('dash-rev', 'Reviews', (d.rating.count ? '<p class="dash-rating">' + ratingLine(d.id) + '</p>' : '') + (d.unreplied.length ? '<ul class="dash-rows">' + d.unreplied.map(r => dashRow('#/profile/' + d.id, r.clientName, shortName(r.clientName) + ', ' + plural(r.stars, 'star', 'stars'), 'No reply yet · ' + esc(fmtShort(r.at)))).join('') + '</ul>'
+      : '<p class="work-quiet">' + (d.rating.count ? 'Every review has your reply.' : 'No reviews yet. Clients you have replied to in chat can review you.') + '</p>') + (d.listed ? '<p class="dash-links"><a href="#/profile/' + d.id + '">Reply on your profile</a></p>' : ''));
+}
+/* C · Overview at the top of Clients: "Needs you" beside a column with the listing, services and reviews. On phones
+   and below 860 px the cards follow "Needs you". Called from the Clients list (service-workspace.js). */
+W.dashOverview = () => {
+  const d = dashData(), items = dashNeeds(d), done = d.steps.filter(s => s.done).length;
+  const card = (t, title, body) => '<section class="dash-card" aria-labelledby="' + t + '"><h3 id="' + t + '">' + title + '</h3>' + body + '</section>';
+  const count = (label, n) => '<div><dt>' + label + '</dt><dd>' + n + '</dd></div>';
+  return '<div class="dash-split"><section class="opt-next dash-needs" aria-labelledby="dash-needs-t"><h2 id="dash-needs-t">Needs you' + (items.length ? ' <span class="opt-count">' + items.length + '</span>' : '') + '</h2>' +
+    (items.length ? '<ul>' + items.map(dashItemHTML).join('') + '</ul>' : '<p class="work-quiet">' + dashQuiet(d) + '</p>') + '</section>' +
+    '<aside class="dash-side" aria-label="Your listing, services and reviews">' +
+    card('dash-c-list', 'Your listing', d.listed ? '<p><span class="pill ok">' + icon('check', 14) + ' Listed</span></p><p><a href="#/profile/' + d.id + '">View public profile</a></p>'
+      : '<p><span class="pill warn">' + icon('alert', 14) + ' Not listed yet</span></p><div class="meter" aria-hidden="true"><span style="width:' + Math.round(done / d.steps.length * 100) + '%"></span></div><p class="small">' + done + ' of ' + d.steps.length + ' details</p>' + dashProfileBtn(d, false)) +
+    card('dash-c-svc', 'Services', '<dl class="dash-counts">' + count('New requests', d.requests.length) + count('In progress', d.inProgress.length) + count('Waiting for client', d.waitingClient.length) + count('Completed', d.completed.length) + '</dl>') +
+    card('dash-c-rev', 'Reviews', d.rating.count ? '<p class="dash-rating">' + ratingLine(d.id) + '</p><p class="small">' + plural(d.unreplied.length, 'review', 'reviews') + ' without a reply</p>' : '<p class="work-quiet">No reviews yet.</p>') +
+    '</aside></div>';
+};
+function dashParts() {
+  const title = 'Dashboard';
+  if (!S.me) return { title, body: stateHTML('lock', 'Sign in to see your dashboard', 'Requests, messages and your listing are private.', signinBtn('#/dashboard')) };
+  if (S.me.role !== 'accountant') return { title, body: stateHTML('user', 'The dashboard is for accountants', 'Your accountants and services are under My accountants.', '<a class="btn" href="#/workspace">My accountants</a>') };
+  if (W.dataMode === 'error') return { title, body: stateHTML('alert', 'We couldn\'t load your dashboard', 'Try again. Nothing has changed.', '<button class="btn primary" data-action="ws-retry-load">Try again</button>') };
+  if (W.dataMode === 'loading') return { title, body: '<div class="state" aria-busy="true">Loading your dashboard…</div>' };
+  const d = dashData();
+  return { title, body: S.opt.dash === 'a' ? dashA(d) : dashB(d) };
+}
+/* Options A and B add a Dashboard item for accountants: first in the site bar, and in place of Accountants on phones. */
+const dashNav = () => !!(S.me && S.me.role === 'accountant' && (S.opt.dash === 'a' || S.opt.dash === 'b'));
 
 const PORTFOLIO_SEED = {
   a1: [
@@ -1799,7 +2074,7 @@ function infoPage(page) {
   }
 }
 function portfolioFieldset(f) {
-  return '<fieldset><legend>Portfolio highlights</legend>' + f.portfolio.map((x, i) =>
+  return '<fieldset><legend' + edLegendId('highlights') + '>Portfolio highlights</legend>' + f.portfolio.map((x, i) =>
     '<div class="row"><div class="row-head"><span>Highlight ' + (i + 1) + '</span><button class="btn ghost sm" data-action="del-pf" data-i="' + i + '">' + icon('trash', 16) + ' Remove<span class="sr-only"> highlight ' + (i + 1) + '</span></button></div>' +
     fld('f-pf-' + i + '-title', 'Title', x.title, { bind: 'ed-pf', field: 'title', i: i, ph: 'e.g. Payroll set-up for a 40-person team' }) +
     fld('f-pf-' + i + '-sector', 'Type of client', x.sector, { bind: 'ed-pf', field: 'sector', i: i, ph: 'e.g. Food retail' }) +
@@ -1812,15 +2087,17 @@ function portfolioFieldset(f) {
 /* ---------- Shells ---------- */
 function tabbarHTML(r) {
   const u = totalUnread();
-  const cur = { directory:'directory', chats:'chats', me:'me', workspace:'workspace', client:'workspace', work:'workspace', request:'workspace' }[r.name];
+  const cur = { directory:'directory', chats:'chats', me:'me', workspace:'workspace', client:'workspace', work:'workspace', request:'workspace', dashboard:'dashboard' }[r.name];
   const tab = (k, h, ic, l, extra) => '<a href="' + h + '" data-fkey="tab-' + k + '"' + (cur === k ? ' aria-current="page"' : '') + '>' + icon(ic, 22) + '<span>' + l + '</span>' + (extra || '') + '</a>';
   const third = S.me ? tab('me', '#/me', 'user', 'Account')
     : '<button data-action="start-signin" data-next="#/me" data-fkey="tab-signin">' + icon('user', 22) + '<span>Sign in</span></button>';
-  return '<nav class="tabbar" aria-label="Main">' + tab('directory', '#/directory', 'search', 'Accountants') +
+  /* Dashboard options A and B: Dashboard takes the Accountants tab's place for accountants; five tabs don't fit 320 px. */
+  return '<nav class="tabbar" aria-label="Main">' + (dashNav() ? tab('dashboard', '#/dashboard', 'home', 'Dashboard') : tab('directory', '#/directory', 'search', 'Accountants')) +
     tab('chats', '#/chats', 'chat', 'Chats', u ? '<span class="badge">' + u + '<span class="sr-only"> unread</span></span>' : '') + (S.me ? tab('workspace','#/workspace','list',S.me.role === 'accountant' ? 'Clients' : 'My accountants') : '') + third + '</nav>';
 }
 function phoneScreen(r) {
   if (['workspace','client','work','request'].includes(r.name)) return W.page(r);
+  if (r.name === 'dashboard') { const d = dashParts(); return { title: d.title, body: '<div class="dash">' + d.body + '</div>', tabs: true }; }
   switch (r.name) {
     case 'directory':
       return { title: 'Tax Buddy', body: directoryBodyHTML('', false), tabs: true };
@@ -1838,6 +2115,7 @@ function phoneScreen(r) {
     case 'editor': { const e = editorParts(); return { title: e.title, back: '#/me', body: e.body, footer: e.footer }; }
     case 'delete': return { title: 'Delete account', back: '#/me', body: deleteHTML() };
     case 'picture': return { title: 'Profile picture', back: '#/me', body: picturePageHTML() };
+    case 'details': { const e = clientDetailsParts(); return { title: e.title, back: '#/me', body: e.body, footer: e.footer }; }
     case 'info': { const i = infoPage(r.page); return { title: i.title, back: '#/directory', body: '<div class="prose">' + i.body + '</div>' }; }
   }
   return { title: '', body: '' };
@@ -1868,7 +2146,9 @@ function desktopMain(r) {
     const inner = '<div class="workspace">' + crumbs + '<h1 id="screen-title" tabindex="-1" class="work-page-title">' + esc(w.title) + '</h1>' + w.body + '</div>';
     return '<div class="page" data-skey="work-' + esc(location.hash) + '">' + (side ? '<div class="work-split">' + side + '<div class="work-main container">' + inner + '</div></div>' : '<div class="container">' + inner + '</div>') + footerHTML() + '</div>';
   }
+  if (['workspace','client','work','request'].includes(r.name) && S.opt.heads !== 'current') { const w = W.page(r); return page('work-' + esc(location.hash), '<div class="workspace heads-' + S.opt.heads + '">' + headsHTML(r) + w.body + '</div>'); }
   if (['workspace','client','work','request'].includes(r.name)) { const w=W.page(r); return page('work-'+esc(location.hash), '<div class="workspace"><nav class="crumbs" aria-label="Breadcrumb"><a href="#/workspace">'+(S.me && S.me.role === 'accountant' ? 'Clients' : 'My accountants')+'</a>'+(r.name === 'workspace' ? '' : '<span aria-hidden="true">/</span><span>'+esc(w.title)+'</span>')+'</nav><h1 id="screen-title" tabindex="-1" class="work-page-title">'+esc(w.title)+'</h1>'+w.body+'</div>'); }
+  if (r.name === 'dashboard') { const d = dashParts(); return page('d-dash', '<div class="workspace dash"><h1 id="screen-title" tabindex="-1" class="work-page-title">' + esc(d.title) + '</h1>' + d.body + '</div>'); }
   switch (r.name) {
     case 'directory': return page('d-dir', directoryBodyHTML('', true));
     case 'profile': return page('d-prof-' + esc(r.id), profileBodyHTML(r.id, true));
@@ -1886,22 +2166,35 @@ function desktopMain(r) {
       }
       const list = '<section class="pane-list" aria-label="Conversations"><div class="pane-head"><h1' + (r.name === 'chats' ? ' id="screen-title" tabindex="-1"' : '') + '>Chats</h1></div>' +
         '<div class="pane-scroll" data-skey="d-convs">' + convListHTML(r.name === 'thread' ? r.id : '') + '</div></section>';
-      return '<div class="panes' + (S.opt.chats === 'b' ? ' opt-focus' : '') + (panel ? ' opt-has-panel' : '') + '">' + list + detail + panel + '</div>';
+      return '<div class="panes' + (S.me && S.me.role === 'client' && S.opt.chats === 'b' ? ' opt-focus' : '') + (panel ? ' opt-has-panel' : '') + '">' + list + detail + panel + '</div>';
     }
   }
-  let title = '', body = '', footer = '';
+  let title = '', body = '', footer = '', cls = '';
   if (r.name === 'signin') { title = 'Sign in'; body = signinHTML(); }
   else if (r.name === 'agree') { title = 'Updated terms'; body = agreeHTML(); }
   else if (r.name === 'me') { title = 'Account'; body = meHTML(); }
-  else if (r.name === 'editor') { const e = editorParts(); title = e.title; body = e.body; footer = e.footer || ''; }
+  else if (r.name === 'editor') { const e = editorParts(); title = e.title; body = e.body; footer = e.footer || ''; cls = e.cls || ''; }
   else if (r.name === 'delete') { title = 'Delete account'; body = deleteHTML(); }
   else if (r.name === 'picture') { title = 'Profile picture'; body = picturePageHTML(); }
-  return '<div class="single-wrap"><div class="pane-head' + (r.name === 'signin' ? ' sr-only' : '') + '"><h1 id="screen-title" tabindex="-1">' + esc(title) + '</h1></div>' +
+  else if (r.name === 'details') { const e = clientDetailsParts(); title = e.title; body = e.body; footer = e.footer || ''; cls = e.cls || ''; }
+  return '<div class="single-wrap' + (cls ? ' ' + cls : '') + '"><div class="pane-head' + (r.name === 'signin' ? ' sr-only' : '') + '"><h1 id="screen-title" tabindex="-1">' + esc(title) + '</h1></div>' +
     '<div class="single" data-skey="d-single-' + r.name + '"><div class="single-inner">' + body + (footer ? '<div class="desk-footer">' + footer + '</div>' : '') + '</div></div></div>';
+}
+/* Page titles options for the workspace pages (options.html, 2026-11-26; proposals, not adopted; S.opt.heads).
+   A: the parents as a breadcrumb, then the name as the only title. B: Back, the name and a privacy pill in one bar.
+   C: the parents and the name as one line, the name being the h1. The intro keeps only its sentence (A, C) or goes (B),
+   in service-workspace.js. The Side list proposal keeps its own header. */
+function headsHTML(r) {
+  const h = W.head(r), o = S.opt.heads, up = h.parents[h.parents.length - 1];
+  const h1 = '<h1 id="screen-title" tabindex="-1" class="heads-title">' + esc(h.title) + '</h1>';
+  const links = h.parents.map(p => '<a href="' + p.href + '">' + esc(p.label) + '</a>');
+  if (o === 'b') return '<div class="heads-bar">' + (up ? '<a class="heads-back" href="' + up.href + '">' + icon('back', 16) + '<span>' + esc(up.label) + '</span></a>' : '') + h1 + W.privatePill(h) + '</div>';
+  if (o === 'c') return '<div class="heads-trail">' + (links.length ? '<nav aria-label="Breadcrumb">' + links.map(l => l + '<span aria-hidden="true">/</span>').join('') + '</nav>' : '') + h1 + '</div>';
+  return (links.length ? '<nav class="crumbs" aria-label="Breadcrumb">' + links.join('<span aria-hidden="true">/</span>') + '</nav>' : '') + h1;
 }
 function desktopShell(r) {
   const main = desktopMain(r);
-  const cur = { directory:'directory', profile:'directory', compose:'chats', thread:'chats', chats:'chats', me:'me', editor:'me', delete:'me', workspace:'workspace', client:'workspace', work:'workspace', request:'workspace' }[r.name];
+  const cur = { details:'me', directory:'directory', profile:'directory', compose:'chats', thread:'chats', chats:'chats', me:'me', editor:'me', delete:'me', workspace:'workspace', client:'workspace', work:'workspace', request:'workspace', dashboard:'dashboard' }[r.name];
   const u = totalUnread();
   const link = (k, h, l, extra) => '<a href="' + h + '"' + (cur === k ? ' aria-current="page"' : '') + '>' + l + (extra || '') + '</a>';
   const user = S.me
@@ -1909,7 +2202,7 @@ function desktopShell(r) {
     : '<a class="btn ghost sm" href="#/for-accountants">For accountants</a>' +
       '<button class="btn primary sm" data-action="start-signin" data-next="#/directory" data-fkey="nav-signin">Sign in</button>';
   return '<div class="shell"><header class="sitebar"><a class="brand" href="#/directory" aria-label="Tax Buddy home">' + brandLogoHTML() + '</a>' +
-    '<nav class="sitenav" aria-label="Main">' + link('directory', '#/directory', 'Find an accountant') +
+    '<nav class="sitenav" aria-label="Main">' + (dashNav() ? link('dashboard', '#/dashboard', 'Dashboard') : '') + link('directory', '#/directory', 'Find an accountant') +
     link('chats', '#/chats', 'Chats', u ? '<span class="badge">' + u + '<span class="sr-only"> unread</span></span>' : '') + (S.me ? link('workspace','#/workspace',S.me.role === 'accountant' ? 'Clients' : 'My accountants') : '') + '</nav>' +
     '<div class="siteuser">' + user + themeToggleHTML() + '</div></header>' +
     '<div class="main">' + offlineBanner() + main + '</div></div>';
@@ -1969,10 +2262,10 @@ const NOTES = {
     tries: [['Simulate an incoming message', 'push'], ['View as accountant', 'role', '', 'accountant'], ['View as client', 'role', '', 'client']] },
   me: { title: 'Account',
     refs: [['R04', 'Sign out ends the session in this browser.'], ['R08', 'Accountants can turn email notifications off and on.'], ['R09', 'Account deletion starts here.'], ['R24', 'The pencil on the picture opens the file chooser; the photo is previewed, then saved. The Picture design control also shows the panel used without script (A) and the options not chosen (B to D).']],
-    open: [['D18', 'How often emails are sent per conversation.']],
-    tries: [['View as accountant', 'role', '', 'accountant'], ['View as client', 'role', '', 'client'], ['View as visitor', 'role', '', 'visitor']] },
+    open: [['D18', 'How often emails are sent per conversation.'], ['R25', 'Since 2026-11-25 a client keeps a name, phone, city and business under "Your details" (Edit details), shared with the accountants they have a service with. Built on the site as F17.']],
+    tries: [['View as accountant', 'role', '', 'accountant'], ['View as client', 'role', '', 'client'], ['View as visitor', 'role', '', 'visitor'], ['Edit client details', 'jump', '', 'client-details']] },
   editor: { title: 'My profile',
-    refs: [['R05', 'Accountants create and edit their own profile.'], ['BR01', 'A checklist shows what is still needed. The profile is listed as soon as it is complete and saved; there is no approval step.'], ['R11', 'Agreeing to show contact details publicly is part of publishing.']],
+    refs: [['R05', 'Accountants create and edit their own profile. Beside the form is their directory card as clients see it, as last saved; on phones it\'s a disclosure above the form (the user\'s choice of 2026-11-25).'], ['BR01', 'A checklist shows what is still needed. The profile is listed as soon as it is complete and saved; there is no approval step.'], ['R11', 'Agreeing to show contact details publicly is part of publishing.']],
     open: [['D04', 'Proposal shown: which fields exist and which are needed to be listed.'], ['D10', 'The consent wording needs a privacy review. Decided 2026-11-21: the title hint discourages licence numbers, which are sensitive personal information.']],
     tries: [['Start as a new accountant', 'jump', '', 'editor-new'], ['Go offline, then save', 'offline']] },
   review: { title: 'Write a review',
@@ -1986,11 +2279,15 @@ const NOTES = {
   delete: { title: 'Delete account',
     refs: [['R09', 'Account deletion on the site.'], ['BR06', 'Two-step confirmation. Profile, sign-in and notification settings are removed.']],
     open: [['D07', 'Decided 2026-11-21: chats stay with the other person, shown as from “Deleted user”; a client\'s reviews, or an accountant\'s profile with its reviews and replies, are removed.'], ['D14', 'Decided 2026-11-21: accounts unused for 2 years are deleted after a warning email. Service documents follow D27.']],
-    tries: [['Go offline, then delete', 'offline'], ['As an accountant', 'role', '', 'accountant']] }
+    tries: [['Go offline, then delete', 'offline'], ['As an accountant', 'role', '', 'accountant']] },
+  dash: { title: 'Accountant dashboard (archived design options A and B)',
+    refs: [['R05, BR01', 'The listing: listed or not, and what the six-item checklist still needs.'], ['R19–R23, BR14–BR18', 'Service requests with the service page\'s Accept and Decline, and services by status with their last update.'], ['R07', 'Unread conversations, and clients who wrote last and wait for a reply.'], ['R13, R14', 'The rating, and reviews without the accountant\'s reply.']],
+    open: [['Archived', 'Archived on 2026-11-26 at the user\'s request; no option chosen. Kept for reference.'], ['Scope', 'Proposed 2026-11-26, not in the PRD: a new page and navigation item, and sign-in would land here when there is no page to return to. Only data the site already has; profile views, earnings and reply times would need a PRD decision.'], ['Clients options', 'Option C puts the same overview at the top of Clients instead, and would settle the Clients options A–C.']],
+    tries: [['As a busy accountant', 'role', '', 'busyAccountant'], ['As a new accountant', 'role', '', 'newAccountant'], ['Listed, no clients', 'role', '', 'listedAccountant'], ['As Andrea', 'role', '', 'accountant'], ['Go offline', 'offline']] }
 };
 function notesHTML() {
   const r = parseRoute();
-  const key = { directory: 'directory', profile: 'profile', compose: 'thread', thread: 'thread', signin: 'signin', agree: 'signin', chats: 'chats', me: 'me', picture: 'me', editor: 'editor', delete: 'delete', review:'review', workspace:'work', client:'work', work:'work', request:'work' }[r.name] || 'info';
+  const key = { details: 'me', directory: 'directory', profile: 'profile', compose: 'thread', thread: 'thread', signin: 'signin', agree: 'signin', chats: 'chats', me: 'me', picture: 'me', editor: 'editor', delete: 'delete', review:'review', workspace:'work', client:'work', work:'work', request:'work', dashboard:'dash' }[r.name] || 'info';
   const n = NOTES[key], L = LOOKS[S.look];
   const li = x => '<li><span class="id">' + esc(x[0]) + '</span> ' + esc(x[1]) + '</li>';
   return '<h2>Screen notes: ' + esc(n.title) + '</h2><p class="muted small">IDs refer to docs/PRD.md, the ADRs and feature specs, including specs/client-services.</p>' +
@@ -2079,7 +2376,9 @@ function syncToolbar() {
   $id('sel-wsnav').value = S.wsNav;
   $id('sel-palette').disabled = S.look !== 'taxbuddy';
   $id('sel-palette').title = S.look === 'taxbuddy' ? 'Colour proposals for the Tax Buddy look' : 'Palette options apply to the Tax Buddy look only';
-  $id('sel-role').value = S.me ? (S.me.accountantId === 'a-new' ? 'newAccountant' : S.me.role) : 'visitor';
+  $id('sel-role').value = !S.me ? 'visitor' : S.me.role === 'client' ? 'client'
+    : Object.keys(PERSONAS).find(k => PERSONAS[k].accountantId && PERSONAS[k].accountantId === S.me.accountantId) || 'accountant';
+  $id('sel-work-data').value = W.dataMode;
   $id('sel-theme').value = S.theme;
   $id('sel-dir').value = S.dirScenario;
   $id('sel-send').value = S.sendScenario;
@@ -2186,7 +2485,8 @@ const JUMPS = {
   thread: () => { setPersona('accountant'); go('#/thread/c2'); },
   editor: () => { setPersona('accountant'); go('#/me/profile'); },
   'editor-new': () => { setPersona('newAccountant'); go('#/me/profile'); },
-  'delete': () => { setPersona('client'); S.del = null; go('#/me/delete'); }
+  'delete': () => { setPersona('client'); S.del = null; go('#/me/delete'); },
+  'client-details': () => { setPersona('client'); S.cd = null; go('#/me/edit'); }
 };
 let signTok = 0;
 /* Profile picture helpers: the same checks and messages as the site (F06 PP03). */
@@ -2212,6 +2512,28 @@ const ACTIONS = {
   'goto-reviews': () => { S.focusSel = '#reviews-h'; render(); },
   /* Profile option A: the section links move focus to the section heading (in-page anchors on the site). */
   'opt-jump': el => { S.focusSel = '#' + el.dataset.target; render(); },
+  /* Client details: save with the same checks a static form would make; a failed save keeps everything typed. */
+  'cd-save': () => {
+    const cd = ensureClientDetails(), d = cd.d, er = {};
+    ['name', 'phone', 'city', 'bizName', 'industry'].forEach(k => { d[k] = (d[k] || '').trim(); });
+    if (!d.name) er['cd-name'] = 'Enter your name.'; else if (d.name.length > 100) er['cd-name'] = 'Use 100 characters or fewer.';
+    if (d.phone && !(/^[0-9 +()-]{7,20}$/.test(d.phone) && (d.phone.match(/[0-9]/g) || []).length >= 7)) er['cd-phone'] = 'Enter a phone number using digits, spaces, + or -.'; /* F17's rule */
+    if (d.city.length > 80) er['cd-city'] = 'Use 80 characters or fewer.';
+    if (d.bizName.length > 120) er['cd-biz'] = 'Use 120 characters or fewer.';
+    if (d.industry.length > 80) er['cd-industry'] = 'Use 80 characters or fewer.';
+    if (d.bizType && !BIZ_TYPES.includes(d.bizType)) er['cd-type'] = 'Choose a type from the list.';
+    cd.errors = er; cd.status = '';
+    if (Object.keys(er).length) { S.focusSel = '#' + Object.keys(er)[0]; render(); return; }
+    if (!S.online) { cd.status = 'failed'; render(); announce('Not saved: no connection. Your changes are still here.'); return; }
+    W.setDetails(S.me.clientId, d); S.me.name = d.name;
+    S.cd = { who: S.me.clientId, d: W.detailsFor(S.me.clientId), errors: {}, status: 'saved' };
+    if (S.opt.details === 'b') { S.focusSel = '#cd-h'; go('#/me'); announce('Saved. The accountants you contact see these details.'); return; }
+    render(); announce('Saved. The accountants you contact see these details.');
+  },
+  'cd-cancel': () => { S.cd = null; S.focusSel = '#cd-h'; go('#/me'); },
+  'cd-edit': () => { S.cd = null; ensureClientDetails(); S.focusSel = '#cd-h'; go('#/me/edit'); },
+  /* Accountant chats option C: All / Unread. */
+  'opt-chat-filter': el => { S.chatFilter = el.dataset.val === 'unread' ? 'unread' : 'all'; render(); },
   'pick-star': el => { if (S.review) { S.review.stars = +el.dataset.n; S.review.error = ''; } render(); },
   'save-review': () => {
     const rv = S.review; if (!rv) return;
@@ -2426,6 +2748,7 @@ app.addEventListener('input', e => {
   }
   else if (b === 'ed-exp') { S.editor.f.experience[+el.dataset.i][el.dataset.field] = el.value; edTouched(); }
   else if (b === 'ed-pf') { S.editor.f.portfolio[+el.dataset.i][el.dataset.field] = el.value; edTouched(); }
+  else if (b === 'cd') { if (S.cd) { S.cd.d[el.dataset.field] = el.value; S.cd.status = ''; } }
   else if (b === 'review-text') { if (S.review) S.review.text = el.value; }
   else if (b === 'reply-draft') { S.replyDraft = el.value; }
   else if (b === 'report-details') { if (S.report) S.report.details = el.value; }
@@ -2434,6 +2757,7 @@ app.addEventListener('input', e => {
 app.addEventListener('change', e => {
   const el = e.target, b = el.dataset ? el.dataset.bind : null;
   if (!b) return;
+  if (b === 'cd') { if (S.cd) { S.cd.d[el.dataset.field] = el.value; S.cd.status = ''; } return; }
   if (b === 'picture-file') {
     S.pic.file = el.files[0] || null;
     /* D previews the chosen photo before it is saved; A keeps the browser's own file name beside the button. */

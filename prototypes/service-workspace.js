@@ -4,7 +4,9 @@ window.createServiceWorkspace = function (ctx) {
   'use strict';
   const { S, PROFILES, CONVS, esc, initials, tone, fmtShort, fmtTime, nid, ago, render, toast, go, icon, getListed, signinBtn, stateHTML, announce } = ctx;
   const states = ['Not started', 'In progress', 'Waiting for client', 'Completed'];
-  const clients = { 'u-maria':'Maria Santos', 'u-jose':'Jose Reyes', 'u-liza':'Liza Fernandez' };
+  const clients = { 'u-maria':'Maria Santos', 'u-jose':'Jose Reyes', 'u-liza':'Liza Fernandez',
+    /* Elaine Navarro's clients, for the busy state of the dashboard options (2026-11-26). */
+    'u-paula':'Paula Mercado', 'u-rina':'Rina Castillo', 'u-ben':'Ben Torres', 'u-carmen':'Carmen Lao', 'u-dan':'Dan Uy' };
   const saved = { 'u-maria':['a1','a5'] };
   const tasks = (names, statuses = []) => names.map((name,i) => ({ id:nid('task'), name, status:statuses[i] || states[0] }));
   const work = [
@@ -14,7 +16,14 @@ window.createServiceWorkspace = function (ctx) {
       files:[{id:'f1',name:'monthly-sales.csv',sample:'sales',taskIndex:0,owner:'client:u-maria',by:'Maria Santos',at:ago(150)}]},
     {id:'e2', clientId:'u-jose', accountantId:'a1', service:'Tax filing', phase:'requested', tasks:[],files:[],updates:[{id:'h2',name:'Jose Reyes',at:ago(80),text:'Requested Tax filing. Please confirm whether you can help.'}]},
     {id:'e3', clientId:'u-maria', accountantId:'a5', service:'Tax advisory', phase:'active',tasks:tasks(['Review business details','Prepare recommendations','Discuss next steps'],[states[3],states[1]]),files:[],updates:[{id:'h3',name:'Elaine Navarro',at:ago(200),text:'I have reviewed your business details and am preparing recommendations.'}]},
-    {id:'e4', clientId:'u-liza', accountantId:'a1', service:'Financial statements', phase:'active',tasks:tasks(['Prepare statements','Hand over statements'],[states[3],states[3]]),files:[],updates:[{id:'h4',name:'Andrea Villanueva',at:ago(500),text:'Statements prepared and handed over.'}]}
+    {id:'e4', clientId:'u-liza', accountantId:'a1', service:'Financial statements', phase:'active',tasks:tasks(['Prepare statements','Hand over statements'],[states[3],states[3]]),files:[],updates:[{id:'h4',name:'Andrea Villanueva',at:ago(500),text:'Statements prepared and handed over.'}]},
+    /* A busy accountant for the dashboard options (2026-11-26): Elaine Navarro, signed in as "busyAccountant". Added
+       last, so the earlier records keep their generated IDs. Nobody else sees these services. */
+    {id:'e5', clientId:'u-paula', accountantId:'a5', service:'Tax filing', phase:'requested', tasks:[],files:[],updates:[{id:'h5',name:'Paula Mercado',at:ago(35),text:'Requested Tax filing. Please confirm whether you can help.'}]},
+    {id:'e6', clientId:'u-rina', accountantId:'a5', service:'Business registration', phase:'requested', tasks:[],files:[],updates:[{id:'h6',name:'Rina Castillo',at:ago(220),text:'Requested Business registration. Please confirm whether you can help.'}]},
+    {id:'e7', clientId:'u-ben', accountantId:'a5', service:'Tax advisory', phase:'requested', tasks:[],files:[],updates:[{id:'h7',name:'Ben Torres',at:ago(1600),text:'Requested Tax advisory. Please confirm whether you can help.'}]},
+    {id:'e8', clientId:'u-carmen', accountantId:'a5', service:'Tax filing', phase:'active',tasks:tasks(['Collect last quarter records','Prepare the return','File and hand over'],[states[3],states[2]]),files:[],updates:[{id:'h8',name:'Elaine Navarro',at:ago(300),text:'Please send the official receipts for September so I can finish the return.'}]},
+    {id:'e9', clientId:'u-dan', accountantId:'a5', service:'Business registration', phase:'active',tasks:tasks(['Choose the business set-up','Register the business'],[states[3],states[3]]),files:[],updates:[{id:'h9',name:'Elaine Navarro',at:ago(5200),text:'Registration complete. Your certificate is in the documents.'}]}
   ];
   const samples = {
     receipts:{name:'receipts-sample.pdf',label:'Sample receipts (PDF)',mime:'application/pdf'},
@@ -48,7 +57,11 @@ window.createServiceWorkspace = function (ctx) {
   const meter = e => { const p=progress(e); return '<div class="work-progress"><progress max="'+(p.total||1)+'" value="'+p.done+'" aria-label="Completed service tasks"></progress><span>'+p.done+' of '+p.total+' tasks complete'+(p.total?' · '+Math.round(p.done/p.total*100)+'%':' · checklist not set')+'</span></div>'; };
   const field = (scope,name,label,value='',extra='') => '<label class="work-field">'+esc(label)+'<input data-bind="work-field" data-scope="'+esc(scope)+'" data-field="'+name+'" data-fkey="'+esc(scope+'-'+name)+'" value="'+esc(value)+'" '+extra+'></label>';
   const summaryCard = (title,value,detail) => '<div class="work-stat"><span>'+title+'</span><strong>'+value+'</strong><small>'+detail+'</small></div>';
-  const heading = (title,sub) => '<div class="work-intro"><span class="eyebrow">Your private workspace</span><h2>'+esc(title)+'</h2><p>'+esc(sub)+'</p></div>';
+  /* Page titles options (options.html, 2026-11-26; proposals, not adopted; S.opt.heads): the name becomes the only title,
+     so the intro keeps just its sentence (A, C) or goes (B). */
+  const heads = () => S.opt && S.opt.heads ? S.opt.heads : 'current';
+  const heading = (title,sub) => heads()==='b' ? '' : heads()!=='current' ? '<p class="heads-sub">'+esc(sub)+'</p>'
+    : '<div class="work-intro"><span class="eyebrow">Your private workspace</span><h2>'+esc(title)+'</h2><p>'+esc(sub)+'</p></div>';
   const workCard = e => '<li class="work-service"><div class="work-row"><h3><a href="#/work/'+e.id+'">'+esc(e.service)+'</a></h3>'+badge(e)+'</div>'+meter(e)+'<div class="work-row small"><span class="muted">'+e.files.length+' service document'+(e.files.length===1?'':'s')+'</span><a href="#/work/'+e.id+'">Open service '+icon('chevron',14)+'</a></div></li>';
   const chatLink = (clientId,accId) => { const c=CONVS.find(c=>c.clientId===clientId&&c.accountantId===accId); return c ? '<a class="btn sm" href="#/thread/'+c.id+'">'+icon('chat',16)+'Open chat</a>' : S.me.role==='client'&&getListed(accId) ? '<a class="btn sm" href="#/compose/'+accId+'">Message accountant</a>' : ''; };
 
@@ -56,9 +69,17 @@ window.createServiceWorkspace = function (ctx) {
     const all=api.dataMode==='empty'?[]:ownWork(), isAcc=S.me.role==='accountant';
     if (isAcc) {
       const ids=[...new Set(all.map(e=>e.clientId))];
-      return heading('A clear view of your client work.','Keep services, next steps and shared documents together. Client details stay private.')+
-        '<div class="work-stats">'+summaryCard('Clients',ids.length,'With requests or service work')+summaryCard('In progress',all.filter(e=>e.phase==='active'&&status(e)!==states[3]).length,'Services to move forward')+summaryCard('New requests',all.filter(e=>e.phase==='requested').length,'Waiting for your response')+'</div>'+
-        (ids.length?'<ul class="work-people">'+ids.map(id=>{const es=all.filter(e=>e.clientId===id),name=clients[id]||'Client';return '<li><a class="work-person" href="#/clients/'+id+'"><span class="avatar '+tone(name)+'" aria-hidden="true">'+initials(name)+'</span><div><h3>'+esc(name)+'</h3><p>'+es.length+' service'+(es.length===1?'':'s')+' · '+es.filter(e=>e.phase==='requested').length+' awaiting acceptance</p><span>'+esc(es.map(e=>e.service).join(' · '))+'</span></div>'+icon('chevron',18)+'</a></li>';}).join('')+'</ul>':stateHTML('user','No clients yet','A client appears here after they request one of your services. Saving your profile alone does not share their details.',''));
+      const intro=heading('A clear view of your client work.','Keep services, next steps and shared documents together. Client details stay private.');
+      const people=ids.length?'<ul class="work-people">'+ids.map(id=>{const es=all.filter(e=>e.clientId===id),name=clients[id]||'Client';return '<li><a class="work-person" href="#/clients/'+id+'"><span class="avatar '+tone(name)+'" aria-hidden="true">'+initials(name)+'</span><div><h3>'+esc(name)+'</h3><p>'+es.length+' service'+(es.length===1?'':'s')+' · '+es.filter(e=>e.phase==='requested').length+' awaiting acceptance</p><span>'+esc(es.map(e=>e.service).join(' · '))+'</span></div>'+icon('chevron',18)+'</a></li>';}).join('')+'</ul>':stateHTML('user','No clients yet','A client appears here after they request one of your services. Saving your profile alone does not share their details.','');
+      /* Dashboard option C (2026-11-26, a proposal): an overview from index.html replaces the intro and the tiles, and
+         settles the Clients options below. */
+      if (S.opt && S.opt.dash === 'c' && api.dashOverview) return api.dashOverview()+'<h2 class="dash-h2" id="dash-clients">Your clients</h2>'+people;
+      const opt = S.opt ? S.opt.clients : 'current';
+      if (opt === 'a') return intro+requestsFirstHTML(all)+people;
+      if (opt === 'b') return intro+(all.length?byStatusHTML(all):people);
+      if (opt === 'c') return intro+(ids.length?clientTableHTML(all,ids):people);
+      return intro+
+        '<div class="work-stats">'+summaryCard('Clients',ids.length,'With requests or service work')+summaryCard('In progress',all.filter(e=>e.phase==='active'&&status(e)!==states[3]).length,'Services to move forward')+summaryCard('New requests',all.filter(e=>e.phase==='requested').length,'Waiting for your response')+'</div>'+people;
     }
     const savedIds=api.dataMode==='empty'?[]:(saved[S.me.clientId]||[]), ids=[...new Set([...savedIds,...all.map(e=>e.accountantId)])];
     const accPanel = id => {const p=getListed(id),es=all.filter(e=>e.accountantId===id);return '<section class="work-panel"><div class="work-row"><div><h3>'+(p?'<a href="#/profile/'+id+'">'+esc(p.name)+'</a>':'Accountant no longer listed')+'</h3><p class="muted small">'+(p?esc(p.title):'Existing service work stays private; account-deletion policy remains open.')+'</p></div>'+(savedIds.includes(id)?'<button class="btn ghost sm" data-action="ws-unsave" data-id="'+id+'">Remove saved<span class="sr-only"> accountant '+esc(p?p.name:'')+'</span></button>':'<span class="work-status">Service history</span>')+'</div>'+
@@ -73,6 +94,33 @@ window.createServiceWorkspace = function (ctx) {
     return heading('Your people. Your next steps.','Accountants you have added, with your service progress in one place.')+
       '<div class="work-stats">'+summaryCard('Added accountants',savedIds.length,'Your private saved list')+summaryCard('Active services',all.filter(e=>e.phase==='active'&&status(e)!==states[3]).length,'Shared with each accountant')+summaryCard('Completed',all.filter(e=>status(e)===states[3]).length,'All checklist tasks complete')+'</div>'+
       note+(ids.length?'<div class="work-accountants">'+ids.map(accPanel).join('')+'</div>':empty)+errorHTML('list');
+  }
+  /* Design options for the accountant's Clients list (options.html, 2026-11-25): proposals, not adopted. S.opt.clients. */
+  const lastAt = e => e.updates.length ? e.updates.reduce((a,u)=>u.at>a?u.at:a,'') : '';
+  const svcRow = (e,who,withBadge) => {const p=progress(e),u=lastAt(e);return '<li><a class="opt-svc-row'+(withBadge?'':' nobadge')+'" href="#/work/'+e.id+'"><span class="opt-svc-name"><strong>'+esc(e.service)+'</strong><small>'+esc(who)+'</small></span>'+(withBadge?badge(e):'')+
+    '<span class="opt-svc-meter"><progress max="'+(p.total||1)+'" value="'+p.done+'" aria-label="Completed tasks"></progress><small>'+(p.total?p.done+' of '+p.total+' tasks':'Checklist not set')+'</small></span><span class="opt-svc-upd"><small>Last update</small>'+(u?esc(fmtShort(u)):'None yet')+'</span>'+icon('chevron',16)+'</a></li>';};
+  /* A · Requests first: answer new requests from the list itself (the same accept and decline as the service page). */
+  function requestsFirstHTML(all) {
+    const reqs=all.filter(e=>e.phase==='requested');
+    return '<section class="opt-next" aria-labelledby="opt-req-t"><h3 id="opt-req-t">New requests</h3>'+(reqs.length?'<ul>'+reqs.map(e=>{const name=clients[e.clientId]||'Client',first=e.updates[e.updates.length-1];return '<li>'+avatarFor(name)+'<span class="opt-next-text"><strong>'+esc(name)+'</strong> requested '+esc(e.service)+(first?'<small>'+esc(fmtShort(first.at))+'</small>':'')+'</span>'+
+      '<span class="actions"><button class="btn primary sm" data-action="ws-accept" data-id="'+e.id+'">Accept<span class="sr-only"> '+esc(e.service)+' for '+esc(name)+'</span></button><button class="btn sm" data-action="ws-decline" data-id="'+e.id+'">Decline<span class="sr-only"> '+esc(e.service)+' for '+esc(name)+'</span></button><a class="btn ghost sm" href="#/work/'+e.id+'">View request</a></span>'+errorHTML(e.id)+'</li>';}).join('')+'</ul>'
+      :'<p class="work-quiet">No new requests. They appear here when a client requests one of your services.</p>')+'</section>';
+  }
+  /* B · Services by status: every service under its status; the number tiles go. */
+  function byStatusHTML(all) {
+    const groups=[['Requested',e=>e.phase==='requested'],['In progress',e=>e.phase==='active'&&(status(e)===states[0]||status(e)===states[1])],['Waiting for client',e=>e.phase==='active'&&status(e)===states[2]],['Completed',e=>e.phase==='active'&&status(e)===states[3]],['Declined',e=>e.phase==='declined']];
+    return groups.map(([t,f])=>{const es=all.filter(f);if(!es.length&&t==='Declined')return '';return '<section class="opt-status-group" aria-label="'+t+'"><h3>'+t+'<span class="opt-count">'+es.length+'</span></h3>'+(es.length?'<ul class="opt-svc-rows">'+es.map(e=>svcRow(e,clients[e.clientId]||'Client',false)).join('')+'</ul>':'<p class="work-quiet">None.</p>')+'</section>';}).join('');
+  }
+  /* C · Client table: one row per client, most recent activity first. Phones get one card per client. */
+  function clientTableHTML(all,ids) {
+    const rank=e=>e.phase==='requested'?0:status(e)===states[2]?1:status(e)===states[1]?2:status(e)===states[0]?3:status(e)===states[3]?4:5;
+    const rows=ids.map(id=>{const es=all.filter(e=>e.clientId===id),conv=CONVS.find(c=>c.clientId===id&&c.accountantId===S.me.accountantId),unread=conv?(conv.unread.accountant||0):0;
+      const times=es.map(lastAt).concat(conv&&conv.messages.length?[conv.messages[conv.messages.length-1].at]:[]).filter(Boolean).sort();
+      return {id,name:clients[id]||'Client',es,urgent:es.slice().sort((a,b)=>rank(a)-rank(b))[0],conv,unread,last:times[times.length-1]||''};}).sort((a,b)=>b.last.localeCompare(a.last));
+    const msgs=r=>r.unread?'<a href="#/thread/'+r.conv.id+'">'+r.unread+' new</a>':r.conv?'<a href="#/thread/'+r.conv.id+'">Open chat</a>':'—';
+    if(S.device==='phone')return '<ul class="opt-acc-compact opt-client-cards">'+rows.map(r=>'<li>'+avatarFor(r.name)+'<div><strong><a href="#/clients/'+r.id+'">'+esc(r.name)+'</a></strong><small>'+esc(r.es.map(e=>e.service).join(' · '))+'</small><small>'+(r.last?'Last activity '+esc(fmtShort(r.last)):'')+'</small></div>'+badge(r.urgent)+(r.unread?'<a class="badge" href="#/thread/'+r.conv.id+'">'+r.unread+' new</a>':'')+'</li>').join('')+'</ul>';
+    return '<table class="opt-table"><caption class="sr-only">Your clients, most recent activity first</caption><thead><tr><th scope="col">Client</th><th scope="col">Services</th><th scope="col">Most urgent</th><th scope="col">Messages</th><th scope="col">Last activity</th></tr></thead><tbody>'+
+      rows.map(r=>'<tr><th scope="row"><a href="#/clients/'+r.id+'">'+avatarFor(r.name)+'<span>'+esc(r.name)+'</span></a></th><td>'+esc(r.es.map(e=>e.service).join(', '))+'</td><td>'+badge(r.urgent)+'</td><td>'+msgs(r)+'</td><td>'+(r.last?esc(fmtShort(r.last)):'—')+'</td></tr>').join('')+'</tbody></table>';
   }
   /* Design options for My accountants (options.html, 2026-11-24): proposals, not adopted. S.opt.myacc picks one. */
   const accName = id => getListed(id)?.name || 'Accountant no longer listed';
@@ -110,7 +158,7 @@ window.createServiceWorkspace = function (ctx) {
     if (S.me.role!=='accountant') return unavailable();
     const es=ownWork().filter(e=>e.clientId===id); if(!es.length)return unavailable();
     const p=PROFILES.find(p=>p.id===S.me.accountantId), d=draft('client:'+id), active=es.some(e=>e.phase==='active');
-    return heading(clients[id]||'Client','Services shared with you. Only this client and you can see the work below.')+
+    return heading(clients[id]||'Client','Services shared with you. Only this client and you can see the work below.')+aboutClientHTML(id)+
       '<div class="actions">'+chatLink(id,S.me.accountantId)+'</div><ul class="work-services">'+es.map(workCard).join('')+'</ul>'+
       (active&&p?'<section class="work-panel"><h3>Add a service for this client</h3><p class="muted small">Proposed: accountants may add work for an existing accepted client relationship. No prices, payment or booking.</p>'+serviceSelect('client:'+id,p,d.service)+'<button class="btn primary" data-action="ws-add-service" data-client="'+id+'">Add service</button>'+errorHTML('client:'+id)+'</section>':'');
   }
@@ -123,17 +171,24 @@ window.createServiceWorkspace = function (ctx) {
     return heading('Request a service',p.name+' will review your request before work starts.')+'<section class="work-panel work-form">'+serviceSelect(scope,p,d.service)+
       '<p class="note"><span>This shares your account name and requested service with '+esc(p.name)+'. It does not make a payment, booking or guarantee of service. The shared client relationship starts after accountant acceptance.</span></p><button class="btn primary" data-action="ws-request" data-id="'+id+'">Send service request</button>'+errorHTML(scope)+'</section>';
   }
+  /* Design options for the service page (options.html, 2026-11-25): proposals, not adopted. S.opt.work.
+     A: the section headings take ids for the links. B: each task lists its documents and an Attach button. */
+  const wopt = () => S.opt ? S.opt.work : 'current';
+  const wid = k => wopt()==='a' ? ' id="ws-'+k+'" tabindex="-1"' : '';
+  const taskDocs = (e,t,i) => {const fs=e.files.filter(f=>f.taskIndex===i);return '<div class="opt-task-docs">'+fs.map(f=>'<span class="opt-doc">'+icon('file',16)+'<span>'+esc(f.name)+'</span><button class="linkbtn" data-action="ws-download" data-id="'+e.id+'" data-file="'+f.id+'">Download<span class="sr-only"> '+esc(f.name)+'</span></button></span>').join('')+
+    (e.phase==='active'?'<button class="linkbtn opt-attach" data-action="ws-attach-task" data-id="'+e.id+'" data-task="'+i+'">'+icon('plus',14)+'Attach a document<span class="sr-only"> to '+esc(t.name)+'</span></button>':'')+'</div>';};
   function checklistHTML(e) {
     const d=draft(e.id), edit=editable(e);
-    return '<section class="work-panel"><div class="work-row"><h3>Service checklist</h3><span class="muted small">'+(edit?'Changes are shared when saved':'Updated by your accountant')+'</span></div>'+meter(e)+
-      (e.tasks.length?'<ol class="work-tasks">'+e.tasks.map(t=>{const value=d['task:'+t.id]||t.status;return '<li><div class="work-task-name">'+(edit?'<input type="checkbox" data-bind="work-check" data-id="'+e.id+'" data-task="'+t.id+'" data-fkey="check-'+t.id+'" aria-label="Mark '+esc(t.name)+' completed"'+(value===states[3]?' checked':'')+'>':'<span aria-hidden="true">'+(t.status===states[3]?'✓':'○')+'</span>')+'<span>'+esc(t.name)+'</span></div>'+(edit?'<label class="work-task-status"><span class="sr-only">Status for '+esc(t.name)+'</span><select data-bind="work-task" data-id="'+e.id+'" data-task="'+t.id+'" data-fkey="status-'+t.id+'">'+states.map(s=>'<option'+(s===value?' selected':'')+'>'+s+'</option>').join('')+'</select></label>':'<span class="work-status">'+esc(t.status)+'</span>')+'</li>';}).join('')+'</ol>':'<p class="work-quiet">No tasks yet. Progress starts after the accountant adds a checklist.</p>')+
+    return '<section class="work-panel"><div class="work-row"><h3'+wid('checklist')+'>Service checklist</h3><span class="muted small">'+(edit?'Changes are shared when saved':'Updated by your accountant')+'</span></div>'+meter(e)+
+      (e.tasks.length?'<ol class="work-tasks">'+e.tasks.map((t,i)=>{const value=d['task:'+t.id]||t.status;return '<li><div class="work-task-name">'+(edit?'<input type="checkbox" data-bind="work-check" data-id="'+e.id+'" data-task="'+t.id+'" data-fkey="check-'+t.id+'" aria-label="Mark '+esc(t.name)+' completed"'+(value===states[3]?' checked':'')+'>':'<span aria-hidden="true">'+(t.status===states[3]?'✓':'○')+'</span>')+'<span>'+esc(t.name)+'</span></div>'+(edit?'<label class="work-task-status"><span class="sr-only">Status for '+esc(t.name)+'</span><select data-bind="work-task" data-id="'+e.id+'" data-task="'+t.id+'" data-fkey="status-'+t.id+'">'+states.map(s=>'<option'+(s===value?' selected':'')+'>'+s+'</option>').join('')+'</select></label>':'<span class="work-status">'+esc(t.status)+'</span>')+(wopt()==='b'?taskDocs(e,t,i):'')+'</li>';}).join('')+'</ol>':'<p class="work-quiet">No tasks yet. Progress starts after the accountant adds a checklist.</p>')+
       (edit?'<div class="actions"><button class="btn primary" data-action="ws-save-tasks" data-id="'+e.id+'">Save checklist changes</button></div>'+field(e.id,'newTask','New checklist task',d.newTask||'','maxlength="120"')+'<button class="btn" data-action="ws-add-task" data-id="'+e.id+'">Add task</button>':'')+errorHTML(e.id)+'</section>';
   }
   function filesHTML(e) {
     const d=draft(e.id),u=uploads.get(key(e.id)),busy=u&&u.state==='uploading',sample=d.sample||'receipts';
-    return '<section class="work-panel"><h3>Service documents</h3><p class="muted small">Private to '+esc(clients[e.clientId]||'the client')+' and '+esc(PROFILES.find(p=>p.id===e.accountantId)?.name||'the accountant')+'. These are service documents, not chat attachments.</p>'+
-      '<ul class="work-files">'+e.files.map(f=>'<li><div>'+icon('file',20)+'<div><strong>'+esc(f.name)+'</strong><small>Available · '+esc(f.by)+' · '+esc(fmtShort(f.at))+' · '+(f.taskIndex===null?'Whole service':esc(e.tasks[f.taskIndex]?.name||'Service task'))+'</small></div></div><div class="actions"><button class="btn sm" data-action="ws-download" data-id="'+e.id+'" data-file="'+f.id+'">Download<span class="sr-only"> '+esc(f.name)+'</span></button>'+(f.owner===actor()?'<button class="btn ghost sm" data-action="ws-remove-file" data-id="'+e.id+'" data-file="'+f.id+'">Remove<span class="sr-only"> '+esc(f.name)+'</span></button>':'')+'</div></li>').join('')+'</ul>'+
-      (!e.files.length?'<p class="work-quiet">No documents attached yet.</p>':'')+
+    const shown=wopt()==='b'?e.files.filter(f=>f.taskIndex===null):e.files;
+    return '<section class="work-panel"><h3'+wid('documents')+'>Service documents</h3><p class="muted small">Private to '+esc(clients[e.clientId]||'the client')+' and '+esc(PROFILES.find(p=>p.id===e.accountantId)?.name||'the accountant')+'. These are service documents, not chat attachments.'+(wopt()==='b'?' Documents for a task are listed under that task; these are for the whole service.':'')+'</p>'+
+      '<ul class="work-files">'+shown.map(f=>'<li><div>'+icon('file',20)+'<div><strong>'+esc(f.name)+'</strong><small>Available · '+esc(f.by)+' · '+esc(fmtShort(f.at))+' · '+(f.taskIndex===null?'Whole service':esc(e.tasks[f.taskIndex]?.name||'Service task'))+'</small></div></div><div class="actions"><button class="btn sm" data-action="ws-download" data-id="'+e.id+'" data-file="'+f.id+'">Download<span class="sr-only"> '+esc(f.name)+'</span></button>'+(f.owner===actor()?'<button class="btn ghost sm" data-action="ws-remove-file" data-id="'+e.id+'" data-file="'+f.id+'">Remove<span class="sr-only"> '+esc(f.name)+'</span></button>':'')+'</div></li>').join('')+'</ul>'+
+      (!shown.length?'<p class="work-quiet">'+(wopt()==='b'&&e.files.length?'No whole-service documents yet.':'No documents attached yet.')+'</p>':'')+
       (e.phase==='active'?'<div class="work-upload"><p class="work-demo">Prototype upload: choose a generated sample only. No actual document is read or sent. Demo policy: PDF, CSV, TXT; 5 MiB maximum (proposed).</p><label class="work-field">Sample document<select data-bind="work-field" data-scope="'+e.id+'" data-field="sample" data-fkey="sample-'+e.id+'"'+(busy?' disabled':'')+'>'+Object.entries(samples).map(([k,s])=>'<option value="'+k+'"'+(k===sample?' selected':'')+'>'+esc(s.label)+'</option>').join('')+'</select></label>'+
         '<label class="work-field">Attach to<select data-bind="work-field" data-scope="'+e.id+'" data-field="fileTask" data-fkey="file-task-'+e.id+'"'+(busy?' disabled':'')+'><option value="">Whole service</option>'+e.tasks.map((t,i)=>'<option value="'+i+'"'+(d.fileTask===String(i)?' selected':'')+'>'+esc(t.name)+'</option>').join('')+'</select></label>'+
         (busy?'<div role="status"><progress max="100" value="'+u.percent+'" aria-label="Sample upload progress"></progress><p>Uploading sample… '+u.percent+'%</p></div>':'')+
@@ -143,12 +198,22 @@ window.createServiceWorkspace = function (ctx) {
   function detailHTML(id) {
     const e=find(id);if(!e)return unavailable();
     const p=PROFILES.find(p=>p.id===e.accountantId),d=draft(id),isAcc=owns(e);
-    return heading(e.service,(clients[e.clientId]||'Client')+' · '+(p?.name||'Accountant'))+
+    /* Page titles options: the breadcrumb or Back already names the client, so the sentence says who can see the work. */
+    const sub=heads()==='current'?(clients[e.clientId]||'Client')+' · '+(p?.name||'Accountant')
+      :isAcc?'Only '+first(clients[e.clientId])+' and you can see this work.':'With '+(p?.name||'your accountant')+'. Only '+first(p?.name)+' and you can see this work.';
+    return heading(e.service,sub)+
       '<div class="work-row work-summary">'+badge(e)+chatLink(e.clientId,e.accountantId)+'</div>'+
-      (e.phase==='requested'?'<section class="work-panel work-request"><h3>Service request</h3><p>Work has not started. '+(isAcc?'Review this request, then accept or decline.':'Your accountant has not accepted this request yet.')+'</p>'+(isAcc?'<div class="actions"><button class="btn primary" data-action="ws-accept" data-id="'+id+'">Accept request</button><button class="btn" data-action="ws-decline" data-id="'+id+'">Decline request</button></div>':'')+errorHTML(id)+'</section>':'')+
-      '<div class="work-grid"><div>'+checklistHTML(e)+filesHTML(e)+'</div><aside class="work-panel work-history"><h3>Progress updates</h3><p class="muted small">Shared notes and activity, newest first. Times are shown in Asia/Manila.</p>'+
+      (wopt()==='a'?'<nav class="opt-sections opt-work-links" aria-label="On this page">'+(e.phase==='requested'?'<a href="#/work/'+id+'" data-action="opt-jump" data-target="ws-request">Request</a>':'')+[['ws-checklist','Checklist'],['ws-documents','Documents'],['ws-updates','Updates']].map(x=>'<a href="#/work/'+id+'" data-action="opt-jump" data-target="'+x[0]+'">'+x[1]+'</a>').join('')+'</nav>':'')+
+      (e.phase==='requested'?'<section class="work-panel work-request"><h3'+wid('request')+'>Service request</h3><p>Work has not started. '+(isAcc?'Review this request, then accept or decline.':'Your accountant has not accepted this request yet.')+'</p>'+(isAcc?aboutClientHTML(e.clientId,true):'')+(isAcc?'<div class="actions"><button class="btn primary" data-action="ws-accept" data-id="'+id+'">Accept request</button><button class="btn" data-action="ws-decline" data-id="'+id+'">Decline request</button></div>':'')+errorHTML(id)+'</section>':'')+
+      (wopt()==='c'?'<div class="work-grid opt-work-c"><div>'+historyHTML(e,d,'section')+filesHTML(e)+'</div><aside class="opt-check-aside" aria-label="Service checklist">'+checklistHTML(e)+'</aside></div>'
+        :'<div class="work-grid"><div>'+checklistHTML(e)+filesHTML(e)+'</div>'+historyHTML(e,d,'aside')+'</div>');
+  }
+  /* Progress updates: a side panel today; option C puts it first, as the page's main stream. */
+  function historyHTML(e,d,tag) {
+    const id=e.id;
+    return '<'+tag+' class="work-panel work-history"><h3'+wid('updates')+'>Progress updates</h3><p class="muted small">Shared notes and activity, newest first. Times are shown in Asia/Manila.</p>'+
       (editable(e)?'<label class="work-field">Shared progress note<textarea rows="4" maxlength="1000" data-bind="work-field" data-scope="'+id+'" data-field="note" data-fkey="note-'+id+'">'+esc(d.note||'')+'</textarea></label><button class="btn" data-action="ws-post-note" data-id="'+id+'">Post update</button>':'')+
-      '<ol class="work-timeline">'+e.updates.map(h=>'<li><strong>'+esc(h.name)+'</strong><time datetime="'+esc(h.at)+'">'+esc(fmtShort(h.at))+(fmtShort(h.at).includes(':')?'':' · '+esc(fmtTime(h.at)))+'</time><p>'+esc(h.text)+'</p></li>').join('')+'</ol></aside></div>';
+      '<ol class="work-timeline">'+e.updates.map(h=>'<li><strong>'+esc(h.name)+'</strong><time datetime="'+esc(h.at)+'">'+esc(fmtShort(h.at))+(fmtShort(h.at).includes(':')?'':' · '+esc(fmtTime(h.at)))+'</time><p>'+esc(h.text)+'</p></li>').join('')+'</ol></'+tag+'>';
   }
   api.page = r => {
     const title=r.name==='workspace'?(S.me?.role==='accountant'?'Clients':'My accountants'):r.name==='request'?'Request a service':r.name==='client'?'Client services':'Service progress';
@@ -159,16 +224,69 @@ window.createServiceWorkspace = function (ctx) {
     /* Design option C for My accountants: on phones, /workspace?accountant=… is its own screen with Back to the list. */
     const one=r.name==='workspace'&&S.opt?.myacc==='c'&&S.device==='phone'&&S.me.role==='client'&&r.sub&&getListed(r.sub)?getListed(r.sub):null;
     if(one)return {title:one.name,back:'#/workspace',tabs:false,body:listHTML()};
-    return {title,back:r.name==='workspace'?null:e?'#/clients/'+e.clientId:'#/workspace',tabs:r.name==='workspace',body:r.name==='workspace'?listHTML():r.name==='client'?clientHTML(r.id):r.name==='request'?requestHTML(r.accId):detailHTML(r.id)};
+    const body=r.name==='workspace'?listHTML():r.name==='client'?clientHTML(r.id):r.name==='request'?requestHTML(r.accId):detailHTML(r.id);
+    if(heads()!=='current'){
+      /* Page titles options: the app bar and the page title name the client or service; Back goes to the parent. On phones
+         B adds the privacy pill and C the parents' trail, as on wide screens. */
+      const h=api.head(r), up=h.parents[h.parents.length-1];
+      const top=S.device!=='phone'?'':heads()==='b'?'<p class="heads-row">'+api.privatePill(h)+'</p>'
+        :heads()==='c'&&h.parents.length?'<nav class="crumbs heads-phone-trail" aria-label="Breadcrumb">'+h.parents.map(p=>'<a href="'+p.href+'">'+esc(p.label)+'</a>').join('<span aria-hidden="true">/</span>')+'</nav>':'';
+      return {title:h.title,back:up?up.href:null,tabs:r.name==='workspace',body:top+body};
+    }
+    return {title,back:r.name==='workspace'?null:e?'#/clients/'+e.clientId:'#/workspace',tabs:r.name==='workspace',body};
   };
+  /* Page titles options: the page's own name, its parents (for the breadcrumb or Back) and who can see it. */
+  api.head = r => {
+    const isAcc=S.me?.role==='accountant', root={label:isAcc?'Clients':'My accountants',href:'#/workspace'};
+    const e=r.name==='work'?find(r.id):null, ok=!!S.me&&api.dataMode==='normal';
+    const other=e?(isAcc?first(clients[e.clientId]):first(PROFILES.find(p=>p.id===e.accountantId)?.name)):'';
+    if(r.name==='workspace')return {title:root.label,parents:[],privacy:isAcc?'Private to you and each client':'Private to you'};
+    if(r.name==='client'&&ok&&isAcc&&ownWork().some(x=>x.clientId===r.id))return {title:clients[r.id]||'Client',parents:[root],privacy:'Private to you and '+first(clients[r.id])};
+    if(e&&ok)return {title:e.service,parents:isAcc?[root,{label:clients[e.clientId]||'Client',href:'#/clients/'+e.clientId}]:[root],privacy:'Private to you and '+other};
+    if(r.name==='request'&&ok){const p=getListed(r.accId);return {title:'Request a service',parents:[root],privacy:p?'Shared with '+first(p.name)+' only':'Private'};}
+    return {title:r.name==='client'?'Client services':r.name==='request'?'Request a service':'Service progress',parents:[root],privacy:'Private'};
+  };
+  api.privatePill = h => '<span class="pill heads-private">'+icon('lock',14)+' '+esc(h.privacy)+'</span>';
   /* Proposed workspace navigation (2026-11-24, not adopted; the "Workspace navigation" control, S.wsNav === 'side').
      trail(): the breadcrumb names the client and the service; for an accountant a service sits under its client.
      sideHTML(): on wide desktop frames, the viewer's clients (or accountants) and their services beside the client and
      service pages, as the conversation list sits beside a chat. Plain links, the open one marked aria-current. */
+  /* Client details (options.html, 2026-11-25; a proposal, not adopted; S.opt.details). A client's name, phone, city and
+     business, shared with the accountants they contact (a conversation or a service), as the client's picture is (R24).
+     Accountants see them on their page for the client and in a service request. Never public (R11). */
+  const clientDetails = {
+    'u-maria':{name:'Maria Santos',phone:'+63 900 000 0201',city:'Pasig City',bizName:'Santos Bakeshop',bizType:'Sole proprietor',industry:'Food and drink'},
+    'u-jose':{name:'Jose Reyes',phone:'',city:'Quezon City',bizName:'Reyes Print Shop',bizType:'Not registered yet',industry:'Printing'},
+    'u-liza':{name:'Liza Fernandez',phone:'+63 900 000 0203',city:'Mandaluyong City',bizName:'Fernandez Home Goods',bizType:'Partnership',industry:'Retail'}
+  };
+  const first = n => String(n||'').split(' ')[0];
+  api.detailsFor = id => Object.assign({name:clients[id]||'',phone:'',city:'',bizName:'',bizType:'',industry:''}, clientDetails[id]||{});
+  api.setDetails = (id,d) => { clientDetails[id]={name:d.name,phone:d.phone,city:d.city,bizName:d.bizName,bizType:d.bizType,industry:d.industry}; if(d.name)clients[id]=d.name; };
+  api.servicedBy = id => [...new Set(work.filter(e=>e.clientId===id).map(e=>e.accountantId))];
+  api.contactedBy = id => [...new Set(CONVS.filter(c=>c.clientId===id).map(c=>c.accountantId).concat(work.filter(e=>e.clientId===id).map(e=>e.accountantId)))];
+  function aboutClientHTML(id,compact) {
+    if(!S.opt||!S.opt.details||S.opt.details==='current')return '';
+    const d=api.detailsFor(id), biz=[d.bizName,d.bizType,d.industry].filter(Boolean).join(' · ');
+    const rows=[['Phone',d.phone],['City',d.city],['Business',biz]].filter(r=>r[1]);
+    return '<section class="opt-about-client'+(compact?' compact':'')+'" aria-label="About '+esc(d.name)+'"><h3>About '+esc(first(d.name))+'</h3>'+
+      (rows.length?'<dl>'+rows.map(r=>'<dt>'+r[0]+'</dt><dd>'+esc(r[1])+'</dd>').join('')+'</dl>':'<p class="work-quiet">'+esc(first(d.name))+' hasn\'t added any details yet.</p>')+
+      '<p class="muted small">Shared by '+esc(first(d.name))+' with the accountants they contact.</p></section>';
+  }
+  api.aboutClientHTML = aboutClientHTML;
   /* For the design options on other pages: the client's saved state and their services with one accountant. */
   api.isSaved = id => !!S.me && S.me.role==='client' && (saved[S.me.clientId]||[]).includes(id);
   api.servicesWith = accId => !S.me||S.me.role!=='client'||api.dataMode!=='normal' ? [] : ownWork().filter(e=>e.accountantId===accId).map(e=>({id:e.id,service:e.service,status:status(e),phase:e.phase}));
+  api.servicesForClient = clientId => !S.me||S.me.role!=='accountant'||api.dataMode!=='normal' ? [] : ownWork().filter(e=>e.clientId===clientId).map(e=>({id:e.id,service:e.service,status:status(e),phase:e.phase}));
   api.myAccountants = () => !S.me||S.me.role!=='client'||api.dataMode!=='normal' ? [] : [...new Set([...(saved[S.me.clientId]||[]),...ownWork().map(e=>e.accountantId)])];
+  /* Dashboard options (options.html, 2026-11-26; proposals, not adopted; S.opt.dash): the accountant's services with the
+     status, progress and last update the Clients pages show, newest first. Accept and Decline use ws-accept and
+     ws-decline, the same as the service page. */
+  api.accountantServices = () => !S.me||S.me.role!=='accountant'||api.dataMode!=='normal' ? [] : ownWork()
+    .map(e=>({id:e.id,clientId:e.clientId,client:clients[e.clientId]||'Client',service:e.service,phase:e.phase,status:status(e),progress:progress(e),last:lastAt(e)}))
+    .sort((a,b)=>b.last.localeCompare(a.last));
+  api.clientName = id => clients[id]||'Client';
+  api.statusBadge = s => '<span class="work-status'+(s===states[3]?' done':'')+'">'+esc(s)+'</span>';
+  api.errorFor = scope => errorHTML(scope);
   api.trail = r => {
     const isAcc=S.me?.role==='accountant', root={label:isAcc?'Clients':'My accountants',href:'#/workspace'};
     if(r.name==='workspace')return [{label:root.label}];
@@ -220,6 +338,8 @@ window.createServiceWorkspace = function (ctx) {
   }
   api.actions = {
     'ws-retry-load':()=>{api.dataMode='normal';render();},
+    /* Service page option B: Attach under a task picks that task in the upload form and moves focus there (?task= on the site). */
+    'ws-attach-task':el=>{const e=find(el.dataset.id);if(!e||e.phase!=='active')return;draft(e.id).fileTask=el.dataset.task;S.focusSel='[data-fkey="file-task-'+e.id+'"]';render();},
     'ws-save':el=>{if(!S.me||S.me.role!=='client'||!getListed(el.dataset.id))return;if(!canWrite('list'))return;const ids=saved[S.me.clientId]||=[];if(!ids.includes(el.dataset.id))ids.push(el.dataset.id);toast('Accountant added to your private list.');},
     'ws-unsave':el=>{if(!S.me||S.me.role!=='client'||!canWrite('list'))return;saved[S.me.clientId]=(saved[S.me.clientId]||[]).filter(id=>id!==el.dataset.id);toast('Removed from your saved list. Existing service work remains accessible.');},
     'ws-request':el=>{const p=getListed(el.dataset.id);if(!p||S.me?.role!=='client')return;const scope='request:'+p.id,service=draft(scope).service;if(!p.services.some(s=>s.name===service)){error(scope,'Choose a service offered by this accountant.');return;}if(!canWrite(scope))return;const ids=saved[S.me.clientId]||=[];if(!ids.includes(p.id))ids.push(p.id);newWork(S.me.clientId,p.id,service,'requested');},
