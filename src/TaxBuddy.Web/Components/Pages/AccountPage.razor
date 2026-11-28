@@ -6,9 +6,12 @@
 @inject ProfileEditorService Editor
 @inject TaxBuddy.Web.Application.Pictures.ProfilePictureService Pictures
 @inject EmailPreferences EmailSettings
+@inject ClientDetailsService ClientDetailsData
+@inject NavigationManager Navigation
 @* Account (prototype meHTML; F02 BD10). Static. Rows joined as their features were built: account deletion (R09) in
    F12, email notifications (R08) in F14, and service work (F03) on 2026-11-24. The accountant's "My reviews" row is
-   left out by the user's choice (F09, 2026-11-17; kept on 2026-11-24). *@
+   left out by the user's choice (F09, 2026-11-17; kept on 2026-11-24). A client's "Your details" card (F17, R25; prototype
+   clientDetailsCardHTML, F02 BD15) shows their details; ?edit=details turns it into a named form posted to this page. *@
 
 <SeoHead Title="Account · Tax Buddy" Description="Your Tax Buddy account." CanonicalPath="/account" />
 <PhoneBar Title="Account" />
@@ -109,6 +112,84 @@
         </section>
         </div>
 
+        @if (!isAccountant && detailsUnavailable)
+        {
+            <section class="details-card" id="details" aria-labelledby="details-heading">
+                <h2 id="details-heading">Your details</h2>
+                <p class="muted">Your details can't be shown right now. Please try again later.</p>
+            </section>
+        }
+        else if (!isAccountant && details is not null && EditDetails)
+        {
+            <section class="details-card is-editing" id="details" aria-labelledby="details-heading">
+                <h2 id="details-heading">Edit your details</h2>
+                @SharedWithNote
+                @if (detailsFailed)
+                {
+                    <div class="banner danger" role="alert"><Icon Name="alert" Size="18" /><div>We couldn't save your details. Please try again.</div></div>
+                }
+                <form method="post" @formname="client-details" @onsubmit="SaveDetailsAsync" novalidate class="form">
+                    <AntiforgeryToken />
+                    <fieldset>
+                        <legend>About you</legend>
+                        @Field("details-name", ClientDetailsRules.Fields.Name, "Your name", DetailsForm!.Name, required: true, autocomplete: "name",
+                            hint: "Shown to the accountants you contact. Reviews show your first name and last initial.")
+                        @Field("details-phone", ClientDetailsRules.Fields.Phone, "Phone", DetailsForm.Phone, type: "tel", autocomplete: "tel",
+                            placeholder: "+63 900 000 0000", hint: "Leave it blank if you prefer chat.")
+                        @Field("details-city", ClientDetailsRules.Fields.City, "City", DetailsForm.City, autocomplete: "address-level2", placeholder: "e.g. Pasig City")
+                        <div class="field">
+                            <span class="details-label">Email</span>
+                            <p class="details-static">@details.Email<span class="hint">From your Google sign-in. Not shown to accountants.</span></p>
+                        </div>
+                    </fieldset>
+                    <fieldset>
+                        <legend>Your business</legend>
+                        @Field("details-business", ClientDetailsRules.Fields.BusinessName, "Business name", DetailsForm.BusinessName, autocomplete: "organization", placeholder: "e.g. Rivera Trading")
+                        <div class="field">
+                            <label for="details-type">Type <span class="req">(optional)</span></label>
+                            <select id="details-type" name="DetailsForm.BusinessType" aria-invalid="@(Problem(ClientDetailsRules.Fields.BusinessType) is null ? null : "true")"
+                                    aria-describedby="@(Problem(ClientDetailsRules.Fields.BusinessType) is null ? null : "details-type-error")">
+                                <option value="">Choose a type</option>
+                                @foreach (var type in ClientDetailsRules.BusinessTypes)
+                                {
+                                    <option value="@type" selected="@(DetailsForm.BusinessType == type)">@type</option>
+                                }
+                            </select>
+                            @if (Problem(ClientDetailsRules.Fields.BusinessType) is { } typeProblem)
+                            {
+                                <span class="ferr" id="details-type-error">@typeProblem</span>
+                            }
+                        </div>
+                        @Field("details-industry", ClientDetailsRules.Fields.Industry, "Industry", DetailsForm.Industry, placeholder: "e.g. Food and drink")
+                    </fieldset>
+                    <p class="note"><Icon Name="info" Size="18" /><span>Don't add your TIN or other ID numbers here. Give them privately when an accountant asks for them.</span></p>
+                    <div class="actions">
+                        <button type="submit" class="btn btn-primary">Save details</button>
+                        <a class="btn" href="/account#details">Cancel</a>
+                    </div>
+                </form>
+            </section>
+        }
+        else if (!isAccountant && details is not null)
+        {
+            <section class="details-card" id="details" aria-labelledby="details-heading">
+                <div class="details-head">
+                    <h2 id="details-heading">Your details</h2>
+                    <a class="btn btn-sm" href="/account?edit=details#details"><Icon Name="edit" Size="16" /> Edit details</a>
+                </div>
+                <dl>
+                    <dt>Phone</dt><dd class="@(details.Details.Phone is null ? "muted" : null)">@(details.Details.Phone ?? "Not added")</dd>
+                    <dt>City</dt><dd class="@(details.Details.City is null ? "muted" : null)">@(details.Details.City ?? "Not added")</dd>
+                    <dt>Business</dt><dd class="@(details.Details.BusinessLine is null ? "muted" : null)">@(details.Details.BusinessLine ?? "Not added")</dd>
+                </dl>
+                <p class="muted small">Shared with the accountants you contact. Never shown publicly.</p>
+                @if (DetailsResult == "saved")
+                {
+                    <p class="save-status ok" role="status">Saved. The accountants you contact see these details.</p>
+                }
+            </section>
+        }
+
         <ul class="menu">
             @* F03 (R19, R20): the workspace, as in the site bar and the phone tabs (DESIGN workspace navigation). *@
             <li>
@@ -177,6 +258,96 @@
 @code {
     [CascadingParameter] public HttpContext? HttpContext { get; set; }
 
+    /// <summary>F17: "details" opens the client's details form in the card.</summary>
+    [SupplyParameterFromQuery(Name = "edit")] public string? Edit { get; set; }
+
+    /// <summary>F17: "saved" after the details were saved (the redirect after the post).</summary>
+    [SupplyParameterFromQuery(Name = "details")] public string? DetailsResult { get; set; }
+
+    [SupplyParameterFromForm(FormName = "client-details")] private ClientDetailsInput? DetailsForm { get; set; }
+
+    private ClientDetailsView? details;
+    private bool detailsUnavailable;
+    private bool detailsFailed;
+    private IReadOnlyDictionary<string, string> problems = ClientDetailsResult.NoProblems;
+
+    private bool EditDetails => Edit == "details";
+
+    private string? Problem(string field) => problems.GetValueOrDefault(field);
+
+    /// <summary>
+    /// One text field of the details form: label, input, hint and the field's message, as the profile editor draws them.
+    /// </summary>
+    private RenderFragment Field(string id, string field, string label, string? value, bool required = false, string type = "text",
+        string? autocomplete = null, string? placeholder = null, string? hint = null) => __builder =>
+    {
+        var problem = Problem(field);
+        var describedBy = problem is not null ? id + "-error" : hint is not null ? id + "-hint" : null;
+        <div class="field">
+            <label for="@id">
+                @label
+                @if (!required)
+                {
+                    <span class="req"> (optional)</span>
+                }
+            </label>
+            <input id="@id" name="@("DetailsForm." + field)" type="@type" value="@value" autocomplete="@autocomplete" placeholder="@placeholder"
+                   aria-invalid="@(problem is null ? null : "true")" aria-describedby="@describedBy" />
+            @if (hint is not null)
+            {
+                <span class="hint" id="@(id + "-hint")">@hint</span>
+            }
+            @if (problem is not null)
+            {
+                <span class="ferr" id="@(id + "-error")">@problem</span>
+            }
+        </div>
+    };
+
+    /// <summary>Who can see the details: the accountants the client has a service with (F17 spec).</summary>
+    private RenderFragment SharedWithNote => __builder =>
+    {
+        var names = details!.SharedWith;
+        <p class="details-share">
+            <Icon Name="lock" Size="16" />
+            <span>
+                @if (names.Count == 0)
+                {
+                    @("Shared with the accountants you contact, once you request a service. Never shown publicly.")
+                }
+                else
+                {
+                    @("Shared with the accountants you contact: ")
+                    @for (var i = 0; i < names.Count; i++)
+                    {
+                        @(i > 0 ? ", " : null)<strong>@names[i]</strong>
+                    }
+                    @(". Never shown publicly.")
+                }
+            </span>
+        </p>
+    };
+
+    private async Task SaveDetailsAsync()
+    {
+        var result = await ClientDetailsData.SaveAsync(HttpContext!.User, DetailsForm!);
+        switch (result.Outcome)
+        {
+            case ClientDetailsOutcome.Saved:
+                Navigation.NavigateTo("/account?details=saved#details");
+                break;
+            case ClientDetailsOutcome.Invalid:
+                problems = result.Problems;
+                break;
+            case ClientDetailsOutcome.Failed:
+                detailsFailed = true;
+                break;
+            default:
+                Navigation.NavigateTo("/account");
+                break;
+        }
+    }
+
     /// <summary>The outcome of a picture upload or removal (F06), from the redirect after the post.</summary>
     [SupplyParameterFromQuery(Name = "picture")] public string? PictureResult { get; set; }
 
@@ -229,6 +400,29 @@
                 email = null; // The row is left out when the database is down; the rest of Account still works.
             }
         }
+        if (!isAccountant)
+        {
+            try
+            {
+                details = await ClientDetailsData.LoadAsync(user);
+            }
+            catch (Exception ex) when (ex is System.Data.Common.DbException or TimeoutException or InvalidOperationException)
+            {
+                detailsUnavailable = true; // The card says so; the rest of Account still works.
+            }
+
+            // The form starts from what is saved; after a refused post it keeps what was typed (BR18).
+            DetailsForm ??= details is null ? null : new ClientDetailsInput
+            {
+                Name = details.Name,
+                Phone = details.Details.Phone,
+                City = details.Details.City,
+                BusinessName = details.Details.BusinessName,
+                BusinessType = details.Details.BusinessType,
+                Industry = details.Details.Industry,
+            };
+        }
+
         if (isAccountant && Guid.TryParse(user.FindFirst(ClaimTypes.NameIdentifier)?.Value, out var owner))
         {
             try

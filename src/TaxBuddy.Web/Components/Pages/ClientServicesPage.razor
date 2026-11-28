@@ -28,6 +28,8 @@
     else
     {
         <WorkIntro Title="@view.ClientName" Text="Services shared with you. Only this client and you can see the work below." />
+        @* F17 (R25): the details the client shares with accountants they contact. *@
+        <AboutClient Name="@view.ClientName" Details="@view.Details" />
         @if (view.ConversationId is { } chat)
         {
             <div class="actions"><a class="btn btn-sm" href="@ChatDisplay.ThreadPath(chat)"><Icon Name="chat" Size="16" />Open chat</a></div>

@@ -286,6 +286,13 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             user.Property(u => u.NormalizedEmail).HasMaxLength(AccountLimits.Email);
             user.Property(u => u.AgreedTermsVersion).HasMaxLength(AccountLimits.TermsVersion);
             user.Property(u => u.PictureObject).HasMaxLength(200);
+            // F17 (PRD R25): a client's details.
+            user.Property(u => u.PhoneNumber).HasMaxLength(ClientDetailsRules.PhoneMax);
+            user.Property(u => u.City).HasMaxLength(ClientDetailsRules.City);
+            user.Property(u => u.BusinessName).HasMaxLength(ClientDetailsRules.BusinessName);
+            user.Property(u => u.BusinessType).HasMaxLength(ClientDetailsRules.BusinessType);
+            user.Property(u => u.Industry).HasMaxLength(ClientDetailsRules.Industry);
+            user.Ignore(u => u.ClientDetails);
         });
 
         modelBuilder.Entity<IdentityUserLogin<Guid>>().ToTable("user_logins");

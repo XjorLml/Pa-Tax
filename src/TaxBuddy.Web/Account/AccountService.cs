@@ -250,6 +250,12 @@ public sealed class AccountService(
             user.NormalizedEmail = null;
             user.PictureObject = null;
             user.EmailNotifications = false;
+            // F17 (BR06): a client's details go with the name and email.
+            user.PhoneNumber = null;
+            user.City = null;
+            user.BusinessName = null;
+            user.BusinessType = null;
+            user.Industry = null;
             user.DeletedAt = now;
             user.LockoutEnd = DateTimeOffset.MaxValue;
             user.SecurityStamp = Guid.NewGuid().ToString("N");

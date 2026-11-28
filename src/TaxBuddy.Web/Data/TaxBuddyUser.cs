@@ -35,4 +35,16 @@ public sealed class TaxBuddyUser : IdentityUser<Guid>
 
     /// <summary>Whether new-message emails go to <see cref="IdentityUser{TKey}.Email"/> (F14, PRD R08). On by default.</summary>
     public bool EmailNotifications { get; set; } = true;
+
+    // F17 (PRD R25): a client's optional details, shared with the accountants they contact. The phone is Identity's
+    // PhoneNumber column. All are personal data: never logged, and cleared when the account is deleted.
+    public string? City { get; set; }
+
+    public string? BusinessName { get; set; }
+
+    public string? BusinessType { get; set; }
+
+    public string? Industry { get; set; }
+
+    public ClientDetails ClientDetails => new(PhoneNumber, City, BusinessName, BusinessType, Industry);
 }

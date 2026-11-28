@@ -850,6 +850,117 @@
     font-size: 18px;
   }
 
+  /* F17 (PRD R25; prototype .opt-cd-card and .opt-about-client, F02 BD15): a client's details on Account, and the card
+     accountants see on their page for the client and in a service request. */
+  .details-card {
+    margin: 0 0 14px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+    scroll-margin-top: 16px;
+  }
+
+  .details-card h2 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .details-card.is-editing h2 { margin-bottom: 12px; }
+  .details-card > p.muted { margin: 0; }
+  .details-card > .save-status { margin: 10px 0 0; }
+  .details-card .note { margin: 0 0 12px; }
+
+  .details-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .details-card .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .details-share {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin: 0 0 16px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+    font-size: 13.5px;
+    line-height: 1.5;
+  }
+
+  .details-share > svg {
+    flex: none;
+    margin-top: 2px;
+    color: var(--muted);
+  }
+
+  .details-label {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+
+  .details-static {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .details-static .hint { display: block; }
+
+  .details-card dl,
+  .about-client dl {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 6px 16px;
+    margin: 12px 0 8px;
+    font-size: 14px;
+  }
+
+  .details-card dt,
+  .about-client dt {
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .details-card dd,
+  .about-client dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .about-client {
+    margin: 0 0 20px;
+    padding: 18px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r-lg);
+  }
+
+  .about-client h3 {
+    margin: 0;
+    font-size: 18px;
+  }
+
+  .about-client p { margin: 0; }
+
+  .about-client.is-compact {
+    margin: 12px 0;
+    padding: 12px 14px;
+    background: var(--app-bg);
+  }
+
+  .about-client.is-compact h3 { font-size: 15px; }
+
   .menu {
     margin: 0 0 14px;
     padding: 0;

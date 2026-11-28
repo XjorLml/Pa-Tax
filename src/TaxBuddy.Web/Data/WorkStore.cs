@@ -118,7 +118,11 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
                 return null;
             }
 
-            var name = await db.Users.Where(u => u.Id == clientId).Select(u => u.DisplayName).FirstOrDefaultAsync(cancellationToken) ?? "Client";
+            // F17 (R25): the client shares their details with accountants they have a service with, as here.
+            var client = await db.Users.Where(u => u.Id == clientId)
+                .Select(u => new { u.DisplayName, u.PhoneNumber, u.City, u.BusinessName, u.BusinessType, u.Industry }).FirstOrDefaultAsync(cancellationToken);
+            var name = client?.DisplayName ?? "Client";
+            var details = client is null ? ClientDetails.Empty : new ClientDetails(client.PhoneNumber, client.City, client.BusinessName, client.BusinessType, client.Industry);
             var conversation = await db.Conversations.Where(c => c.ClientAccountId == clientId && c.AccountantAccountId == accountantId)
                 .Select(c => (Guid?)c.Id).FirstOrDefaultAsync(cancellationToken);
             var canAdd = new List<string>();
@@ -130,7 +134,7 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
             }
 
             var documents = await DocumentCountsAsync(db, engagements, cancellationToken);
-            return new ClientServicesView(clientId, name, conversation, engagements.Select(e => Card(e, documents)).ToList(), canAdd);
+            return new ClientServicesView(clientId, name, conversation, engagements.Select(e => Card(e, documents)).ToList(), canAdd, details);
         }, cancellationToken);
 
     public Task<EngagementView?> ServiceAsync(Guid engagementId, Guid viewerId, CancellationToken cancellationToken) =>
@@ -142,7 +146,13 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
                 return null; // Nothing about someone else's service, not even that it exists (BR15).
             }
 
-            var clientName = await db.Users.Where(u => u.Id == e.ClientAccountId).Select(u => u.DisplayName).FirstOrDefaultAsync(cancellationToken) ?? "Client";
+            var client = await db.Users.Where(u => u.Id == e.ClientAccountId)
+                .Select(u => new { u.DisplayName, u.PhoneNumber, u.City, u.BusinessName, u.BusinessType, u.Industry }).FirstOrDefaultAsync(cancellationToken);
+            var clientName = client?.DisplayName ?? "Client";
+            // F17 (R25): only the service's accountant sees the client's details here.
+            var clientDetails = e.AccountantAccountId == viewerId && client is not null
+                ? new ClientDetails(client.PhoneNumber, client.City, client.BusinessName, client.BusinessType, client.Industry)
+                : null;
             var profile = await db.AccountantProfiles.Where(p => p.OwnerAccountId == e.AccountantAccountId)
                 .Select(p => new { p.Id, p.DisplayName }).FirstOrDefaultAsync(cancellationToken);
             var accountantName = profile?.DisplayName
@@ -168,7 +178,8 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
                 conversation,
                 files.Select(f => new FileView(f.Id, f.DisplayName, NameOf(f.UploaderAccountId), f.CreatedAt,
                     f.TaskId is { } taskId ? tasks.GetValueOrDefault(taskId, "Service task") : null,
-                    f.UploaderAccountId == viewerId, f.Length)).ToList());
+                    f.UploaderAccountId == viewerId, f.Length)).ToList(),
+                clientDetails);
         }, cancellationToken);
 
     public Task<ServiceEngagement?> FindAsync(Guid engagementId, CancellationToken cancellationToken) =>

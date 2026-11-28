@@ -124,6 +124,21 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("agreed_to_terms_at");
 
+                    b.Property<string>("BusinessName")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("business_name");
+
+                    b.Property<string>("BusinessType")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)")
+                        .HasColumnName("business_type");
+
+                    b.Property<string>("City")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("city");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text")
@@ -156,6 +171,11 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("boolean")
                         .HasColumnName("email_notifications");
 
+                    b.Property<string>("Industry")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("industry");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("boolean")
                         .HasColumnName("lockout_enabled");
@@ -179,7 +199,8 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnName("password_hash");
 
                     b.Property<string>("PhoneNumber")
-                        .HasColumnType("text")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
                         .HasColumnName("phone_number");
 
                     b.Property<bool>("PhoneNumberConfirmed")

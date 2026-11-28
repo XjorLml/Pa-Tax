@@ -27,7 +27,8 @@ public sealed record AccountantClientEntry(Guid ClientId, string Name, int Servi
 public sealed record AccountantWorkspaceView(IReadOnlyList<AccountantClientEntry> Clients, int InProgress, int NewRequests);
 
 /// <summary>An accountant's view of one client's services, and the services they could add (D24 proposal).</summary>
-public sealed record ClientServicesView(Guid ClientId, string ClientName, Guid? ConversationId, IReadOnlyList<ServiceCard> Services, IReadOnlyList<string> CanAdd);
+/// <summary>F03 client page; <paramref name="Details"/> is what the client shares with accountants they contact (F17, R25).</summary>
+public sealed record ClientServicesView(Guid ClientId, string ClientName, Guid? ConversationId, IReadOnlyList<ServiceCard> Services, IReadOnlyList<string> CanAdd, ClientDetails Details);
 
 public sealed record TaskView(Guid Id, string Title, ServiceTaskStatus Status);
 
@@ -52,8 +53,11 @@ public sealed record EngagementView(
     IReadOnlyList<TaskView> Tasks,
     IReadOnlyList<UpdateView> Updates,
     Guid? ConversationId,
-    IReadOnlyList<FileView> Files)
+    IReadOnlyList<FileView> Files,
+    ClientDetails? ClientDetails)
 {
+    // ClientDetails (F17, R25): for the service's accountant only; null for the client, who sees their own on Account.
+
     public bool CanEdit => ViewerIsAccountant && Phase == ServicePhase.Active;
 
     /// <summary>R23: either participant attaches documents to accepted work.</summary>

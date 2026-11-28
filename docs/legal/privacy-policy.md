@@ -1,8 +1,8 @@
 # Privacy Policy
 
-> **Owner-approved text, not reviewed by a lawyer.** Written on 2026-11-21 from the [drafting prompt](terms-privacy-drafting-prompt.md) and the owner's decisions, and approved by the owner the same day without a lawyer's review (PRD D10, STATUS G13). Version 2026-11-23 replaced "email us until deletion is available" with deletion on the site (F12). **Version 2026-11-23.2 is not yet approved by the owner:** it switches on the blocks for saved accountants and service work (F03), fills in service documents as decided in D26 and D28, and says what happens to the rest of the service work when an account is deleted, as the site does it. The Microsoft blocks stay off: the owner archived Microsoft sign-in on 2026-11-23 (F15). On 2026-11-24 the hosting provider changed from Render to Oracle Cloud Infrastructure, still in Singapore (ADR 012). The site's `/privacy` page shows this text (F11). `[OPTIONAL — …]` blocks cover features that aren't built yet and stay off the site until they launch; `[DECISION …]` marks what is still open. Remaining questions are in the [drafting notes](drafting-notes.md). This box isn't part of the published text.
+> **Owner-approved text, not reviewed by a lawyer.** Written on 2026-11-21 from the [drafting prompt](terms-privacy-drafting-prompt.md) and the owner's decisions, and approved by the owner the same day without a lawyer's review (PRD D10, STATUS G13). Version 2026-11-23 replaced "email us until deletion is available" with deletion on the site (F12). **Version 2026-11-25 is not yet approved by the owner:** it adds a client's details (name, phone, city and business; PRD R25, F17), what they're for, who sees them and their deletion. It includes version 2026-11-23.2, also not yet approved: it switches on the blocks for saved accountants and service work (F03), fills in service documents as decided in D26 and D28, and says what happens to the rest of the service work when an account is deleted, as the site does it. The Microsoft blocks stay off: the owner archived Microsoft sign-in on 2026-11-23 (F15). On 2026-11-24 the hosting provider changed from Render to Oracle Cloud Infrastructure, still in Singapore (ADR 012). The site's `/privacy` page shows this text (F11). `[OPTIONAL — …]` blocks cover features that aren't built yet and stay off the site until they launch; `[DECISION …]` marks what is still open. Remaining questions are in the [drafting notes](drafting-notes.md). This box isn't part of the published text.
 
-Version: 2026-11-23.2 · Last updated: 23 November 2026
+Version: 2026-11-25 · Last updated: 25 November 2026
 
 ## The short version
 
@@ -31,6 +31,8 @@ This policy explains what we do with personal information on the Site. It doesn'
 **When you register.** Your role (client or accountant), and when you agreed to our [Terms of Use](terms-of-use.md) and confirmed that you had read this policy, and to which version.
 
 **Profile picture (optional).** If you add one, it can be a JPEG, PNG or WebP image of up to 5 MB. We save it as a 400 × 400 picture and remove its location and camera data. Without one, your initials are shown.
+
+**Your details (clients).** The name we show for you, which starts as the name from Google and which you can change on your Account page. If you add them: a phone number, a city, and your business's name, type and industry. Please don't add your TIN or other government-issued numbers.
 
 **Accountant profiles.** Your name, title, city, career summary, experience (role, company, and start and end month), services offered with short descriptions, and contact email, phone number and website. To be listed, you must agree to show your contact details publicly.
 
@@ -66,6 +68,7 @@ This policy explains what we do with personal information on the Site. It doesn'
 | Keep a record of what you agreed to, and when | Time and version of agreement | Our legitimate interest in showing what you agreed to |
 | Show accountant profiles, pictures, highlights, ratings, reviews and replies | Profile, picture, highlights, reviews, replies | Contract. Consent for an accountant's public contact details |
 | Show a client's picture to the accountants they chat with | Client's picture | Contract |
+| Show a client's details to the accountants they have a service with | Client's name and details | Contract |
 | Deliver messages and show unread marks | Messages | Contract |
 | Check who may write a review, and show reviews | Conversation history, reviews | Contract; our legitimate interest in trustworthy reviews |
 | Keep a client's private list of accountants | Saved accountants | Contract |
@@ -94,6 +97,7 @@ Search engines may index public pages and show them in their results. While the 
 
 - Your name: with the people you chat with.
 - A client's picture: with that client and the accountants they have a conversation with.
+- A client's details (phone, city and business): with that client and the accountants they have a service with.
 - Messages: with the conversation's client and accountant only.
 - Service work and service documents: with that service's client and accountant only.
 - Saved accountants: with that client only.
@@ -130,7 +134,7 @@ Our service providers store and process personal information outside the Philipp
 
 - **Account, profile and picture:** while your account exists.
 - **Unused accounts:** if you don't use your account for 2 years, we email you a warning and then delete it, as below.
-- **When an account is deleted:** we remove its name, email, profile picture and sign-in links, and an accountant's profile. What remains is a nameless record, shown as "Deleted user", that the other person's chats point to.
+- **When an account is deleted:** we remove its name, email, profile picture, a client's details and sign-in links, and an accountant's profile. What remains is a nameless record, shown as "Deleted user", that the other person's chats point to.
 - **Messages after an account is deleted:** they stay with the other person in the conversation, shown as from "Deleted user". When both people in a conversation have deleted their accounts, the conversation is deleted.
 - **Reviews and replies after an account is deleted:** a client's reviews are removed, and ratings are recalculated. An accountant's profile is removed with its reviews and replies.
 - **Service work and documents after an account is deleted:** documents someone uploaded are deleted with their account. The rest of the service work, such as requests, checklists and notes, stays with the other person, shown as from "Deleted user". A client's saved accountants are deleted.
@@ -184,7 +188,7 @@ Under the DPA, you have the right to:
 
 Your lawful heirs and assigns may exercise these rights if you die or become incapacitated.
 
-**Doing it yourself.** You can edit your profile, change or remove your picture, edit or delete your reviews, block someone, and withdraw your agreement to show contact details. Withdrawing that agreement takes your profile out of the directory. You can also delete your account from your Account page. You can also turn off notification emails, in Account or from the link in any email.
+**Doing it yourself.** You can edit your profile or your details, change or remove your picture, edit or delete your reviews, block someone, and withdraw your agreement to show contact details. Withdrawing that agreement takes your profile out of the directory. You can also delete your account from your Account page. You can also turn off notification emails, in Account or from the link in any email.
 
 **Asking us.** Email our Data Protection Officer at lumaban.lemnuel.1@gmail.com. We may need to confirm your identity first, for example by asking you to write from your account's email address. We'll respond within 15 working days, free of charge.
 

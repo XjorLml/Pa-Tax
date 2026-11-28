@@ -57,6 +57,11 @@
             <section class="work-panel work-request">
                 <h3>Service request</h3>
                 <p>Work has not started. @(view.ViewerIsAccountant ? "Review this request, then accept or decline." : "Your accountant has not accepted this request yet.")</p>
+                @if (view.ClientDetails is { } details)
+                {
+                    @* F17 (R25): who is asking, before the accountant accepts. *@
+                    <AboutClient Name="@view.ClientName" Details="@details" Compact="true" />
+                }
                 @if (view.ViewerIsAccountant)
                 {
                     <div class="actions">

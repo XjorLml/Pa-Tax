@@ -57,10 +57,10 @@ public static class DeletedAccount
 /// </summary>
 public static class LegalText
 {
-    public const string CurrentVersion = "2026-11-23.2";
+    public const string CurrentVersion = "2026-11-25";
 
     /// <summary>The date shown on the pages and the agree page.</summary>
-    public const string UpdatedOn = "23 November 2026";
+    public const string UpdatedOn = "25 November 2026";
 
     /// <summary>The operator named in the text (owner's details of 2026-11-21; no registered business name yet).</summary>
     public const string Operator = "Lemnuel Lumaban";

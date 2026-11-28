@@ -1,0 +1,39 @@
+@using TaxBuddy.Web.Domain
+@* F17 (PRD R25; prototype aboutClientHTML, F02 BD15): what a client shares with the accountants they contact, on the
+   accountant's page for the client and, compact, in a service request. Only filled fields show. Never on a public page. *@
+<section class="@(Compact ? "about-client is-compact" : "about-client")" aria-label="About @Name">
+    <h3>About @FirstName</h3>
+    @if (Details.IsEmpty)
+    {
+        <p class="work-quiet">@FirstName hasn't added any details yet.</p>
+    }
+    else
+    {
+        <dl>
+            @if (Details.Phone is { } phone)
+            {
+                <dt>Phone</dt><dd>@phone</dd>
+            }
+            @if (Details.City is { } city)
+            {
+                <dt>City</dt><dd>@city</dd>
+            }
+            @if (Details.BusinessLine is { } business)
+            {
+                <dt>Business</dt><dd>@business</dd>
+            }
+        </dl>
+    }
+    <p class="muted small">Shared by @FirstName with the accountants they contact.</p>
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "";
+
+    [Parameter, EditorRequired] public ClientDetails Details { get; set; } = ClientDetails.Empty;
+
+    /// <summary>The smaller form inside a service request's panel.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    private string FirstName => Name.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? Name;
+}

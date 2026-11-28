@@ -60,6 +60,7 @@ public static class AccountSetup
         services.AddCascadingAuthenticationState();
         services.AddAuthorization();
         services.AddScoped<AccountService>();
+        services.AddScoped<ClientDetailsService>(); // F17 (PRD R25)
 
         var authentication = services.AddAuthentication(options =>
         {
