@@ -59,6 +59,19 @@ After a [comparison](../../docs/delivery/evidence/2026-11-24-prototype-site-comp
 | CS16 / R22 | A history entry from today, yesterday or earlier | "10:42 AM", "Yesterday · 10:42 AM", "Nov 16 · 10:42 AM"; the time is never shown twice | Unit test |
 | CS17 / BR15 | An accountant opens Request a service, or the profile is unknown or unlisted; or a workspace address is malformed | 404 with "This workspace is not available" in the workspace frame; a visitor is asked to sign in | Web test |
 
+## Repeated posts (2026-11-25)
+
+[PRD D31](../../docs/PRD.md#open-decisions), decided 2026-11-25: on a static form, a repeated post changes nothing. "Add task" and the shared note had no guard, so the user said "fix the two forms first" (CS18–CS20). The other three forms stored nothing twice, but a repeat showed the wrong result, so the user then said "fix the other three too" (CS21–CS23). Contract: [SDD](../../docs/SDD.md#private-service-workspaces).
+
+| ID / requirement | Given / when | Observable result in the application | Verification |
+|---|---|---|---|
+| CS18 / BR18, D31 | The accountant sends the same "Add task" or shared-note form twice, one after the other or at the same moment | One task and one history line, or one note. Both posts return to the page with "Task added." or "Progress update shared." | Web tests |
+| CS19 / BR18, D31 | The note form from an older copy of the page (the browser's Back) is sent with a different text | A second note: the same key with another text is a new post, not a repeat | Web test |
+| CS20 / D31 | The note form arrives without its key (a page drawn before this change) | "We couldn't save that. Your changes are kept; please try again.", with the text kept and the form drawn again with a key; nothing stored | Web test |
+| CS21 / BR18, D31 | The accountant sends Accept or Decline twice, one after the other, or Accept twice at the same moment | Accepted or declined once: one starting checklist and one history line. Every post shows "Request accepted." or "Request declined."; the second used to get an empty HTTP 400, because the page no longer drew the form. A Decline sent after Accept from the same old page shows the service as it is | Web tests |
+| CS22 / BR18, D31 | The accountant sends the same checklist save twice, one after the other or at the same moment | Every post shows "Checklist progress saved.", and the history has one line. A different choice saved from an older version still gets "Someone saved this checklist since you opened it" | Web tests |
+| CS23 / BR18, D31 | The upload form from an older copy of the page is sent with another file, or with the same file for another task | A new document each time. The same file and task again stays one document; before, another file got "Document attached." and nothing was stored | Web test |
+
 ## Decisions and evidence limits
 
 The private-save/request/accept model is confirmed. Other lifecycle, editing/completion and demo file policies remain proposals. Demo files: generated PDF/CSV/TXT, 5 MiB maximum simulated size; unsupported/oversize samples exist to exercise rejection. Actual storage provider, scanning, limits, retention, deletion and relationship termination must be decided before real documents are accepted. See [ADR 009](../../docs/adr/009-private-service-workspaces.md).

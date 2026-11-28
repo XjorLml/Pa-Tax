@@ -148,6 +148,140 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
     }
 
     [DatabaseFact]
+    public async Task Sending_the_same_task_or_note_form_twice_stores_it_once()
+    {
+        // PRD D31 (2026-11-25): a double click sends a static form twice, and the second post changes nothing (BR18).
+        var (accountant, _, service) = await AcceptedAsync("Bookkeeping");
+        var (task, note) = TaskAndNoteForms(await accountant.Client.GetHtmlAsync($"/work/{service}"));
+
+        for (var i = 0; i < 2; i++)
+        {
+            Assert.Equal($"/work/{service}?done=task", Target(await accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(task))));
+            Assert.Equal($"/work/{service}?done=note", Target(await accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(note))));
+        }
+
+        await AssertStoredOnceAsync(service);
+    }
+
+    [DatabaseFact]
+    public async Task The_same_task_or_note_form_sent_twice_at_once_is_stored_once()
+    {
+        // The two posts race: the one that loses finds the other's row and answers "done" too (PRD D31).
+        var (accountant, _, service) = await AcceptedAsync("Payroll");
+        var (task, note) = TaskAndNoteForms(await accountant.Client.GetHtmlAsync($"/work/{service}"));
+
+        var responses = await Task.WhenAll(new[] { task, task, note, note }
+            .Select(form => accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(form))));
+
+        Assert.Equal(["task", "task", "note", "note"], responses.Select(r => Target(r)?.Replace($"/work/{service}?done=", "")));
+        await AssertStoredOnceAsync(service);
+    }
+
+    [DatabaseFact]
+    public async Task A_different_note_sent_from_an_older_copy_of_the_page_is_shared_too()
+    {
+        // After the browser's Back, the page can return with a key already used. A different text is a new note, not a repeat.
+        var (accountant, _, service) = await AcceptedAsync("Audit");
+        var note = HiddenFields(await accountant.Client.GetHtmlAsync($"/work/{service}"), "Progress updates");
+        foreach (var text in new[] { "First update.", "Second update." })
+        {
+            note["Note.Text"] = text;
+            Assert.Equal($"/work/{service}?done=note", Target(await accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(note))));
+        }
+
+        await using var db = app.Schema.CreateContext();
+        Assert.True(await db.ServiceUpdates.AnyAsync(u => u.EngagementId == service && u.Text == "First update."));
+        Assert.True(await db.ServiceUpdates.AnyAsync(u => u.EngagementId == service && u.Text == "Second update."));
+    }
+
+    [DatabaseFact]
+    public async Task A_note_form_without_its_key_is_refused_with_the_text_kept()
+    {
+        // A page drawn before the key existed can't be checked for repeats, so it is drawn again with a key (PRD D31).
+        var (accountant, _, service) = await AcceptedAsync("Tax filing");
+        var note = HiddenFields(await accountant.Client.GetHtmlAsync($"/work/{service}"), "Progress updates");
+        Assert.True(note.Remove("Note.Key"));
+        note["Note.Text"] = "Sent without a key.";
+
+        var response = await accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(note));
+        var html = await response.ReadHtmlAsync();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("We couldn't save that. Your changes are kept; please try again.", html);
+        Assert.Contains(">Sent without a key.</textarea>", html);
+        Assert.Matches("""<input type="hidden" name="Note.Key" value="[0-9a-f]{8}-[0-9a-f-]{27}" """, html);
+        await using var db = app.Schema.CreateContext();
+        Assert.False(await db.ServiceUpdates.AnyAsync(u => u.EngagementId == service && u.Text == "Sent without a key."));
+    }
+
+    [DatabaseFact]
+    public async Task Accepting_or_declining_a_request_twice_changes_nothing_more_and_says_done()
+    {
+        // PRD D31: the second post of a double click finds the request already answered. It got an empty 400, because the
+        // page no longer drew the form it was sent from.
+        var (accountant, _, accepted) = await RequestAsync("Bookkeeping");
+        var requestPage = await accountant.Client.GetHtmlAsync($"/work/{accepted}");
+        var accept = HiddenFields(requestPage, "Review this request");
+        var lateDecline = HiddenFields(requestPage, ">Accept request</button>");
+        var (other, _, declined) = await RequestAsync("Tax filing");
+        var decline = HiddenFields(await other.Client.GetHtmlAsync($"/work/{declined}"), ">Accept request</button>");
+
+        for (var i = 0; i < 2; i++)
+        {
+            Assert.Equal($"/work/{accepted}?done=accepted", Target(await accountant.Client.PostAsync($"/work/{accepted}", new FormUrlEncodedContent(accept))));
+            Assert.Equal($"/work/{declined}?done=declined", Target(await other.Client.PostAsync($"/work/{declined}", new FormUrlEncodedContent(decline))));
+        }
+
+        // Decline from the same old page after accepting: it no longer applies, so the service is shown as it is.
+        Assert.Equal($"/work/{accepted}", Target(await accountant.Client.PostAsync($"/work/{accepted}", new FormUrlEncodedContent(lateDecline))));
+        Assert.Contains("Not started", await accountant.Client.GetHtmlAsync($"/work/{accepted}"));
+
+        await AssertAcceptedOnceAsync(accepted);
+        await using var db = app.Schema.CreateContext();
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == declined && u.Text == "Declined the service request."));
+    }
+
+    [DatabaseFact]
+    public async Task Accepting_a_request_twice_at_once_accepts_it_once()
+    {
+        // The post that loses the race tries again against the saved service, and finds it already accepted.
+        var (accountant, _, service) = await RequestAsync("Payroll");
+        var accept = HiddenFields(await accountant.Client.GetHtmlAsync($"/work/{service}"), "Review this request");
+
+        var responses = await Task.WhenAll(Enumerable.Range(0, 2)
+            .Select(_ => accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(accept))));
+
+        Assert.All(responses, r => Assert.Equal($"/work/{service}?done=accepted", Target(r)));
+        await AssertAcceptedOnceAsync(service);
+    }
+
+    [DatabaseFact]
+    public async Task Saving_the_same_checklist_twice_says_saved_and_records_it_once()
+    {
+        // PRD D31: the second post carries the version from before the first, but asks for nothing that isn't saved now.
+        // It said "Someone saved this checklist since you opened it". A real conflict still does (the stale test above).
+        var (accountant, _, service) = await AcceptedAsync("Audit");
+        var first = HiddenFields(await accountant.Client.GetHtmlAsync($"/work/{service}"), "Service checklist");
+        first["Statuses.Tasks[0].Status"] = nameof(ServiceTaskStatus.Completed);
+        for (var i = 0; i < 2; i++)
+        {
+            Assert.Equal($"/work/{service}?done=saved", Target(await accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(first))));
+        }
+
+        var second = HiddenFields(await accountant.Client.GetHtmlAsync($"/work/{service}"), "Service checklist");
+        second["Statuses.Tasks[1].Status"] = nameof(ServiceTaskStatus.InProgress);
+        var responses = await Task.WhenAll(Enumerable.Range(0, 2)
+            .Select(_ => accountant.Client.PostAsync($"/work/{service}", new FormUrlEncodedContent(second))));
+        Assert.All(responses, r => Assert.Equal($"/work/{service}?done=saved", Target(r)));
+
+        await using var db = app.Schema.CreateContext();
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == service
+            && u.Text == $"Agree the service requirements: {WorkRules.Label(ServiceTaskStatus.Completed)}"));
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == service
+            && u.Text == $"Prepare the work: {WorkRules.Label(ServiceTaskStatus.InProgress)}"));
+    }
+
+    [DatabaseFact]
     public async Task Nobody_else_sees_or_changes_a_service()
     {
         var (accountant, client, service) = await AcceptedAsync("Business registration");
@@ -360,5 +494,32 @@ public sealed class ClientServicesTests(EmptyAppFixture app) : IClassFixture<Emp
         var page = await accountant.Client.GetHtmlAsync($"/work/{id}");
         Assert.EndsWith("done=accepted", Target(await accountant.Client.PostAsync($"/work/{id}", new FormUrlEncodedContent(HiddenFields(page, "Review this request")))));
         return (accountant, client, id);
+    }
+
+    /// <summary>The accountant's "Add task" and shared-note forms, filled in, each with the key the page drew.</summary>
+    private static (Dictionary<string, string> Task, Dictionary<string, string> Note) TaskAndNoteForms(string page)
+    {
+        var task = HiddenFields(page, "Save checklist changes");
+        task["NewTask.Title"] = "Send payslips";
+        var note = HiddenFields(page, "Progress updates");
+        note["Note.Text"] = "Please send the March timesheets.";
+        Assert.NotEqual(task["NewTask.Key"], note["Note.Key"]);
+        return (task, note);
+    }
+
+    private async Task AssertAcceptedOnceAsync(Guid service)
+    {
+        await using var db = app.Schema.CreateContext();
+        Assert.Equal(WorkRules.StartingTasks.Length, await db.ServiceTasks.CountAsync(t => t.EngagementId == service));
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == service
+            && u.Text == "Accepted the service request and created a starting checklist."));
+    }
+
+    private async Task AssertStoredOnceAsync(Guid service)
+    {
+        await using var db = app.Schema.CreateContext();
+        Assert.Equal(1, await db.ServiceTasks.CountAsync(t => t.EngagementId == service && t.Title == "Send payslips"));
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == service && u.Text == "Added checklist task: Send payslips"));
+        Assert.Equal(1, await db.ServiceUpdates.CountAsync(u => u.EngagementId == service && u.Text == "Please send the March timesheets."));
     }
 }

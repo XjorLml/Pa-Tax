@@ -251,6 +251,9 @@ public sealed partial class TaxBuddyDbContext(DbContextOptions<TaxBuddyDbContext
             update.Property(u => u.Id).ValueGeneratedNever();
             update.Property(u => u.Text).HasMaxLength(WorkRules.Note);
             update.HasIndex(u => new { u.EngagementId, u.CreatedAt });
+
+            // A form's key is used once per service (PRD D31). PostgreSQL treats nulls as distinct, so lines without one don't collide.
+            update.HasIndex(u => new { u.EngagementId, u.FormKey }).IsUnique();
             update.HasOne<ServiceEngagement>().WithMany().HasForeignKey(u => u.EngagementId).OnDelete(DeleteBehavior.Cascade);
             update.HasOne<TaxBuddyUser>().WithMany().HasForeignKey(u => u.AuthorAccountId).OnDelete(DeleteBehavior.Restrict);
         });

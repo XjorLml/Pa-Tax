@@ -75,6 +75,14 @@
                 }
             </section>
         }
+        else if (view.ViewerIsAccountant && HttpMethods.IsPost(HttpContext?.Request.Method ?? ""))
+        {
+            @* PRD D31: Blazor hands a post only to a form the page draws, and answered a repeat with an empty 400. The second
+               post of a double-clicked Accept or Decline arrives after the request was answered, so while a post is handled
+               the two forms are drawn empty and hidden; their handlers find nothing to change and go back with the usual line. *@
+            <form method="post" @formname="accept" @onsubmit="AcceptAsync" hidden></form>
+            <form method="post" @formname="decline" @onsubmit="DeclineAsync" hidden></form>
+        }
         else if (view.Phase == ServicePhase.Declined)
         {
             <section class="work-panel"><h3>Service request</h3><p>@(view.ViewerIsAccountant ? "You declined this request." : "The accountant declined this request. You can request another service, or message them.")</p></section>
@@ -147,6 +155,7 @@
                     {
                         <form method="post" @formname="add-task" @onsubmit="AddTaskAsync" novalidate>
                             <AntiforgeryToken />
+                            <input type="hidden" name="NewTask.Key" value="@TaskKey" />
                             <label class="work-field">New checklist task<input name="NewTask.Title" value="@NewTask!.Title" maxlength="@WorkRules.TaskTitle" /></label>
                             @if (taskError is not null)
                             {
@@ -263,6 +272,7 @@
                 {
                     <form method="post" @formname="note" @onsubmit="PostNoteAsync" novalidate>
                         <AntiforgeryToken />
+                        <input type="hidden" name="Note.Key" value="@NoteKey" />
                         <label class="work-field">Shared progress note<textarea name="Note.Text" rows="4" maxlength="@WorkRules.Note">@Note!.Text</textarea></label>
                         @if (noteError is not null)
                         {
@@ -322,6 +332,15 @@
 
     /// <summary>A new key for each upload form: the same form sent twice stores one document (BR18).</summary>
     private readonly Guid uploadKey = Guid.NewGuid();
+
+    // One key for each static form that adds a row (PRD D31): the same form sent twice adds it once. A form drawn again
+    // after a failure keeps the key it was sent with, so a retry after an unknown outcome isn't stored twice either.
+    private readonly Guid newTaskKey = Guid.NewGuid();
+    private readonly Guid newNoteKey = Guid.NewGuid();
+
+    private Guid TaskKey => NewTask?.Key is { } key && key != Guid.Empty ? key : newTaskKey;
+
+    private Guid NoteKey => Note?.Key is { } key && key != Guid.Empty ? key : newNoteKey;
 
     private string? FileDoneText => FileResult switch
     {
@@ -393,9 +412,24 @@
             ? status
             : task.Status;
 
-    private async Task AcceptAsync() => After(await Work.AcceptAsync(viewer, Id), "accepted", e => actionError = e);
+    private async Task AcceptAsync() => Answered(await Work.AcceptAsync(viewer, Id), "accepted");
 
-    private async Task DeclineAsync() => After(await Work.DeclineAsync(viewer, Id), "declined", e => actionError = e);
+    private async Task DeclineAsync() => Answered(await Work.DeclineAsync(viewer, Id), "declined");
+
+    /// <summary>
+    /// An answer that no longer applies (accepted in one tab, then declined from another) shows the service as it is
+    /// now, to the participant who can already see it. Anything else goes through <see cref="After"/>.
+    /// </summary>
+    private void Answered(WorkOutcome outcome, string done)
+    {
+        if (outcome == WorkOutcome.NotAllowed && view is not null)
+        {
+            Navigation.NavigateTo($"/work/{Id}");
+            return;
+        }
+
+        After(outcome, done, e => actionError = e);
+    }
 
     private async Task SaveStatusesAsync()
     {
@@ -416,7 +450,7 @@
 
     private async Task AddTaskAsync()
     {
-        var result = await Work.AddTaskAsync(viewer, Id, NewTask!.Title);
+        var result = await Work.AddTaskAsync(viewer, Id, NewTask!.Title, NewTask.Key);
         if (result.Outcome == WorkOutcome.Invalid)
         {
             taskError = result.Problem;
@@ -428,7 +462,7 @@
 
     private async Task PostNoteAsync()
     {
-        var result = await Work.PostNoteAsync(viewer, Id, Note!.Text);
+        var result = await Work.PostNoteAsync(viewer, Id, Note!.Text, Note.Key);
         if (result.Outcome == WorkOutcome.Invalid)
         {
             noteError = result.Problem;
@@ -454,12 +488,16 @@
         }
     }
 
-    /// <summary>Done: back to the page with the status line. Failed: the page again with the input kept. Otherwise unavailable.</summary>
+    /// <summary>
+    /// Done, or Existing (the same form sent again): back to the page with the status line. Failed: the page again with
+    /// the input kept. Otherwise unavailable.
+    /// </summary>
     private void After(WorkOutcome outcome, string done, Action<string> showError)
     {
         switch (outcome)
         {
             case WorkOutcome.Done:
+            case WorkOutcome.Existing:
                 Navigation.NavigateTo($"/work/{Id}?done={done}");
                 break;
             case WorkOutcome.Failed:
@@ -488,11 +526,15 @@
 
     private sealed class TaskForm
     {
+        public Guid Key { get; set; }
+
         public string? Title { get; set; }
     }
 
     private sealed class NoteForm
     {
+        public Guid Key { get; set; }
+
         public string? Text { get; set; }
     }
 

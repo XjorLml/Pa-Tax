@@ -1,3 +1,4 @@
+using System.Security.Cryptography;
 using SkiaSharp;
 using TaxBuddy.Web.Application.Chat;
 using TaxBuddy.Web.Application.Directory;
@@ -74,6 +75,20 @@ public sealed class ServiceDocuments(IWorkStore store, IDocumentStorage storage,
         };
     }
 
+    /// <summary>
+    /// The key a document is stored under: the upload form's one-time key, the chosen task and the file's content
+    /// together (PRD D31, BR18). The same form sent again with the same file and task is one document. Another file or
+    /// task sent from an older copy of the page (the browser's Back) is a new document, not a repeat to ignore.
+    /// </summary>
+    public static Guid UploadKey(Guid formKey, Guid? taskId, byte[] content)
+    {
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        hash.AppendData(formKey.ToByteArray());
+        hash.AppendData((taskId ?? Guid.Empty).ToByteArray());
+        hash.AppendData(content);
+        return new Guid(hash.GetHashAndReset().AsSpan(0, 16));
+    }
+
     public async Task<UploadResult> AttachAsync(ChatViewer? viewer, Guid engagementId, Guid operationId, Guid? taskId, string? fileName, byte[] content,
         CancellationToken cancellationToken = default)
     {
@@ -82,10 +97,11 @@ public sealed class ServiceDocuments(IWorkStore store, IDocumentStorage storage,
             return new UploadResult(WorkOutcome.NotAllowed);
         }
 
+        var storedKey = UploadKey(operationId, taskId, content);
         UploadTarget? target;
         try
         {
-            target = await store.UploadTargetAsync(engagementId, viewer.AccountId, operationId, cancellationToken);
+            target = await store.UploadTargetAsync(engagementId, viewer.AccountId, storedKey, cancellationToken);
         }
         catch (DataUnavailableException)
         {
@@ -146,7 +162,7 @@ public sealed class ServiceDocuments(IWorkStore store, IDocumentStorage storage,
             return Invalid(UploadProblem.Failed);
         }
 
-        var file = new ServiceFile(fileId, engagementId, taskId, viewer.AccountId, operationId, objectName, name, contentType, content.Length, clock.UtcNow);
+        var file = new ServiceFile(fileId, engagementId, taskId, viewer.AccountId, storedKey, objectName, name, contentType, content.Length, clock.UtcNow);
         WorkOutcome outcome;
         try
         {

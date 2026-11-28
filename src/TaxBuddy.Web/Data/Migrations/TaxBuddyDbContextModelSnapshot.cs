@@ -765,6 +765,10 @@ namespace TaxBuddy.Web.Data.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("engagement_id");
 
+                    b.Property<Guid?>("FormKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("form_key");
+
                     b.Property<bool>("IsNote")
                         .HasColumnType("boolean")
                         .HasColumnName("is_note");
@@ -783,6 +787,10 @@ namespace TaxBuddy.Web.Data.Migrations
 
                     b.HasIndex("EngagementId", "CreatedAt")
                         .HasDatabaseName("ix_service_updates_engagement_id_created_at");
+
+                    b.HasIndex("EngagementId", "FormKey")
+                        .IsUnique()
+                        .HasDatabaseName("ix_service_updates_engagement_id_form_key");
 
                     b.ToTable("service_updates", (string)null);
                 });

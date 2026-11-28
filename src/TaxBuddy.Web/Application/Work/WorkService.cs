@@ -141,9 +141,15 @@ public sealed class WorkService(IWorkStore store, IClock clock)
         }
     }
 
+    /// <summary>Accepts a request. Accepting work that is already active changes nothing: the same form sent again (PRD D31).</summary>
     public Task<WorkOutcome> AcceptAsync(ChatViewer? viewer, Guid engagementId, CancellationToken cancellationToken = default) =>
         AsAccountantAsync(viewer, engagementId, null, e =>
         {
+            if (e.Phase == ServicePhase.Active)
+            {
+                return [];
+            }
+
             if (e.Phase != ServicePhase.Requested)
             {
                 return null;
@@ -153,9 +159,15 @@ public sealed class WorkService(IWorkStore store, IClock clock)
             return [("Accepted the service request and created a starting checklist.", false)];
         }, cancellationToken);
 
+    /// <summary>Declines a request. Declining one already declined changes nothing: the same form sent again (PRD D31).</summary>
     public Task<WorkOutcome> DeclineAsync(ChatViewer? viewer, Guid engagementId, CancellationToken cancellationToken = default) =>
         AsAccountantAsync(viewer, engagementId, null, e =>
         {
+            if (e.Phase == ServicePhase.Declined)
+            {
+                return [];
+            }
+
             if (e.Phase != ServicePhase.Requested)
             {
                 return null;
@@ -191,7 +203,11 @@ public sealed class WorkService(IWorkStore store, IClock clock)
             return lines.Count == 0 ? [] : [(string.Join("; ", lines), false)];
         }, cancellationToken);
 
-    public async Task<WorkResult> AddTaskAsync(ChatViewer? viewer, Guid engagementId, string? title, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// Adds a checklist task. <paramref name="formKey"/> is the form's one-time key: the same form sent twice adds one
+    /// task, and returns Existing the second time (PRD D31, BR18).
+    /// </summary>
+    public async Task<WorkResult> AddTaskAsync(ChatViewer? viewer, Guid engagementId, string? title, Guid formKey, CancellationToken cancellationToken = default)
     {
         var trimmed = title?.Trim();
         if (string.IsNullOrEmpty(trimmed) || trimmed.Length > WorkRules.TaskTitle)
@@ -199,6 +215,7 @@ public sealed class WorkService(IWorkStore store, IClock clock)
             return new WorkResult(WorkOutcome.Invalid, Problem: $"Enter a task name of 1 to {WorkRules.TaskTitle} characters.");
         }
 
+        var line = $"Added checklist task: {trimmed}";
         var outcome = await AsAccountantAsync(viewer, engagementId, null, e =>
         {
             if (e.Phase != ServicePhase.Active || e.Tasks.Count >= WorkRules.TasksPerService)
@@ -207,13 +224,16 @@ public sealed class WorkService(IWorkStore store, IClock clock)
             }
 
             e.AddTask(trimmed, clock.UtcNow);
-            return [($"Added checklist task: {trimmed}", false)];
-        }, cancellationToken);
+            return [(line, false)];
+        }, cancellationToken, new FormPost(formKey, line));
         return new WorkResult(outcome, engagementId);
     }
 
-    /// <summary>R22: a shared progress note by the accountant (BR16), 1 to 1,000 characters.</summary>
-    public async Task<WorkResult> PostNoteAsync(ChatViewer? viewer, Guid engagementId, string? text, CancellationToken cancellationToken = default)
+    /// <summary>
+    /// R22: a shared progress note by the accountant (BR16), 1 to 1,000 characters. The same form sent twice shares one
+    /// note (PRD D31, BR18).
+    /// </summary>
+    public async Task<WorkResult> PostNoteAsync(ChatViewer? viewer, Guid engagementId, string? text, Guid formKey, CancellationToken cancellationToken = default)
     {
         var trimmed = text?.Trim();
         if (string.IsNullOrEmpty(trimmed) || trimmed.Length > WorkRules.Note)
@@ -222,22 +242,36 @@ public sealed class WorkService(IWorkStore store, IClock clock)
         }
 
         var outcome = await AsAccountantAsync(viewer, engagementId, null,
-            e => e.Phase == ServicePhase.Active ? [(trimmed, true)] : null, cancellationToken);
+            e => e.Phase == ServicePhase.Active ? [(trimmed, true)] : null, cancellationToken, new FormPost(formKey, trimmed));
         return new WorkResult(outcome, engagementId);
     }
 
-    /// <summary>Runs a change as the service's accountant; anyone else, or a change that doesn't apply, is NotAllowed.</summary>
-    private async Task<WorkOutcome> AsAccountantAsync(ChatViewer? viewer, Guid engagementId, int? version, EngagementChange change, CancellationToken cancellationToken)
+    /// <summary>
+    /// Runs a change as the service's accountant; anyone else, or a change that doesn't apply, is NotAllowed. A form
+    /// that came without its key can't be checked for repeats, so it is refused as a failed save: the page shows the
+    /// form again, with the text kept and a key. A change that loses a race to another save (most often the same form
+    /// sent twice at once) is tried once more against what was saved, where a repeat finds nothing left to do.
+    /// </summary>
+    private async Task<WorkOutcome> AsAccountantAsync(ChatViewer? viewer, Guid engagementId, int? version, EngagementChange change,
+        CancellationToken cancellationToken, FormPost? form = null)
     {
         if (!IsAccountant(viewer))
         {
             return WorkOutcome.NotAllowed;
         }
 
+        if (form is { Key: var key } && key == Guid.Empty)
+        {
+            return WorkOutcome.Failed;
+        }
+
         try
         {
-            return await store.ChangeAsync(engagementId, version, viewer!.AccountId,
-                e => e.AccountantAccountId == viewer.AccountId ? change(e) : null, clock.UtcNow, cancellationToken);
+            EngagementChange own = e => e.AccountantAccountId == viewer!.AccountId ? change(e) : null;
+            var outcome = await store.ChangeAsync(engagementId, version, viewer!.AccountId, own, clock.UtcNow, form, cancellationToken);
+            return outcome == WorkOutcome.Stale
+                ? await store.ChangeAsync(engagementId, version, viewer.AccountId, own, clock.UtcNow, form, cancellationToken)
+                : outcome;
         }
         catch (DataUnavailableException)
         {

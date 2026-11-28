@@ -92,7 +92,14 @@ public sealed record WorkResult(WorkOutcome Outcome, Guid? EngagementId = null, 
 /// <summary>What the store changes in one transaction: the service's new state and the lines it adds to the history.</summary>
 public delegate IReadOnlyList<(string Text, bool IsNote)>? EngagementChange(ServiceEngagement engagement);
 
-/// <summary>What an upload needs to know before storing bytes: the service's phase and tasks, and whether this form was already sent.</summary>
+/// <summary>
+/// A static form's one-time key and the history line it writes (PRD D31, BR18). The same key with the same line from
+/// the same person is the form sent again, and changes nothing; the same key with another line is a new post from an
+/// older copy of the page (the browser's Back), and is stored without the key.
+/// </summary>
+public sealed record FormPost(Guid Key, string Line);
+
+/// <summary>What an upload needs to know before storing bytes: the service's phase and tasks, and whether this form was already stored with this file and task.</summary>
 public sealed record UploadTarget(ServicePhase Phase, IReadOnlyDictionary<Guid, string> Tasks, int Files, bool AlreadySent);
 
 /// <summary>A stored document's object and download details, for one of its service's participants.</summary>
@@ -137,9 +144,12 @@ public interface IWorkStore
 
     /// <summary>
     /// Loads the service, checks <paramref name="expectedVersion"/> when given, applies <paramref name="change"/> and its
-    /// history lines by <paramref name="authorId"/>, and saves: Done, Stale, or NotAllowed when it is gone.
+    /// history lines by <paramref name="authorId"/>, and saves: Done, Stale, or NotAllowed when it is gone. A stale
+    /// version is Done when the change finds nothing to change (the same form sent again), and Stale otherwise. With
+    /// <paramref name="form"/>, the line it names carries the form's key, and Existing means that form was already stored.
     /// </summary>
-    Task<WorkOutcome> ChangeAsync(Guid engagementId, int? expectedVersion, Guid authorId, EngagementChange change, DateTimeOffset at, CancellationToken cancellationToken);
+    Task<WorkOutcome> ChangeAsync(Guid engagementId, int? expectedVersion, Guid authorId, EngagementChange change, DateTimeOffset at,
+        FormPost? form, CancellationToken cancellationToken);
 
     /// <summary>The service as an upload by <paramref name="viewerId"/> sees it; null when it isn't theirs or doesn't exist.</summary>
     Task<UploadTarget?> UploadTargetAsync(Guid engagementId, Guid viewerId, Guid operationId, CancellationToken cancellationToken);

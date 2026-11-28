@@ -114,6 +114,33 @@ public sealed class ServiceDocumentsTests(EmptyAppFixture app) : IClassFixture<E
     }
 
     [DatabaseFact]
+    public async Task An_older_copy_of_the_upload_form_with_another_file_or_task_stores_a_new_document()
+    {
+        // PRD D31: after the browser's Back the form can return with its key already used. Another file, or the same file
+        // for another task, is a new document; only the same file and task again is a repeat. It said "Document attached."
+        // and stored nothing.
+        var (_, client, service) = await AcceptedAsync("Payroll");
+        var task = await TaskIdAsync(service, 1);
+        var page = await client.Client.GetHtmlAsync($"/work/{service}");
+        var otherPdf = SamplePdf.Concat("% another file\n"u8.ToArray()).ToArray();
+
+        foreach (var (content, name, forTask) in new[]
+        {
+            (SamplePdf, "return.pdf", (Guid?)null), (otherPdf, "receipt.pdf", null), (SamplePdf, "return.pdf", task), (SamplePdf, "return.pdf", null),
+        })
+        {
+            var response = await client.Client.PostAsync(WorkEndpoints.FilesPath(service), UploadForm(page, content, name, forTask));
+            Assert.Equal($"/work/{service}?file=attached#documents", Target(response));
+        }
+
+        await using var db = app.Schema.CreateContext();
+        var files = await db.ServiceFiles.Where(f => f.EngagementId == service).Select(f => new { f.DisplayName, f.TaskId }).ToListAsync();
+        Assert.Equal(3, files.Count);
+        Assert.Single(files, f => f.DisplayName == "receipt.pdf");
+        Assert.Single(files, f => f.DisplayName == "return.pdf" && f.TaskId == task);
+    }
+
+    [DatabaseFact]
     public async Task Nobody_else_downloads_or_adds_documents_and_requests_take_none()
     {
         var (accountant, client, service) = await AcceptedAsync("Business registration");

@@ -209,7 +209,7 @@ public sealed class ServiceUpdate
     {
     }
 
-    public ServiceUpdate(Guid id, Guid engagementId, Guid authorAccountId, string text, bool isNote, DateTimeOffset at)
+    public ServiceUpdate(Guid id, Guid engagementId, Guid authorAccountId, string text, bool isNote, DateTimeOffset at, Guid? formKey = null)
     {
         Id = id;
         EngagementId = engagementId;
@@ -217,6 +217,7 @@ public sealed class ServiceUpdate
         Text = text;
         IsNote = isNote;
         CreatedAt = at;
+        FormKey = formKey;
     }
 
     public Guid Id { get; private set; }
@@ -231,6 +232,12 @@ public sealed class ServiceUpdate
     public bool IsNote { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
+
+    /// <summary>
+    /// The one-time key of the static form that wrote this line ("Add task", the shared note), unique per service: the
+    /// same form sent again, by a double click or a retry, changes nothing (BR18, PRD D31). Null for other lines.
+    /// </summary>
+    public Guid? FormKey { get; private set; }
 }
 
 /// <summary>
@@ -268,7 +275,10 @@ public sealed class ServiceFile
 
     public Guid UploaderAccountId { get; private set; }
 
-    /// <summary>The upload form's one-time key: sending the same form twice (a retry or a double click) stores one file (BR18).</summary>
+    /// <summary>
+    /// Made from the upload form's one-time key, the task and the file's content: the same form sent twice with the same
+    /// file (a retry or a double click) stores one file (BR18, PRD D31). Before 2026-11-25 it was the form's key alone.
+    /// </summary>
     public Guid OperationId { get; private set; }
 
     public string ObjectName { get; private set; } = "";

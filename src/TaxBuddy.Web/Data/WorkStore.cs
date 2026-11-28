@@ -216,8 +216,9 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
     }
 
     public async Task<WorkOutcome> ChangeAsync(Guid engagementId, int? expectedVersion, Guid authorId, EngagementChange change, DateTimeOffset at,
-        CancellationToken cancellationToken)
+        FormPost? form, CancellationToken cancellationToken)
     {
+        var post = form;
         try
         {
             await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
@@ -227,19 +228,35 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
                 return WorkOutcome.NotAllowed;
             }
 
-            if (expectedVersion is { } version && version != engagement.Version)
+            if (post is not null && await EarlierPostAsync(db, engagementId, authorId, post, cancellationToken) is { } same)
             {
-                return WorkOutcome.Stale;
+                if (same)
+                {
+                    return WorkOutcome.Existing; // the same form sent again: it is already stored (PRD D31)
+                }
+
+                post = null; // the key came with an older copy of the page, and this post says something else
             }
 
+            var stale = expectedVersion is { } version && version != engagement.Version;
             if (change(engagement) is not { } lines)
             {
                 return WorkOutcome.NotAllowed;
             }
 
+            if (stale)
+            {
+                // Saved by someone since this form was drawn. A form that asks for nothing that isn't saved already (the
+                // same form sent again) has nothing to refuse (PRD D31); otherwise its draft goes back for review.
+                return lines.Count == 0 ? WorkOutcome.Done : WorkOutcome.Stale;
+            }
+
+            var keyed = false;
             foreach (var (text, isNote) in lines)
             {
-                db.ServiceUpdates.Add(new ServiceUpdate(Guid.NewGuid(), engagement.Id, authorId, text, isNote, at));
+                Guid? key = !keyed && post is not null && text == post.Line ? post.Key : null;
+                keyed |= key is not null;
+                db.ServiceUpdates.Add(new ServiceUpdate(Guid.NewGuid(), engagement.Id, authorId, text, isNote, at, key));
             }
 
             await db.SaveChangesAsync(cancellationToken);
@@ -247,13 +264,37 @@ public sealed class WorkStore(IDbContextFactory<TaxBuddyDbContext> contextFactor
         }
         catch (DbUpdateConcurrencyException)
         {
-            return WorkOutcome.Stale;
+            // Another save won. If it was this same form sent at the same moment, the work is done.
+            return await SentBeforeAsync(engagementId, authorId, post, cancellationToken) ? WorkOutcome.Existing : WorkOutcome.Stale;
+        }
+        catch (DbUpdateException ex) when (post is not null && ex.InnerException is PostgresException { SqlState: PostgresErrorCodes.UniqueViolation })
+        {
+            if (await SentBeforeAsync(engagementId, authorId, post, cancellationToken))
+            {
+                return WorkOutcome.Existing; // the same form sent twice at once: the other request stored it
+            }
+
+            throw Unavailable(ex);
         }
         catch (Exception ex) when (IsDataFailure(ex))
         {
             throw Unavailable(ex);
         }
     }
+
+    /// <summary>Null when no line carries the form's key; true when this person's same line does (a repeat); false otherwise.</summary>
+    private static async Task<bool?> EarlierPostAsync(TaxBuddyDbContext db, Guid engagementId, Guid authorId, FormPost post, CancellationToken cancellationToken)
+    {
+        var earlier = await db.ServiceUpdates.AsNoTracking()
+            .Where(u => u.EngagementId == engagementId && u.FormKey == post.Key)
+            .Select(u => new { u.AuthorAccountId, u.Text })
+            .FirstOrDefaultAsync(cancellationToken);
+        return earlier is null ? null : earlier.AuthorAccountId == authorId && earlier.Text == post.Line;
+    }
+
+    /// <summary>Checks again in a new context, after a save lost a race, whether that race was this form sent twice.</summary>
+    private async Task<bool> SentBeforeAsync(Guid engagementId, Guid authorId, FormPost? post, CancellationToken cancellationToken) =>
+        post is not null && await Run(db => EarlierPostAsync(db, engagementId, authorId, post, cancellationToken), cancellationToken) == true;
 
     public Task<UploadTarget?> UploadTargetAsync(Guid engagementId, Guid viewerId, Guid operationId, CancellationToken cancellationToken) =>
         Run(async db =>
