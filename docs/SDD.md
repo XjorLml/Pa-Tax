@@ -65,6 +65,11 @@ The render mode is chosen per page or component ([ADR 010](adr/010-single-projec
 
 Apart from new chat, every interactive page requires sign-in, so only signed-in users hold a server connection (the "circuit"). Cost of this choice: each open interactive page holds one, and it drops when the server restarts. Drafts on interactive forms other than chat depend on open conflict [C04](README.md#history-and-unresolved-conflicts).
 
+**Streaming and prerendered state** (written 2026-11-25 with the [loading standard](DESIGN.md#loading-and-busy-feedback); streaming decided the same day as [PRD D32](PRD.md#open-decisions)):
+- **No page uses `[StreamRendering]`.** A streamed page sends its first part, status code included, before its data is read. The directory, profiles, the chat pages and the workspace pages could then no longer answer 404 or 503 ([navigation table](#navigation-and-screen-state)). And the streamed content is put in place by script, which [ADR 010](adr/010-single-project-per-page-render-modes.md) rules out for public pages (TP01). [F01 P1](../specs/browse-accountants/tasks.md#polish-follow-ups) reached the same view. A page that needs streaming later comes back as a new decision, recorded in the table above.
+- **An interactive component that prerenders carries its first result to the circuit,** so its data is read once and the page isn't drawn twice: `ChatPanes` uses `[PersistentState]` (F07). A component that can't do that has prerendering turned off and shows a skeleton instead, and the table above names it.
+- **Noted on 2026-11-25, not changed:** the table's rows for `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service` and `/work/{id}` say Interactive Server. As built they are static pages with named forms ([F03 stage 1](#private-service-workspaces)), and `ChatPanes` is the only interactive component in the source. The loading standard treats them as static. The rows are left for the owner to correct.
+
 Forms on static pages follow the static rendering rules ([forms reference](REFERENCES.md#implementation-and-hosting)):
 - each form has a unique name;
 - `UseAntiforgery` validates the antiforgery token;
@@ -283,7 +288,7 @@ Addresses are proposed; the first feature spec refines the directory ones.
 | `/account/delete` | Signed-in user; `step=confirm` for the second step; `done=1` for the result after sign-out | None | Two steps; on success the user is signed out and sees "Your account was deleted" (`?done=1`); a failure keeps them signed in with the page and a banner. Built in F12; service files will follow D27 |
 | `/workspace`, `/clients/{id}`, `/accountants/{id}/request-service`, `/work/{id}` | Authenticated participant and valid parent IDs; [private-workspace contract](#private-service-workspaces) | Draft request/task/note state retained on failed write. Documents (2026-11-23): after a failed upload the task choice is kept (`?task=`) and the file is chosen again, as browsers don't keep a file choice across pages; resending the same form stores one document | Missing/unauthorized is generic unavailable; built 2026-11-23, with `/work/{id}/files` (upload) and `/work/{id}/files/{fileId}` (download) |
 
-A submit button is disabled while its operation runs, so a double click can't run it twice.
+On interactive pages a submit button is disabled while its operation runs, so a double click can't run it twice. On static forms a double click sends the form twice, and the server makes the repeat change nothing ([PRD D31](PRD.md#open-decisions), decided 2026-11-25; checks in [DEVELOPMENT](DEVELOPMENT.md#loading-and-busy-feedback)). Until then this sentence named every submit button.
 
 ### As built in F01 (2026-11-13)
 

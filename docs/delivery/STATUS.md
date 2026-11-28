@@ -438,6 +438,31 @@ The subsequent F03 expansion added PRD R19–R23, ADR 009, private workspace con
   - **Legal:** the privacy policy names the details. Version `2026-11-25` awaits the owner's approval, and signed-in people agree again.
   - **Checked:** 400 tests pass (23 new); Release build with no warnings; pages viewed in Edge; the prototype, aligned with the site, passes its 212 checks.
   - **Waiting on the user:** rotate the Supabase key, approve version `2026-11-25`, and try both on the running site.
+- 2026-11-25, the user: a loading and busy-feedback standard, adapted from another web app's audit of about 60 loading defects. Documentation only.
+  - **Written, all Proposed:**
+    - DESIGN [Loading and busy feedback](../DESIGN.md#loading-and-busy-feedback): states, the indicator table, timings, shape, refreshes, writes, the spinner with its computed contrast, failures, live connections and component labels;
+    - DEVELOPMENT's review checks;
+    - an SDD note on streaming and prerendered state;
+    - TP28, PRD D29–D34 and gate G19;
+    - REFERENCES rows for the Blazor pages read.
+  - **Adapted to the repository:** the request described a repository without source, where the account, editor and workspace pages were interactive. In fact F01–F17 are built, and only the chat panel is interactive. So no streamed skeletons are proposed for static pages (ADR 010 and the 404/503 statuses), and the prototype's spinner sizes and button words stay until D34.
+  - **Recorded, not changed:** the SDD's render-mode rows for the workspace pages still say Interactive Server.
+  - **Checked:**
+    - the documentation checker (`--ready`) passes: 132 files, 1,438 local links, 0 errors;
+    - the API names against the .NET 11.0.0 reference assemblies, SDK 11.0.100's `blazor.web.js` and the docs' source.
+  - **Not checked:** the contrast ratios were computed from the palette values, not measured. Nothing was built, and nothing was checked in a browser.
+  - **Waiting on the user:** D29–D34.
+- 2026-11-25, the user: "go with your recommendations for D29 to D34" ([PRD](../PRD.md#open-decisions)).
+  - **Recorded as decided:** the agent had listed the options without a pick for each, so it stated its recommendations after the instruction:
+    - D29: 300 ms and 400 ms, as working values;
+    - D30: skeletons pulse, as in the prototype;
+    - D31: static forms run no script, and the server makes a repeated post change nothing;
+    - D32: no page streams;
+    - D33: a thin bar along the top of the window during moves between pages ([F01 P1](../../specs/browse-accountants/tasks.md#polish-follow-ups) option A);
+    - D34: the prototype's spinner sizes, button words and connection notice, and no session screen of its own.
+  - **Updated:** PRD, DESIGN, DEVELOPMENT, the SDD (its submit-button sentence now covers interactive pages only), TP28 and F01 P1.
+  - **Found while checking D31:** `WorkService.AddTaskAsync` and `PostNoteAsync` have no repeat guard, so a double-clicked "Add task" or shared note is stored twice (BR18, TP20). Recorded in G19; not fixed.
+  - **Not done:** nothing was built or checked in a browser.
 - 2026-11-25, the user: "in the My profile implement Option B: Preview beside the form in the prototype" ([evidence](evidence/2026-11-25-prototype-editor-preview.md)).
   - **Done:** B is the prototype's default for the accountant's editor ([F02 BD16](../../specs/brand-design-refresh/spec.md#my-profile-preview-beside-the-form-2026-11-25-bd16)). It shows the directory card, as last saved, beside the form. On phones and below 860 px it's a disclosure above the form.
   - **Options page:** B is Current. "Before" shows the one long form (`opt=editor-current`), and A and C are marked not chosen.

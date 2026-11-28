@@ -44,6 +44,7 @@ Recorded 2026-11-13 at the user's request ("record it for now for polishing upda
   - Option A: a thin progress bar that appears only when a navigation takes longer than about 300 ms (a few lines of script around Blazor's navigation events).
   - Option B: turn off enhanced navigation for those links (`data-enhance-nav="false"`) so the browser's indicator shows.
   - Confirm .NET 11's current behaviour first, and record the chosen state in [DESIGN](../../docs/DESIGN.md#screen-and-component-states).
+  - **Decided 2026-11-25 ([PRD D33](../../docs/PRD.md#open-decisions)): option A**, with the old results dimmed while a move that stays on the directory loads. Checked the same day: .NET 11 sends `enhancednavigationstart` and `enhancednavigationend`, and the docs read describe no indicator of Blazor's own ([REFERENCES](../../docs/REFERENCES.md#implementation-and-hosting)). The look is in [DESIGN](../../docs/DESIGN.md#loading-and-busy-feedback). Not started: the prototype gets the bar first.
   - A skeleton is not the answer here: streaming a placeholder would send the response before the 404/503 status is known (FT05, FT06) and would put content behind script ([ADR 010](../../docs/adr/010-single-project-per-page-render-modes.md)).
 - [ ] **P2. Shorter database timeouts.**
   - Problem: with Npgsql's defaults (15 s to connect, 30 s per query), a slow or paused database can keep a visitor waiting up to about 30 s before the "Try again" page (FT06).

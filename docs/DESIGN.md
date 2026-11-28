@@ -127,6 +127,8 @@ Directory pages lead with a short introduction and labelled search, followed by 
 
 ## Screen and component states
 
+This table says which states each screen has. How a loading, busy or failed state looks and when it shows is in [Loading and busy feedback](#loading-and-busy-feedback) (Proposed, 2026-11-25).
+
 | Component / workflow | States to design | Observable behavior |
 |---|---|---|
 | Directory list and search (R01, R02) | Ready, empty directory, no match, load error | A static page with a plain search form ([SDD](SDD.md#navigation-and-screen-state), C03 resolved 2026-11-12): search and the service menu apply when the form is submitted, and on wide screens each service button submits it at once. Sort and page are links. Search, service, sort and page live in the address, so Back and shared links keep them. No in-page loading state, and the prototype's brief placeholder stands in for the page load. A full page load (first visit, reload, Search) shows the browser's own indicator. Links inside the site use Blazor's enhanced navigation and currently show no indicator; see [F01 polish P1](../specs/browse-accountants/tasks.md#polish-follow-ups). Cards look the same to every viewer. Empty and "no match" use different messages. A failed load is an error with a retry, never an empty list |
@@ -148,6 +150,128 @@ Directory pages lead with a short introduction and labelled search, followed by 
 | Legal and privacy prompts (D10, 2026-11-21) | Shown always; agree page: ready, not ticked (error), failed save | Decided by the user in a question session. The prototype has them first, and the site has them since F11 (2026-11-21). **Agreeing again (R16):** prototype `agreeHTML`, site `/account/agree`. It shows "We've updated our terms", the date, the same box as registration, Continue and Sign out. Recorded deviation: on the site, Sign out is a second form under Continue, not beside it, because forms can't nest. **Registration:** "I agree to the Terms of use and have read the Privacy policy." **Chat:** a one-line hint with a lock icon above the message box, "Don't share TINs, tax returns or ID numbers in chat.", tied to the box with `aria-describedby`. **Profile editor:** the professional title hint says to use only titles you hold and not to add licence or ID numbers. **Profile:** the "doesn't check licences" note adds "check a CPA's licence with the PRC". **Report page:** "review them by hand within 10 working days" (D22). **Deleted accounts (D07):** the other person sees "Deleted user" and "You can still read this conversation, but you can't reply"; the deletion page names what is removed and that chats stay |
 
 Link business rules to the PRD instead of redefining them. Keep keyboard focus where the user was when a list updates. On phones, the on-screen keyboard must not hide the chat send button.
+
+## Loading and busy feedback
+
+**Status: Proposed, 2026-11-25; its open choices (D29–D34) were decided the same day. Nothing in this section is built or checked yet.** Written at the user's request by adapting the loading rules of another web app, which found and fixed about 60 loading defects in one audit. That app's checks and approvals are not evidence for Tax Buddy; its failures are kept below as reasons ("Why"). The [states table](#screen-and-component-states) says which states each screen has; this section says how each state looks and when it shows.
+- How pages are built to it: [DEVELOPMENT](DEVELOPMENT.md#loading-and-busy-feedback).
+- The procedure: TP28 in [TEST-PLAN](delivery/TEST-PLAN.md#scenario-mapping).
+- Its choices, decided on 2026-11-25 by the user's instruction: [PRD D29–D34](PRD.md#open-decisions).
+
+It applies to new pages and to changes to built ones. The pages built before 2026-11-25 haven't been compared with it.
+
+**Where Tax Buddy waits.** Almost every page is static ([SDD render modes](SDD.md#render-modes)): the server sends a page only when it is complete, and no page streams (D32). So these pages have nothing to draw while their data loads:
+- a first visit, a reload, a search or a form post shows the browser's own indicator;
+- a link inside the site (enhanced navigation) keeps the old page until the new one is patched in. There is no indicator yet: D33 chose a thin bar along the top of the window, not built yet ([F01 P1](../specs/browse-accountants/tasks.md#polish-follow-ups));
+- the prototype's skeletons and loading lines stand for that wait (the directory row above).
+
+The in-page waits are in the chat panel, the one interactive component, and in page scripts: the chat composer and the picture preview. The rules below cover those, and any page the owner later lets stream or makes interactive.
+
+**The prototype comes first** ([CLAUDE.md](../CLAUDE.md)). Where it draws a loading or busy state, follow it:
+- the directory skeleton (`skeletonHTML`) and the workspace's "Loading your workspace…" line;
+- the editor's "Saving…" and account deletion's "Deleting…" buttons, and the chat's "· Sending…";
+- the spinner and skeleton styles (`.spin`, `.skel`, `.skeleton`, `.sk`).
+
+Where the request behind this section differed from the prototype, the prototype stays (D34), and the rules below follow it. The page-move bar, the dimmed refresh, the delayed reveal and the blocking dialog have no prototype screen; draw one in the prototype before a page uses them.
+
+### States
+
+- **Every view that loads data has explicit states:** loading, ready, empty and error; a filtered list adds no match. A write has idle, busy, done and failed. A write whose answer was lost adds outcome unknown (checking), as the chat thread already does ("Checking whether it was sent…").
+- **A view starts in loading,** never in idle or empty. Empty is something the server answered, never the starting value. *Why:* lists that started as an empty array said "No records found" before the first answer came back.
+- **An error is never shown as empty.** A failed load says what failed and offers Try again in place of the empty message, with the built `StateMessage`, as the directory's "We couldn't load the accountants" does.
+- **Nothing that looks like data stands in for it.** No "0 unread", "0 of 0 tasks", "No reviews yet", default name or zero count while the real value is on its way: show a skeleton for it, or nothing. *Why:* a wallet showed "0 credits" until its request answered.
+- **A menu whose options are still loading** says so in the open list, for example "Loading tasks…", not "No options".
+- **A check shows neither branch while it runs** (sign-in, access, a signed link). It never draws the allowed branch by default. Static pages finish their checks before anything is sent, so this binds interactive components and scripts. *Why:* a reset-password form was drawn before its link was checked.
+
+### Which indicator, and when
+
+| Situation | Indicator | Timing |
+|---|---|---|
+| First paint of a page | A static page: the finished page, with the browser's indicator until then. An interactive component with prerendering off, which loads after it is drawn: the page frame with a skeleton in the page's shape. No page streams (D32) | At once |
+| Move to another page | The chrome stays, and a thin bar runs along the top of the window (D33). When the move stays on the directory, its results are dimmed too | After 300 ms, for at least 400 ms |
+| A list or section loading, nothing shown yet | Skeleton rows in the list's own shape, as the prototype's `skeletonHTML`. The workspace lists show the prototype's "Loading your workspace…" line instead (D34) | After 300 ms, for at least 400 ms |
+| A refresh with content on screen | The content stays, dimmed (opacity about 0.3, not clickable), with a thin bar along its top | After 300 ms, for at least 400 ms |
+| A button's action | A busy button ([Writes](#writes)) | At once |
+| Menu options loading | "Loading …" in the open list | At once |
+| A wait the page can't continue without | One dialog with a named spinner and one line, for example "Uploading 2 files…". Rare: no page has one, and static uploads show the browser's own progress | At once |
+| Connection status | The built connection notice (Connection row above): the wifi-off icon and "Reconnecting…", with no spinner (D34) | At once |
+
+- **The delay and the minimum are working values (D29).** The 300 ms delay keeps a quick answer from flashing an indicator; the 400 ms minimum keeps one that has appeared from flickering. The prototype shows its skeletons at once.
+- **Without script (server-sent HTML), the delay is CSS:** an animation keeps the element hidden for 300 ms and then shows it, so an element removed sooner is never seen.
+- **Content hidden behind a skeleton shows anyway** if the script never runs or a file never loads: a CSS timeout (for example 12 s) and a `<noscript>` rule.
+
+### Shape
+
+- **A skeleton has the same boxes as what it stands for:** the same heights, columns, gaps and number of rows on screen. Its sizes come from the same values as the real component (for a card: its padding, avatar size and line heights), so the two can't drift apart.
+- **The chrome stays:** the site bar, the phone app bar and tabs, the footer and the title band stay in place while the next page loads. A skeleton never removes them or draws them somewhere else. Enhanced navigation patches the new page into the old one, so they shouldn't flash; the frame test confirms it.
+- **The frame test:** load each page on a throttled connection and look at each frame. Every step from one frame to the next must be "no change" or "content arrives". Anything that moves, resizes, disappears and comes back, or a general skeleton swapped for a specific one, is a defect (TP28). *Why:* in the other app, Home → Log in showed a grey grid, then the form's skeleton, then the form, and each swap moved the page.
+- **A skeleton takes no data and no services,** so it draws the same on the server and in the browser.
+
+### Content already on screen
+
+- **A refresh keeps the content,** dimmed with the thin bar as in the table. It never collapses to a spinner or a skeleton, which would make the layout jump on every refresh. In the chat panel, a reload after a live update is a refresh.
+- **A change only to the address** (search, service, sort, page) updates the list in place in the same way, never with a whole-page skeleton, and focus stays where it was (the rule under the states table). On the static directory, D33's script dims the results while a sort or page link loads. Until it is built, the old list stays until the new one arrives. A search is a full page load, with the browser's indicator.
+
+### Writes
+
+- **Check first, then go busy:** a refused field never shows a spinner. On static forms the server checks after the post, so this binds the checks made in the page: the picture preview's type and size, and the chat composer's.
+- **A second press while busy does nothing.** How: [DEVELOPMENT](DEVELOPMENT.md#loading-and-busy-feedback). On a static form the browser sends the form again, and the server makes the repeat change nothing (D31).
+- **A busy button** keeps its size, is disabled, sets `aria-busy="true"` and shows the 16 px spinner before its words. The words change, as the prototype's "Saving…" (editor) and "Deleting…" (account deletion) do (D34). The button is as wide as its longer label, so the change doesn't resize it. Static forms have no busy button: they run no script (D31), so the browser's indicator shows while they post.
+- **A write the page knows will fail isn't started.** While the connection notice shows, writes are off, the notice says why, and the form stays as it is (R10).
+- **A failure keeps everything typed and says what failed** ([BR18](PRD.md#business-rules)).
+- **A wait that blocks the page** is the dialog in the table, used rarely.
+
+### One spinner
+
+The prototype's styles define it:
+- `.spin`: 16 px, a 2 px ring in the current text colour with one side clear, turning every 0.8 s. Inside a button it takes the button's own text colour.
+- `.spin.lg`: 32 px with a 3 px ring in `--link`, which is `--primary` in the site (the palette's shared `primary`/`link` value).
+- Skeleton bars (`.sk`): 12 px lines on `surface-2` that pulse, their opacity falling to 0.45 and back every 1.2 s. They pulse rather than stay still (D30).
+
+The request's 16, 24 and 40 px spinners were not taken (D34). Port these styles into `app.css`. Tailwind's `animate-pulse` is a different pulse (2 s, another curve), so don't use it in their place.
+
+Contrast of each tone against what it sits on, where WCAG 1.4.11 asks for 3:1. Computed on 2026-11-25 from the palette values with the WCAG formula; not measured in a browser:
+
+| Spinner or bar (colour) | Sits on | Light | Dark |
+|---|---|---|---|
+| `.spin.lg`, a ghost button's spinner, a refresh bar if drawn in `primary` | `surface` | 7.79:1 | 9.89:1 |
+| The same | `app-bg` | 7.25:1 | 11.11:1 |
+| The same | `surface-2` | 6.71:1 | 8.26:1 |
+| In a default button (`text`) | `surface`, or `surface-2` on hover | 13.42:1, 11.55:1 | 13.58:1, 11.35:1 |
+| In a primary button (`on-primary`) | `primary`, or `primary-strong` on hover | 7.79:1, 10.53:1 | 9.35:1, 11.04:1 |
+| In a danger button (`on-danger`) | `danger` | 7.24:1 | 9.95:1 |
+| In the connection notice (`warn`) | `warn-soft` | 6.30:1 | 8.13:1 |
+| A skeleton bar (`surface-2`) | `surface` | 1.16:1 | 1.20:1 |
+
+The skeleton bars are far below 3:1, as the prototype draws them. That is acceptable only because a skeleton carries no information: it is hidden from screen readers, and the wait has a name.
+
+- **Every wait has a name.** A spinner with words beside it ("Saving…") is hidden from screen readers, as in the prototype. A spinner, skeleton or bar without words carries a name: `role="status"` with hidden text such as "Loading conversations…", as the prototype's directory skeleton does ("Loading accountants…"). A container that is loading sets `aria-busy="true"`.
+- **The end of a wait the user started is announced** through the existing live regions, for example "Message sent." or "Couldn't save".
+- **Reduced motion:** the site already stops every animation when the browser asks for reduced motion (`app.css`, as the prototype does; Motion row above), so skeletons are still and the spinner is a still ring. Its words or hidden name still say that it's busy.
+
+### Failures
+
+- **A page that fails** keeps the chrome and shows the built error page: a fixed message, Try again, a way back and the support code (R18; the BD11 "States" list above). Never the exception text: it can hold client names, messages or document names.
+- **A list that fails** says what failed and offers Try again ([States](#states)).
+- **A session that can't be confirmed,** for example when the database doesn't answer the sign-in check, shows the error page: never an empty page, and never the visitor's view. It has no screen of its own (D34).
+
+### Live connections
+
+- **A move must not close a live connection that the next view needs** before that view has its own. Going between the conversation list and a thread must not drop messages or the panel's live updates. The panel reads from the database whenever it is drawn ([SDD missed updates](SDD.md#live-chat-and-email-notifications)). *Why:* in the other app, a loading screen removed a call lobby as soon as the move to the call began; that closed the lobby's connection, and the other person saw "Call ended".
+
+### Components
+
+Planning labels, not existing source, as in [Stack and component mapping](#stack-and-component-mapping):
+
+| Label | What it is | From |
+|---|---|---|
+| Spinner | The one spinner, 16 or 32 px | Prototype `.spin`, `.spin.lg` |
+| BusyButton | A button with the busy state under [Writes](#writes) | The prototype editor's Save and "Delete my account" |
+| Skeleton | Placeholder boxes in one list's or page's shape; one per list, sized from the real component's values | Prototype `skeletonHTML`, `.skel`, `.skeleton`, `.sk` |
+| DelayedReveal | Shows its content after 300 ms and keeps it for at least 400 ms: CSS on server-sent HTML, one shared C# helper in interactive components | No prototype counterpart |
+| RefreshBar | The thin bar: along the top of the window during a move between pages (D33), or along the top of content on screen during a refresh, which it dims | No prototype counterpart |
+| ListStatus | The built `StateMessage`: empty, no match, unavailable, and error with Try again. Not a second component | Prototype `.state` |
+| StatusBanner | The built connection notice, `ReconnectModal` | Prototype `offlineBanner` |
 
 ## Service workspace presentation
 
