@@ -83,6 +83,24 @@ public sealed class DirectoryServiceTests
         Assert.Equal(12, Assert.Single(result.Cards).YearsOfExperience);
     }
 
+    [Fact]
+    public async Task One_card_reads_like_a_directory_card_and_is_null_when_not_listed()
+    {
+        // F05 PE09 (F02 BD16): the editor's preview shows the card the directory shows, with the rating and highlights.
+        var row = new CardRow(AccountantId.New(), "Andrea Villanueva", "CPA", "Makati City", "Summary", ["Bookkeeping", "Audit"],
+            [new YearMonth(2014, 1)], "/pictures/x", HighlightCount: 2, ReviewCount: 2, StarTotal: 9);
+        var service = new DirectoryService(new FakeStore(new DirectoryRows([row], 1, 1, AnyListed: true)), Clock());
+
+        var card = await service.GetCardAsync(row.Id);
+        var page = Assert.Single((await service.SearchAsync(DirectoryQuery.Default)).Cards);
+
+        Assert.NotNull(card);
+        Assert.Equal(page, card); // the same mapping; both use the row's own service list
+        Assert.Equal(4.5m, card.Rating!.Average);
+        Assert.Equal(12, card.YearsOfExperience);
+        Assert.Null(await service.GetCardAsync(AccountantId.New()));
+    }
+
     [Theory]
     [InlineData("not-a-guid")]
     [InlineData("00000000-0000-0000-0000-000000000000")]
@@ -120,5 +138,9 @@ public sealed class DirectoryServiceTests
             FindCalls++;
             return Task.FromResult<AccountantProfile?>(null);
         }
+
+        /// <summary>The page's row with that ID, as the database returns only a listed profile's row.</summary>
+        public Task<CardRow?> FindCardAsync(AccountantId id, CancellationToken cancellationToken) =>
+            Task.FromResult(rows.Rows.FirstOrDefault(r => r.Id == id));
     }
 }

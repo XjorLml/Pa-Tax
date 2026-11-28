@@ -3,13 +3,16 @@
 @using System.Globalization
 @using System.Security.Claims
 @using TaxBuddy.Web.Account
+@using TaxBuddy.Web.Application.Directory
 @using TaxBuddy.Web.Application.Profiles
 @using TaxBuddy.Web.Domain
 @inject ProfileEditorService Editor
+@inject DirectoryService DirectoryCards
 @inject NavigationManager Navigation
 @* F05 (PRD R05), laid out as the prototype's editorParts (F02 BD10). A static form posted to this page (C04 for this
    page): a failed or invalid save shows the form again with everything typed. The owner is always the signed-in
-   account. The portfolio fieldset came with R12 (F08). *@
+   account. The portfolio fieldset came with R12 (F08). Since F02 BD16 (2026-11-25) the directory card, as last saved,
+   sits beside the form, or in a closed disclosure above it on phones and below 860 px. *@
 
 <SeoHead Title="@($"{PageTitle} · Tax Buddy")" Description="Edit your accountant profile." CanonicalPath="/account/profile" />
 <PhoneBar Title="@PageTitle" Back="/account" />
@@ -30,217 +33,228 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
 {
     var steps = Form.ListingSteps();
     var done = steps.Count(s => s.Done);
-    <DeskTitle Title="@PageTitle" />
-    <div class="single-inner">
-        <div class="form">
-            <p class="status-line">
-                <span class="pill @(IsListed ? "ok" : "warn")"><Icon Name="@(IsListed ? "check" : "alert")" Size="14" /> @(IsListed ? "Listed in the directory" : "Not listed yet")</span>
-                @if (IsListed)
-                {
-                    <a href="@Display.ProfilePath(status!.Id)">View public profile</a>
-                }
-            </p>
-
-            <div class="checklist">
-                <p>
-                    @if (done == steps.Count)
+    <DeskTitle Title="@PageTitle" Class="editor-wide" />
+    <div class="single-inner editor-wide">
+        @* The stylesheet shows this or the side panel, never both; each works without script. *@
+        <details class="editor-preview-mini">
+            <summary>Preview your directory card</summary>
+            @Preview
+        </details>
+        <div class="editor-grid">
+            <div class="form">
+                <p class="status-line">
+                    <span class="pill @(IsListed ? "ok" : "warn")"><Icon Name="@(IsListed ? "check" : "alert")" Size="14" /> @(IsListed ? "Listed in the directory" : "Not listed yet")</span>
+                    @if (IsListed)
                     {
-                        @(IsListed ? "Everything needed to be listed is filled in." : "Everything is filled in. Save to be listed.")
-                    }
-                    else
-                    {
-                        <strong>@done of @steps.Count</strong> @(" details needed to be listed")
+                        <a href="@Display.ProfilePath(status!.Id)">View public profile</a>
                     }
                 </p>
-                <div class="meter" aria-hidden="true"><span style="width: @(done * 100 / steps.Count)%"></span></div>
-                <ul>
-                    @foreach (var step in steps)
-                    {
-                        if (step.Done)
+
+                <div class="checklist">
+                    <p>
+                        @if (done == steps.Count)
                         {
-                            <li class="done"><Icon Name="check" Size="16" /><span>@step.Label<span class="sr-only"> (done)</span></span></li>
+                            @(IsListed ? "Everything needed to be listed is filled in." : "Everything is filled in. Save to be listed.")
                         }
                         else
                         {
-                            <li><Icon Name="plus" Size="16" /><a href="#@step.TargetId">Add: @(char.ToLowerInvariant(step.Label[0]) + step.Label[1..])</a></li>
+                            <strong>@done of @steps.Count</strong> @(" details needed to be listed")
                         }
-                    }
-                </ul>
-            </div>
-
-            @if (errors.Count > 0)
-            {
-                <div class="err-summary" id="err-summary" tabindex="-1" role="alert">
-                    <h2>Fix @(errors.Count == 1 ? "this" : "these") before saving</h2>
+                    </p>
+                    <div class="meter" aria-hidden="true"><span style="width: @(done * 100 / steps.Count)%"></span></div>
                     <ul>
-                        @foreach (var (key, message) in errors)
+                        @foreach (var step in steps)
                         {
-                            <li><a href="#@IdFor(key)">@message</a></li>
+                            if (step.Done)
+                            {
+                                <li class="done"><Icon Name="check" Size="16" /><span>@step.Label<span class="sr-only"> (done)</span></span></li>
+                            }
+                            else
+                            {
+                                <li><Icon Name="plus" Size="16" /><a href="#@step.TargetId">Add: @(char.ToLowerInvariant(step.Label[0]) + step.Label[1..])</a></li>
+                            }
                         }
                     </ul>
                 </div>
-            }
 
-            @if (conflict)
-            {
-                @* No prototype counterpart (BD10 deviation): a save from an older tab, in the error-summary style. *@
-                <div class="err-summary warn" role="alert">
-                    <h2>This profile was changed in another tab or window</h2>
-                    <p>Nothing was saved. Your changes are still here: save again to replace the other changes, or <a href="/account/profile">reload</a> to see them instead.</p>
-                </div>
-            }
-
-            <form method="post" @formname="profile" @onsubmit="HandleAsync" novalidate>
-                <AntiforgeryToken />
-                @* Enter in a text field presses the first submit button: make that Save, not "Remove". *@
-                <button type="submit" name="command" value="save" class="sr-only" tabindex="-1" aria-hidden="true">Save</button>
-                <input type="hidden" name="Form.Version" value="@Form.Version" />
-
-                <fieldset>
-                    <legend>About you</legend>
-                    @* F06: the picture is managed on Account, for every kind of account. *@
-                    <div class="picture-row">
-                        <a class="avatar-edit" href="/account#picture" aria-label="Change profile picture">
-                            <Avatar Name="@(Form.DisplayName ?? "")" Picture="@picture" Size="lg" />
-                            <span class="pencil"><Icon Name="edit" Size="14" /></span>
-                        </a>
-                        <div>
-                            <p class="picture-row-title">Profile picture</p>
-                            <span class="hint">Optional. Without one, your initials are shown. Use the pencil to add or change it on your Account page.</span>
-                        </div>
+                @if (errors.Count > 0)
+                {
+                    <div class="err-summary" id="err-summary" tabindex="-1" role="alert">
+                        <h2>Fix @(errors.Count == 1 ? "this" : "these") before saving</h2>
+                        <ul>
+                            @foreach (var (key, message) in errors)
+                            {
+                                <li><a href="#@IdFor(key)">@message</a></li>
+                            }
+                        </ul>
                     </div>
-                    @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
-                    @* F11 (D10, 2026-11-21): licence numbers are sensitive personal information (prototype editorParts). *@
-                    @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant",
-                           hint: "Use only titles you hold. Don't add your PRC licence number or other ID numbers anywhere on your profile; give them privately if a client asks.")
-                    @Field("City", "City", Form.City, ProfileLimits.City, placeholder: "e.g. Makati City")
-                    <div class="field">
-                        <label for="f-summary">Career summary <span class="req">(needed to be listed)</span></label>
-                        <textarea id="f-summary" name="Form.Summary" rows="5" aria-invalid="@Invalid("Summary")"
-                                  aria-describedby="@DescribedBy("Summary", "f-summary-hint")">@Form.Summary</textarea>
-                        <span class="hint" id="f-summary-hint">@((Form.Summary ?? "").Length.ToString("N0", CultureInfo.InvariantCulture)) / @ProfileLimits.Summary.ToString("N0", CultureInfo.InvariantCulture) characters. The first lines appear in the directory.</span>
-                        @ErrorFor("Summary")
+                }
+
+                @if (conflict)
+                {
+                    @* No prototype counterpart (BD10 deviation): a save from an older tab, in the error-summary style. *@
+                    <div class="err-summary warn" role="alert">
+                        <h2>This profile was changed in another tab or window</h2>
+                        <p>Nothing was saved. Your changes are still here: save again to replace the other changes, or <a href="/account/profile">reload</a> to see them instead.</p>
                     </div>
-                </fieldset>
+                }
 
-                <fieldset id="experience">
-                    <legend>Experience</legend>
-                    @ErrorFor("Experience")
-                    @for (var i = 0; i < Form.Experience.Count; i++)
-                    {
-                        var row = Form.Experience[i];
-                        var n = i + 1;
-                        <div class="row">
-                            <div class="row-head">
-                                <span>Experience @n</span>
-                                <button type="submit" name="command" value="remove-experience:@i" formaction="/account/profile#experience" class="btn btn-ghost btn-sm">
-                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> experience @n</span>
-                                </button>
+                <form method="post" @formname="profile" @onsubmit="HandleAsync" novalidate>
+                    <AntiforgeryToken />
+                    @* Enter in a text field presses the first submit button: make that Save, not "Remove". *@
+                    <button type="submit" name="command" value="save" class="sr-only" tabindex="-1" aria-hidden="true">Save</button>
+                    <input type="hidden" name="Form.Version" value="@Form.Version" />
+
+                    <fieldset>
+                        <legend>About you</legend>
+                        @* F06: the picture is managed on Account, for every kind of account. *@
+                        <div class="picture-row">
+                            <a class="avatar-edit" href="/account#picture" aria-label="Change profile picture">
+                                <Avatar Name="@(Form.DisplayName ?? "")" Picture="@picture" Size="lg" />
+                                <span class="pencil"><Icon Name="edit" Size="14" /></span>
+                            </a>
+                            <div>
+                                <p class="picture-row-title">Profile picture</p>
+                                <span class="hint">Optional. Without one, your initials are shown. Use the pencil to add or change it on your Account page.</span>
                             </div>
-                            @Field($"Experience[{i}].Role", "Role", row.Role, ProfileLimits.ExperienceText, placeholder: "e.g. Senior tax associate")
-                            @Field($"Experience[{i}].Organization", "Company or practice", row.Organization, ProfileLimits.ExperienceText, placeholder: "e.g. Self-employed")
-                            <div class="grid2">
-                                @Field($"Experience[{i}].Start", "Start month", row.Start, null, type: "month", placeholder: "YYYY-MM")
-                                @Field($"Experience[{i}].End", "End month", row.Current ? "" : row.End, null, type: "month", placeholder: "YYYY-MM")
-                            </div>
-                            <label class="check">
-                                <input type="checkbox" name="Form.Experience[@i].Current" value="true" checked="@row.Current" />
-                                I work here now
-                            </label>
                         </div>
-                    }
-                    @if (Form.Experience.Count < ProfileLimits.ExperienceEntries)
-                    {
-                        <button type="submit" id="add-exp" name="command" value="add-experience" formaction="/account/profile#experience" class="btn btn-sm">
-                            <Icon Name="plus" Size="16" /> Add experience
-                        </button>
-                    }
-                    <p class="muted small mt-2">Your years of experience on your card are counted from the earliest start month here.</p>
-                </fieldset>
-
-                <fieldset id="services">
-                    <legend>Services</legend>
-                    @for (var i = 0; i < Form.Services.Count; i++)
-                    {
-                        var row = Form.Services[i];
-                        var n = i + 1;
-                        var nameKey = $"Services[{i}].Name";
-                        <div class="row">
-                            <div class="row-head">
-                                <span>Service @n</span>
-                                <button type="submit" name="command" value="remove-service:@i" formaction="/account/profile#services" class="btn btn-ghost btn-sm">
-                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> service @n</span>
-                                </button>
-                            </div>
-                            <div class="field">
-                                <label for="@IdFor(nameKey)">Service</label>
-                                <select id="@IdFor(nameKey)" name="Form.@nameKey" aria-invalid="@Invalid(nameKey)" aria-describedby="@DescribedBy(nameKey)">
-                                    <option value="">Choose a service</option>
-                                    @foreach (var service in ServiceCatalog.All)
-                                    {
-                                        <option value="@service" selected="@(string.Equals(service, row.Name, StringComparison.Ordinal))">@service</option>
-                                    }
-                                </select>
-                                @ErrorFor(nameKey)
-                            </div>
-                            @Field($"Services[{i}].Description", "Short description", row.Description, ProfileLimits.ServiceDescription, placeholder: "What this includes")
+                        @Field("DisplayName", "Display name", Form.DisplayName, ProfileLimits.DisplayName, required: true)
+                        @* F11 (D10, 2026-11-21): licence numbers are sensitive personal information (prototype editorParts). *@
+                        @Field("Title", "Professional title", Form.Title, ProfileLimits.Title, required: true, placeholder: "e.g. Certified Public Accountant",
+                               hint: "Use only titles you hold. Don't add your PRC licence number or other ID numbers anywhere on your profile; give them privately if a client asks.")
+                        @Field("City", "City", Form.City, ProfileLimits.City, placeholder: "e.g. Makati City")
+                        <div class="field">
+                            <label for="f-summary">Career summary <span class="req">(needed to be listed)</span></label>
+                            <textarea id="f-summary" name="Form.Summary" rows="5" aria-invalid="@Invalid("Summary")"
+                                      aria-describedby="@DescribedBy("Summary", "f-summary-hint")">@Form.Summary</textarea>
+                            <span class="hint" id="f-summary-hint">@((Form.Summary ?? "").Length.ToString("N0", CultureInfo.InvariantCulture)) / @ProfileLimits.Summary.ToString("N0", CultureInfo.InvariantCulture) characters. The first lines appear in the directory.</span>
+                            @ErrorFor("Summary")
                         </div>
-                    }
-                    @if (Form.Services.Count < ServiceCatalog.All.Count)
-                    {
-                        <button type="submit" id="add-svc" name="command" value="add-service" formaction="/account/profile#services" class="btn btn-sm">
-                            <Icon Name="plus" Size="16" /> Add service
-                        </button>
-                    }
-                    <p class="muted small mt-2">No prices in release 1. Clients ask about pricing in chat.</p>
-                </fieldset>
+                    </fieldset>
 
-                @* F08 (PRD R12; prototype portfolioFieldset). *@
-                <fieldset id="portfolio">
-                    <legend>Portfolio highlights</legend>
-                    @ErrorFor("Highlights")
-                    @for (var i = 0; i < Form.Highlights.Count; i++)
-                    {
-                        var row = Form.Highlights[i];
-                        var n = i + 1;
-                        <div class="row">
-                            <div class="row-head">
-                                <span>Highlight @n</span>
-                                <button type="submit" name="command" value="remove-highlight:@i" formaction="/account/profile#portfolio" class="btn btn-ghost btn-sm">
-                                    <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> highlight @n</span>
-                                </button>
+                    <fieldset id="experience">
+                        <legend>Experience</legend>
+                        @ErrorFor("Experience")
+                        @for (var i = 0; i < Form.Experience.Count; i++)
+                        {
+                            var row = Form.Experience[i];
+                            var n = i + 1;
+                            <div class="row">
+                                <div class="row-head">
+                                    <span>Experience @n</span>
+                                    <button type="submit" name="command" value="remove-experience:@i" formaction="/account/profile#experience" class="btn btn-ghost btn-sm">
+                                        <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> experience @n</span>
+                                    </button>
+                                </div>
+                                @Field($"Experience[{i}].Role", "Role", row.Role, ProfileLimits.ExperienceText, placeholder: "e.g. Senior tax associate")
+                                @Field($"Experience[{i}].Organization", "Company or practice", row.Organization, ProfileLimits.ExperienceText, placeholder: "e.g. Self-employed")
+                                <div class="grid2">
+                                    @Field($"Experience[{i}].Start", "Start month", row.Start, null, type: "month", placeholder: "YYYY-MM")
+                                    @Field($"Experience[{i}].End", "End month", row.Current ? "" : row.End, null, type: "month", placeholder: "YYYY-MM")
+                                </div>
+                                <label class="check">
+                                    <input type="checkbox" name="Form.Experience[@i].Current" value="true" checked="@row.Current" />
+                                    I work here now
+                                </label>
                             </div>
-                            @Field($"Highlights[{i}].Title", "Title", row.Title, ProfileLimits.HighlightTitle, placeholder: "e.g. Payroll set-up for a 40-person team")
-                            @Field($"Highlights[{i}].ClientType", "Type of client", row.ClientType, ProfileLimits.HighlightClientType, placeholder: "e.g. Food retail")
-                            @Field($"Highlights[{i}].Work", "What you did", row.Work, ProfileLimits.HighlightWork)
-                            @Field($"Highlights[{i}].Result", "Result", row.Result, ProfileLimits.HighlightResult)
-                        </div>
-                    }
-                    @if (Form.Highlights.Count < ProfileLimits.Highlights)
-                    {
-                        <button type="submit" id="add-pf" name="command" value="add-highlight" formaction="/account/profile#portfolio" class="btn btn-sm">
-                            <Icon Name="plus" Size="16" /> Add highlight
-                        </button>
-                    }
-                    <p class="muted small mt-2">Up to @ProfileLimits.Highlights. Don't name clients or share their details without their permission.</p>
-                </fieldset>
+                        }
+                        @if (Form.Experience.Count < ProfileLimits.ExperienceEntries)
+                        {
+                            <button type="submit" id="add-exp" name="command" value="add-experience" formaction="/account/profile#experience" class="btn btn-sm">
+                                <Icon Name="plus" Size="16" /> Add experience
+                            </button>
+                        }
+                        <p class="muted small mt-2">Your years of experience on your card are counted from the earliest start month here.</p>
+                    </fieldset>
 
-                <fieldset>
-                    <legend>Contact details</legend>
-                    @Field("Email", "Email", Form.Email, ProfileLimits.Email, type: "email", required: true, placeholder: "name@example.com")
-                    @Field("Phone", "Phone", Form.Phone, ProfileLimits.Phone, type: "tel", placeholder: "+63 900 000 0000")
-                    @Field("Website", "Website", Form.Website, ProfileLimits.Website, placeholder: "example.com")
-                    <label class="check">
-                        <input type="checkbox" id="f-consent" name="Form.ConsentToShowContact" value="true" checked="@Form.ConsentToShowContact" />
-                        <span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using Tax Buddy can see them, including people who aren't signed in.</span></span>
-                    </label>
-                </fieldset>
+                    <fieldset id="services">
+                        <legend>Services</legend>
+                        @for (var i = 0; i < Form.Services.Count; i++)
+                        {
+                            var row = Form.Services[i];
+                            var n = i + 1;
+                            var nameKey = $"Services[{i}].Name";
+                            <div class="row">
+                                <div class="row-head">
+                                    <span>Service @n</span>
+                                    <button type="submit" name="command" value="remove-service:@i" formaction="/account/profile#services" class="btn btn-ghost btn-sm">
+                                        <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> service @n</span>
+                                    </button>
+                                </div>
+                                <div class="field">
+                                    <label for="@IdFor(nameKey)">Service</label>
+                                    <select id="@IdFor(nameKey)" name="Form.@nameKey" aria-invalid="@Invalid(nameKey)" aria-describedby="@DescribedBy(nameKey)">
+                                        <option value="">Choose a service</option>
+                                        @foreach (var service in ServiceCatalog.All)
+                                        {
+                                            <option value="@service" selected="@(string.Equals(service, row.Name, StringComparison.Ordinal))">@service</option>
+                                        }
+                                    </select>
+                                    @ErrorFor(nameKey)
+                                </div>
+                                @Field($"Services[{i}].Description", "Short description", row.Description, ProfileLimits.ServiceDescription, placeholder: "What this includes")
+                            </div>
+                        }
+                        @if (Form.Services.Count < ServiceCatalog.All.Count)
+                        {
+                            <button type="submit" id="add-svc" name="command" value="add-service" formaction="/account/profile#services" class="btn btn-sm">
+                                <Icon Name="plus" Size="16" /> Add service
+                            </button>
+                        }
+                        <p class="muted small mt-2">No prices in release 1. Clients ask about pricing in chat.</p>
+                    </fieldset>
 
-                <p class="save-status @SaveStatusClass" role="status">@SaveStatusText</p>
-                <div class="desk-footer save-bar">
-                    <button type="submit" name="command" value="save" class="btn btn-primary btn-block">Save profile</button>
-                </div>
-            </form>
+                    @* F08 (PRD R12; prototype portfolioFieldset). *@
+                    <fieldset id="portfolio">
+                        <legend>Portfolio highlights</legend>
+                        @ErrorFor("Highlights")
+                        @for (var i = 0; i < Form.Highlights.Count; i++)
+                        {
+                            var row = Form.Highlights[i];
+                            var n = i + 1;
+                            <div class="row">
+                                <div class="row-head">
+                                    <span>Highlight @n</span>
+                                    <button type="submit" name="command" value="remove-highlight:@i" formaction="/account/profile#portfolio" class="btn btn-ghost btn-sm">
+                                        <Icon Name="trash" Size="16" /> Remove<span class="sr-only"> highlight @n</span>
+                                    </button>
+                                </div>
+                                @Field($"Highlights[{i}].Title", "Title", row.Title, ProfileLimits.HighlightTitle, placeholder: "e.g. Payroll set-up for a 40-person team")
+                                @Field($"Highlights[{i}].ClientType", "Type of client", row.ClientType, ProfileLimits.HighlightClientType, placeholder: "e.g. Food retail")
+                                @Field($"Highlights[{i}].Work", "What you did", row.Work, ProfileLimits.HighlightWork)
+                                @Field($"Highlights[{i}].Result", "Result", row.Result, ProfileLimits.HighlightResult)
+                            </div>
+                        }
+                        @if (Form.Highlights.Count < ProfileLimits.Highlights)
+                        {
+                            <button type="submit" id="add-pf" name="command" value="add-highlight" formaction="/account/profile#portfolio" class="btn btn-sm">
+                                <Icon Name="plus" Size="16" /> Add highlight
+                            </button>
+                        }
+                        <p class="muted small mt-2">Up to @ProfileLimits.Highlights. Don't name clients or share their details without their permission.</p>
+                    </fieldset>
+
+                    <fieldset>
+                        <legend>Contact details</legend>
+                        @Field("Email", "Email", Form.Email, ProfileLimits.Email, type: "email", required: true, placeholder: "name@example.com")
+                        @Field("Phone", "Phone", Form.Phone, ProfileLimits.Phone, type: "tel", placeholder: "+63 900 000 0000")
+                        @Field("Website", "Website", Form.Website, ProfileLimits.Website, placeholder: "example.com")
+                        <label class="check">
+                            <input type="checkbox" id="f-consent" name="Form.ConsentToShowContact" value="true" checked="@Form.ConsentToShowContact" />
+                            <span>Show my email, phone and website on my public profile. <span class="req">(needed to be listed)</span><span class="hint">Anyone using Tax Buddy can see them, including people who aren't signed in.</span></span>
+                        </label>
+                    </fieldset>
+
+                    <p class="save-status @SaveStatusClass" role="status">@SaveStatusText</p>
+                    <div class="desk-footer save-bar">
+                        <button type="submit" name="command" value="save" class="btn btn-primary btn-block">Save profile</button>
+                    </div>
+                </form>
+            </div>
+            <aside class="editor-preview" aria-labelledby="ed-preview-h">
+                <h2 class="editor-preview-h" id="ed-preview-h">Your card in the directory</h2>
+                @Preview
+            </aside>
         </div>
     </div>
 }
@@ -262,6 +276,8 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
     private bool conflict;
     private bool saveFailed;
     private ListingStatus? status;
+    private AccountantCard? card;
+    private bool cardFailed;
     private IReadOnlyDictionary<string, string> errors = new Dictionary<string, string>();
 
     private bool IsListed => status?.IsListed == true;
@@ -299,12 +315,28 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
                 justSaved = SavedFlag == "1" && status is not null;
             }
         }
-        catch (TaxBuddy.Web.Application.Directory.DataUnavailableException)
+        catch (DataUnavailableException)
         {
             if (Form is null)
             {
                 loadFailed = true;
                 ResponseStatus.Set(HttpContext, StatusCodes.Status503ServiceUnavailable);
+            }
+
+            return;
+        }
+
+        // F02 BD16: the card as clients see it, as last saved. Read from the directory, so it's the same card; a failure here
+        // leaves the form usable and the panel says so.
+        if (status is { IsListed: true })
+        {
+            try
+            {
+                card = await DirectoryCards.GetCardAsync(status.Id);
+            }
+            catch (DataUnavailableException)
+            {
+                cardFailed = true;
             }
         }
     }
@@ -421,6 +453,32 @@ else if (Form is not null) @* Null only during the render Blazor makes while the
         var close = rest.IndexOf(']', StringComparison.Ordinal);
         return (rest[..close], rest[(close + 2)..]);
     }
+
+    /// <summary>
+    /// The preview's content, in the side panel and in the disclosure (prototype editorParts, design B). It changes only after
+    /// a save, so it may differ from the form while editing.
+    /// </summary>
+    private RenderFragment Preview => __builder =>
+    {
+        if (card is not null)
+        {
+            <ul class="editor-preview-card">
+                <AccountantCardItem Card="card" />
+            </ul>
+            <p class="muted small">As last saved. Changes show here after you save.</p>
+            <a href="@Display.ProfilePath(card.Id)">View public profile</a>
+        }
+        else if (cardFailed)
+        {
+            @* No prototype counterpart (BD16 deviation): the profile is listed, but its card couldn't be read. *@
+            <p class="muted small">We couldn't load your card right now. Your profile is still listed.</p>
+            <a href="@Display.ProfilePath(status!.Id)">View public profile</a>
+        }
+        else
+        {
+            <p class="muted small">Not listed yet. Your card appears in the directory, and here, once everything needed to be listed is filled in and saved.</p>
+        }
+    };
 
     private string? Invalid(string key) => errors.ContainsKey(key) ? "true" : null;
 

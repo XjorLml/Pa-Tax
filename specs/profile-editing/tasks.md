@@ -28,6 +28,17 @@ Scope and scenarios: [spec](spec.md). Sequence and dependencies: [plan](plan.md)
 - [ ] With a real Google accountant account: create, save and edit a profile (owner walkthrough).
 - [ ] Other browsers, phones, a screen reader and zoom (TP06). Firefox and desktop Safari show the month fields as text boxes; the "YYYY-MM" hint and the server check cover that, but it is unverified.
 
+## Preview beside the form, 2026-11-25 (PE09)
+
+- [x] Prototype: the user's choice of design B ([F02 BD16](../brand-design-refresh/spec.md#my-profile-preview-beside-the-form-2026-11-25-bd16)).
+- [x] Site, at the user's "implement to site":
+  - `DirectoryService.GetCardAsync` and `IDirectoryStore.FindCardAsync`, reading one listed card the way a directory page reads its cards;
+  - the editor's side panel and disclosure, a `Class` on `DeskTitle`, and the styles in `app.css`.
+- [x] Tests: a rule test for the card read; a web test for PE09 (before listing, after a save, after a refused save, and the same card as in the directory). The whole suite and the Release build: see the [evidence](../../docs/delivery/evidence/2026-11-25-f05-editor-preview.md).
+- [x] Rendered pages from the test host viewed in Edge: 1280 px light and dark, 820 px, and phones at 390 and 320 px.
+- [ ] **Found, not fixed (before this change):** at 320 px, a saved experience row's End month field is 27 px wider than the screen.
+- [ ] **Owner:** try it on the running site with a real Google sign-in.
+
 ## Acceptance
 
 - [ ] Owner walkthrough (G9), including the header: with "My profile" it wraps to two rows even at 1440 px.

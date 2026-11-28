@@ -349,6 +349,66 @@ public sealed partial class ProfileEditorTests(EmptyAppFixture app) : IClassFixt
         Assert.False(await db.AccountantProfiles.AnyAsync(p => p.DisplayName == "Carla Mendoza"));
     }
 
+    [DatabaseFact]
+    public async Task The_directory_card_as_last_saved_is_shown_beside_the_form()
+    {
+        // F05 PE09 (F02 BD16): the side panel on wide screens and the disclosure below 860 px hold the same preview.
+        var client = await AccountantAsync("Dana Reyes");
+        var page = await GetEditorAsync(client);
+        Assert.Contains("""<div class="pane-head editor-wide"><h1 tabindex="-1">Create your profile</h1>""", page);
+        Assert.Contains("""<details class="editor-preview-mini"><summary>Preview your directory card</summary>""", page);
+        Assert.Contains("""<aside class="editor-preview" aria-labelledby="ed-preview-h"><h2 class="editor-preview-h" id="ed-preview-h">Your card in the directory</h2>""", page);
+        Assert.Equal(2, Count(page, "Not listed yet. Your card appears in the directory, and here, once everything needed to be listed is filled in and saved."));
+        Assert.Empty(PreviewCards(page));
+
+        var saved = await SaveAsync(client, page, Complete(title: "Certified Public Accountant"));
+        var after = await GetEditorAsync(client, Target(saved)!);
+        var cards = PreviewCards(after);
+        Assert.Equal(2, cards.Count); // the disclosure's and the side panel's
+        Assert.All(cards, c =>
+        {
+            Assert.Contains("Dana Reyes", c);
+            Assert.Contains("Certified Public Accountant", c);
+            Assert.Contains("Makati City", c);
+            Assert.Contains("""<li class="tag">Bookkeeping</li>""", c);
+            Assert.Contains("No reviews yet", c);
+        });
+        Assert.Equal(2, Count(after, "As last saved. Changes show here after you save."));
+        var directory = await (await client.GetAsync("/?q=Dana+Reyes")).ReadHtmlAsync();
+        var article = cards[0][cards[0].IndexOf("<article", StringComparison.Ordinal)..(cards[0].IndexOf("</article>", StringComparison.Ordinal) + 10)];
+        Assert.Contains(article, directory); // the same card as in the directory
+
+        // A refused save keeps what was typed in the form; the card still shows what was last saved.
+        var fields = Complete(title: "Certified Public Accountant");
+        fields["Form.City"] = "Pasig City";
+        fields["Form.Email"] = "not-an-email";
+        var refused = await SaveAsync(client, after, fields);
+        var html = await refused.ReadHtmlAsync();
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, refused.StatusCode);
+        Assert.Contains("""value="Pasig City" """.Trim(), html);
+        Assert.All(PreviewCards(html), c =>
+        {
+            Assert.Contains("Makati City", c);
+            Assert.DoesNotContain("Pasig City", c);
+        });
+    }
+
+    private static int Count(string html, string text) =>
+        (html.Length - html.Replace(text, "", StringComparison.Ordinal).Length) / text.Length;
+
+    /// <summary>The preview's cards, from each card list to its "As last saved" line.</summary>
+    private static List<string> PreviewCards(string html)
+    {
+        var cards = new List<string>();
+        for (var at = html.IndexOf("""<ul class="editor-preview-card">""", StringComparison.Ordinal); at >= 0;
+             at = html.IndexOf("""<ul class="editor-preview-card">""", at + 1, StringComparison.Ordinal))
+        {
+            cards.Add(html[at..html.IndexOf("As last saved.", at, StringComparison.Ordinal)]);
+        }
+
+        return cards;
+    }
+
     private static HttpRequestMessage WithCookies(HttpMethod method, string address, params string[] cookies)
     {
         var request = new HttpRequestMessage(method, address);

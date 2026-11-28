@@ -56,51 +56,69 @@ public sealed class DirectoryStore(IDbContextFactory<TaxBuddyDbContext> contextF
                     .OrderBy(p => p.DisplayName.ToLower())
                     .ThenBy(p => p.Id);
 
-            var rows = await ordered
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(p => new
-                {
-                    p.Id,
-                    p.DisplayName,
-                    p.Title,
-                    p.City,
-                    p.Summary,
-                    p.OwnerAccountId,
-                    Services = p.Services.OrderBy(s => s.Position).Select(s => s.Name).ToList(),
-                    Starts = p.Experience.Select(e => e.Start).ToList(),
-                    Highlights = p.Highlights.Count(),
-                    ReviewCount = db.Reviews.Count(r => r.AccountantId == p.Id),
-                    StarTotal = db.Reviews.Where(r => r.AccountantId == p.Id).Sum(r => r.Stars),
-                })
-                .ToListAsync(cancellationToken);
-
-            // F06: the owners' pictures, in one more query for the page's owners.
-            var owners = rows.Where(r => r.OwnerAccountId is not null).Select(r => r.OwnerAccountId!.Value).ToList();
-            var pictures = owners.Count == 0
-                ? new Dictionary<Guid, string?>()
-                : await db.Users.AsNoTracking()
-                    .Where(u => owners.Contains(u.Id) && u.PictureObject != null)
-                    .ToDictionaryAsync(u => u.Id, u => u.PictureObject, cancellationToken);
-
+            var rows = await CardRowsAsync(db, ordered.Skip((page - 1) * pageSize).Take(pageSize), cancellationToken);
             var anyListed = matchCount > 0 || (query.IsFiltered && await listed.AnyAsync(cancellationToken));
 
-            return new DirectoryRows(
-                rows.Select(r => new CardRow(r.Id, r.DisplayName, r.Title, r.City, r.Summary, r.Services, r.Starts,
-                    r.OwnerAccountId is { } owner && pictures.TryGetValue(owner, out var picture)
-                        ? ProfilePictureService.AddressFor(owner, picture)
-                        : null,
-                    r.Highlights,
-                    r.ReviewCount,
-                    r.StarTotal)).ToList(),
-                matchCount,
-                page,
-                anyListed);
+            return new DirectoryRows(rows, matchCount, page, anyListed);
         }
         catch (Exception ex) when (IsDataFailure(ex))
         {
             throw Unavailable(ex);
         }
+    }
+
+    public async Task<CardRow?> FindCardAsync(AccountantId id, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await using var db = await contextFactory.CreateDbContextAsync(cancellationToken);
+            var listed = db.AccountantProfiles.AsNoTracking().Where(ListingRules.IsListed).Where(p => p.Id == id);
+            return (await CardRowsAsync(db, listed, cancellationToken)).SingleOrDefault();
+        }
+        catch (Exception ex) when (IsDataFailure(ex))
+        {
+            throw Unavailable(ex);
+        }
+    }
+
+    /// <summary>
+    /// The card rows for <paramref name="profiles"/>, in their order: the card's fields, the review totals (F09) and, in one
+    /// more query, the owners' pictures (F06). Directory pages and the editor's preview read cards the same way.
+    /// </summary>
+    private static async Task<List<CardRow>> CardRowsAsync(
+        TaxBuddyDbContext db, IQueryable<AccountantProfile> profiles, CancellationToken cancellationToken)
+    {
+        var rows = await profiles
+            .Select(p => new
+            {
+                p.Id,
+                p.DisplayName,
+                p.Title,
+                p.City,
+                p.Summary,
+                p.OwnerAccountId,
+                Services = p.Services.OrderBy(s => s.Position).Select(s => s.Name).ToList(),
+                Starts = p.Experience.Select(e => e.Start).ToList(),
+                Highlights = p.Highlights.Count(),
+                ReviewCount = db.Reviews.Count(r => r.AccountantId == p.Id),
+                StarTotal = db.Reviews.Where(r => r.AccountantId == p.Id).Sum(r => r.Stars),
+            })
+            .ToListAsync(cancellationToken);
+
+        var owners = rows.Where(r => r.OwnerAccountId is not null).Select(r => r.OwnerAccountId!.Value).ToList();
+        var pictures = owners.Count == 0
+            ? new Dictionary<Guid, string?>()
+            : await db.Users.AsNoTracking()
+                .Where(u => owners.Contains(u.Id) && u.PictureObject != null)
+                .ToDictionaryAsync(u => u.Id, u => u.PictureObject, cancellationToken);
+
+        return rows.Select(r => new CardRow(r.Id, r.DisplayName, r.Title, r.City, r.Summary, r.Services, r.Starts,
+            r.OwnerAccountId is { } owner && pictures.TryGetValue(owner, out var picture)
+                ? ProfilePictureService.AddressFor(owner, picture)
+                : null,
+            r.Highlights,
+            r.ReviewCount,
+            r.StarTotal)).ToList();
     }
 
     public async Task<AccountantProfile?> FindListedAsync(AccountantId id, CancellationToken cancellationToken)

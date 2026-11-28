@@ -2,7 +2,7 @@
 @* The prototype's single-page heading band (desktopMain "single-wrap" pane-head). On phones the app bar shows the title,
    so the heading is kept for screen readers only. *@
 <SectionContent SectionName="@Section">
-    <div class="pane-head">
+    <div class="@(Class is null ? "pane-head" : "pane-head " + Class)">
         <h1 tabindex="-1">@Title</h1>
     </div>
 </SectionContent>
@@ -11,4 +11,7 @@
     public const string Section = "desk-title";
 
     [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>A page's width class, so the heading lines up with a wider page (the editor's <c>editor-wide</c>).</summary>
+    [Parameter] public string? Class { get; set; }
 }

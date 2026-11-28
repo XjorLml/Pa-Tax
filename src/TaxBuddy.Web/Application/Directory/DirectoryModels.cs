@@ -129,6 +129,12 @@ public interface IDirectoryStore
     /// <summary>The profile when it exists and is listed (PRD BR01); otherwise null.</summary>
     Task<AccountantProfile?> FindListedAsync(AccountantId id, CancellationToken cancellationToken);
 
+    /// <summary>
+    /// The card row for one listed profile, read exactly as <see cref="SearchAsync"/> reads a page's rows; null when the
+    /// profile doesn't exist or isn't listed (BR01). The editor's preview uses it (F05, F02 BD16).
+    /// </summary>
+    Task<CardRow?> FindCardAsync(AccountantId id, CancellationToken cancellationToken);
+
     /// <summary>The address of the profile owner's picture (F06), or null for none and for seed profiles.</summary>
     Task<string?> PictureAddressAsync(AccountantProfile profile, CancellationToken cancellationToken) => Task.FromResult<string?>(null);
 }

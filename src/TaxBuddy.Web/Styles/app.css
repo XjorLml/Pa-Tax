@@ -1291,6 +1291,81 @@
     margin-top: 8px;
   }
 
+  /* My profile: the directory card, as last saved, beside the form (F02 BD16; prototype editorParts design B and
+     taxbuddy.css .editor-*). Below 860 px, phones included, it's a closed disclosure above the form instead. The page
+     draws both, and only one is shown, so both work without script. */
+  .single-inner.editor-wide {
+    max-width: none;
+  }
+
+  .editor-preview {
+    display: none;
+  }
+
+  .editor-preview-mini {
+    margin: 0 0 14px;
+    background: var(--app-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--r-md);
+  }
+
+  .editor-preview-mini summary {
+    min-height: 44px;
+    padding: 12px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .editor-preview-mini[open] {
+    padding-bottom: 14px;
+  }
+
+  .editor-preview-mini > :not(summary) {
+    margin: 0 14px 10px;
+  }
+
+  .editor-preview-h {
+    margin: 4px 0 0;
+    color: var(--muted);
+    font: 600 11px/1.4 var(--font-body);
+    letter-spacing: .15em;
+    text-transform: uppercase;
+  }
+
+  @media (min-width: 53.75rem) {
+    /* The heading lines up with the wider page: the page container's 1040 px less its 32 px sides. */
+    .pane-head.editor-wide h1 {
+      flex-basis: 976px;
+    }
+
+    .editor-preview-mini {
+      display: none;
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 28px;
+      align-items: start;
+    }
+
+    .editor-preview {
+      position: sticky;
+      top: 16px;
+      display: grid;
+      gap: 10px;
+      padding: 18px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+    }
+
+    .editor-preview p {
+      margin: 0;
+    }
+  }
+
   /* Information pages (infoPage in a narrow panel). */
   .narrow {
     max-width: 760px;

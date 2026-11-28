@@ -2,6 +2,8 @@
 
 Amended 2026-11-16 by [F02 BD10](../brand-design-refresh/spec.md#application-aligned-to-the-prototype-2026-11-16-bd10): the editor's layout, wording and fields now follow the prototype's `editorParts`. Services are rows with a dropdown, the contact email starts empty, there's a listing checklist, and the messages and the title "Create your profile" come from the prototype. The behaviour in the scenarios below is unchanged; quoted texts are as first built.
 
+Amended 2026-11-25 by [F02 BD16](../brand-design-refresh/spec.md#my-profile-preview-beside-the-form-2026-11-25-bd16): the user chose the design with the directory card, as last saved, beside the form (a disclosure on phones and below 860 px), first in the prototype and then, at "implement to site", on the site (PE09). The earlier scenarios are unchanged.
+
 Governing requirements: [PRD](../../docs/PRD.md) R05, with BR01 (listing), D04 (fields and limits) and R11 (contact consent). Contracts: [SDD](../../docs/SDD.md) render modes, navigation and errors, and [DESIGN](../../docs/DESIGN.md) states. Builds on F01 (profiles, directory) and F04 (accounts). Approach: [plan](plan.md). Tracking: [tasks](tasks.md).
 
 ## Intent and scope
@@ -23,7 +25,7 @@ An accountant who has registered (F04) creates and edits their own profile. Once
 - Protection against a stale save from another tab.
 - "My profile" in the header for accountants. An accountant registering from the home page lands on the editor.
 
-**Exclusions:** portfolio highlights (R12; built later as [F08](../portfolio-highlights/spec.md) on 2026-11-17), account deletion (R09), profile photos (since 2026-11-16 a separate feature, [F06](../profile-pictures/spec.md), managed from Account and linked from the editor), the order of services (they follow the catalog order), an "edit" link on the public profile page, and a preview before saving.
+**Exclusions:** portfolio highlights (R12; built later as [F08](../portfolio-highlights/spec.md) on 2026-11-17), account deletion (R09), profile photos (since 2026-11-16 a separate feature, [F06](../profile-pictures/spec.md), managed from Account and linked from the editor), the order of services (they follow the catalog order), an "edit" link on the public profile page, and a preview before saving. The card beside the form since 2026-11-25 (PE09) is not that preview: it shows only what was last saved.
 
 ## Acceptance scenarios
 
@@ -37,6 +39,7 @@ An accountant who has registered (F04) creates and edits their own profile. Once
 | PE06 / R05, BR15 | A visitor, a client, or an accountant posting someone else's data | Visitor: sign-in, then back to the editor. Client: "Only accountant accounts have a profile", with no form. The profile edited is always the signed-in account's own; no ID in the address or form is trusted. A missing antiforgery token gets 400 | Web.Tests |
 | PE07 / SDD errors | The database is unavailable when the page loads or saves | "We couldn't load / save your profile" with a retry; on save, the input is kept; nothing partial is stored | Web.Tests (unreachable database) |
 | PE08 / DESIGN | Desktop and phone, light and dark, keyboard | Labelled fields, visible focus, errors announced, no horizontal overflow; Enter in a text field saves rather than removing a row | Browser check |
+| PE09 / R05, R01; F02 BD16 (2026-11-25) | An accountant opens My profile before listing, saves a complete profile, then makes a refused save with another city; on a wide screen, below 860 px and on a phone | Before listing: "Not listed yet. Your card appears in the directory, and here, once everything needed to be listed is filled in and saved." After saving: "Your card in the directory", the same card as in the directory (rating, city, years, services, summary), "As last saved. Changes show here after you save." and View public profile. After the refused save, the form has the new city and the card the saved one. From 860 px the card is in a panel right of the form; below, in a closed "Preview your directory card" disclosure above it. If the card can't be read, the panel says so and the form still works | Rule test, Web.Tests, browser (rendered pages); the card-read failure is a code path only |
 
 ## State, dependencies, and unresolved decisions
 

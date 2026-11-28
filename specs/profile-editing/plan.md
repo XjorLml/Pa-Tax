@@ -13,6 +13,7 @@
 | `Components/Layout/MainLayout.razor`, `Pages/RegisterPage.razor` | "My profile" in the navigation for accountants; registration as an accountant from `/` lands on the editor | PE01 |
 | `Program.cs`, `Account/AccountSetup.cs` | Register the services; authorization for the page | PE06 |
 | Tests | Rule tests for the validator and domain; web tests for the flows; shared form helpers moved to `Support` | All |
+| 2026-11-25 (F02 BD16): `Application/Directory/DirectoryService.cs`, `DirectoryModels.cs`, `Data/DirectoryStore.cs`, `Components/Shared/DeskTitle.razor`, the editor page, `Styles/app.css` | The card beside the form: one listed card read the way directory pages read theirs (a shared projection); a side panel from 860 px and a disclosure below it, both drawn by the server | PE09 |
 
 ## Dependencies and approach
 
